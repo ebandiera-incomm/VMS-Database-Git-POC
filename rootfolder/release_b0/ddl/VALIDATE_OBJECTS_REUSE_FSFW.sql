@@ -24,7 +24,7 @@ DECLARE
         AND object_type IN ( 'FUNCTION', 'PROCEDURE', 'PACKAGE', 'PACKAGE BODY', 'TYPE',
                              'TYPE BODY', 'SYNONYM', 'VIEW', 'TRIGGER' )
         AND editionable = 'Y'
-        AND edition_name in ('RELEASE_R107')
+        AND edition_name in ('RELEASE_R002')
     ORDER BY
         owner,
         object_name,

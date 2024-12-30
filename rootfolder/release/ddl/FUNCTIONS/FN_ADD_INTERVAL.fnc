@@ -4,6 +4,7 @@ CREATE OR REPLACE FUNCTION VMSCMS.fn_add_interval (
 )
    RETURN DATE
 AS
+-- release2
 /*************************************************
      * VERSION             :  1.0
      * Created Date       : 05/AUG/2009.

@@ -16,7 +16,7 @@ set lines 1010;
 set pages 1010; 
 set serveroutput on
 
-PROMPT                 START OF RELEASE VMSGPRHOST_R999
+PROMPT                 START OF RELEASE VMSGPRHOST_R003
 ------------------------------------------------------------------------------------------------------------------------------------        
 SET DEFINE OFF
 SET ECHO OFF
@@ -35,7 +35,7 @@ PROMPT DML
     --@$VMS_HOME/JAN_VMSGPRHOST_R001_RELEASE/VMSGPRHOST_R104_B0002/DML/VMS_8937_VMS_CONFIG_QUERY.sql
 	PROMPT     --------------------------------------------------------------------------------
 
-PROMPT			 	END OF RELEASE VMSGPRHOST_R999
+PROMPT			 	END OF RELEASE VMSGPRHOST_R003
 
 spool off;
 

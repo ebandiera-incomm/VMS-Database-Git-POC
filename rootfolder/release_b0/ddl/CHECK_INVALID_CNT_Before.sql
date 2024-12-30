@@ -1,3 +1,5 @@
+SPOOL $VMS_HOME/JAN_VMSGPRHOST_R003_RELEASE/LOG/CHECK_INVALID_CNT.log;
+
 PROMPT     *** Truncating Objects req for Invalid cnt   *****
 
 TRUNCATE TABLE vmscms.vms_edition_invalid_cnt_ebr;

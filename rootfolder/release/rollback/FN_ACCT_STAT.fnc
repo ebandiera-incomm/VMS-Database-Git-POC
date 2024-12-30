@@ -16,8 +16,7 @@ BEGIN
    END IF;
 
    RETURN STAT;
-
-   --change done by release1
+   
 END;
 /
 

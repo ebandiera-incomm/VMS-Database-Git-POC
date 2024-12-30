@@ -1,4 +1,4 @@
-SPOOL $VMS_HOME/JAN_VMSGPRHOST_R001_RELEASE/LOG/ROLLBACK_VMSCMS_RELEASE_R999.log;
+SPOOL $VMS_HOME/JAN_VMSGPRHOST_R001_RELEASE/LOG/ROLLBACK_VMSCMS_RELEASE_R003.log;
 
  
 ----------------------------------------------------------------------------------------------------------------
@@ -18,7 +18,7 @@ set serveroutput on
 
  
 
-PROMPT               START OF RELEASE ROLLBACK_VMSGPRHOST_R999
+PROMPT               START OF RELEASE ROLLBACK_VMSGPRHOST_R003
 ------------------------------------------------------------------------------------------------------------------------------------        
 SET ECHO OFF
 SET DEFINE OFF
@@ -37,7 +37,7 @@ PROMPT ROLLBACK DML
     --@$VMS_HOME/JAN_VMSGPRHOST_R001_RELEASE/VMSGPRHOST_R104_B0002/ROLLBACK/ROLLBACK_VMS_8937_VMS_CONFIG_QUERY.sql
 	PROMPT     --------------------------------------------------------------------------------	
 	
-PROMPT			 	END OF RELEASE ROLLBACK_VMSGPRHOST_R999
+PROMPT			 	END OF RELEASE ROLLBACK_VMSGPRHOST_R003
 
 spool off;
 

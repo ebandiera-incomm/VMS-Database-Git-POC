@@ -1,4 +1,4 @@
-SPOOL $VMS_HOME/OCT_VMSGPRHOST_R104_RELEASE/LOG/VMSGPRHOST_RELEASE_VMSCMS_R104_B2.log;
+SPOOL $VMS_HOME/JAN_VMSGPRHOST_R001_RELEASE/LOG/VMSGPRHOST_RELEASE_VMSCMS_R104.log;
 
 
 ----------------------------------------------------------------------------------------------------------------
@@ -16,7 +16,7 @@ set lines 1010;
 set pages 1010; 
 set serveroutput on
 
-PROMPT                 START OF RELEASE VMSGPRHOST_R104_B0002
+PROMPT                 START OF RELEASE VMSGPRHOST_R999
 ------------------------------------------------------------------------------------------------------------------------------------        
 SET DEFINE OFF
 SET ECHO OFF
@@ -25,25 +25,17 @@ SET ECHO OFF
 PROMPT DDL
 
 	PROMPT     *** CREATE_BACKUP  ***
-    @$VMS_HOME/OCT_VMSGPRHOST_R104_RELEASE/VMSGPRHOST_R104_B0002/DDL/CREATE_BACKUP.sql
+    @$VMS_HOME/JAN_VMSGPRHOST_R001_RELEASE/RELEASE/DDL/FUNCTIONS/FN_ACCT_STAT.fnc
 	PROMPT     --------------------------------------------------------------------------------	
-	
-	PROMPT     *** VMS_9234_GPP_TOKENS  ***
-    @$VMS_HOME/OCT_VMSGPRHOST_R104_RELEASE/VMSGPRHOST_R104_B0002/DDL/VMS_9234_GPP_TOKENS.pkb
-	PROMPT     --------------------------------------------------------------------------------
-
-	PROMPT     *** DISABLE_INDEX  ***
-    @$VMS_HOME/OCT_VMSGPRHOST_R104_RELEASE/VMSGPRHOST_R104_B0002/DDL/DISABLE_INDEX.sql
-	PROMPT     --------------------------------------------------------------------------------		
 	
 
 PROMPT DML
 	
-	PROMPT     *** VMS_8937_VMS_CONFIG_QUERY  ***
-    @$VMS_HOME/OCT_VMSGPRHOST_R104_RELEASE/VMSGPRHOST_R104_B0002/DML/VMS_8937_VMS_CONFIG_QUERY.sql
+	PROMPT     *** no dml  ***
+    --@$VMS_HOME/JAN_VMSGPRHOST_R001_RELEASE/VMSGPRHOST_R104_B0002/DML/VMS_8937_VMS_CONFIG_QUERY.sql
 	PROMPT     --------------------------------------------------------------------------------
 
-PROMPT			 	END OF RELEASE VMSGPRHOST_R104_B0002
+PROMPT			 	END OF RELEASE VMSGPRHOST_R999
 
 spool off;
 

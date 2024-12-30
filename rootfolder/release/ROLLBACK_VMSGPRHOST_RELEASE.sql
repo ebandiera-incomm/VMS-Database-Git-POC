@@ -1,8 +1,8 @@
-SPOOL $VMS_HOME/OCT_VMSGPRHOST_R104_RELEASE/LOG/ROLLBACK_VMSCMS_RELEASE_R104_B2.log;
+SPOOL $VMS_HOME/JAN_VMSGPRHOST_R001_RELEASE/LOG/ROLLBACK_VMSCMS_RELEASE_R999.log;
 
  
 ----------------------------------------------------------------------------------------------------------------
---    Please keep OCT_VMSGPRHOST_R104_RELEASE folder in $VMS_HOME/ and then execute the script                        
+--    Please keep JAN_VMSGPRHOST_R001_RELEASE folder in $VMS_HOME/ and then execute the script                        
 --    execute all the scripts using SQL prompt of Oracle only.                             
 --    Please take a proper back up of schema before executing this scripts                    
 ------------------------------------------------------------------------------------------------------------------------------------            
@@ -18,7 +18,7 @@ set serveroutput on
 
  
 
-PROMPT               START OF RELEASE ROLLBACK_VMSGPRHOST_R104_B0002 
+PROMPT               START OF RELEASE ROLLBACK_VMSGPRHOST_R999
 ------------------------------------------------------------------------------------------------------------------------------------        
 SET ECHO OFF
 SET DEFINE OFF
@@ -27,28 +27,17 @@ SET DEFINE OFF
 PROMPT ROLLBACK DDL
 		
 	PROMPT     *** ROLLBACK_VMS_9234_GPP_TOKENS  ***
-    @$VMS_HOME/OCT_VMSGPRHOST_R104_RELEASE/VMSGPRHOST_R104_B0002/ROLLBACK/ROLLBACK_VMS_9234_GPP_TOKENS.pkb
+    @$VMS_HOME/JAN_VMSGPRHOST_R001_RELEASE/RELEASE/ROLLBACK/FN_ACCT_STAT.fnc
 	PROMPT     --------------------------------------------------------------------------------
 	
-	PROMPT     *** ROLLBACK_DISABLE_INDEX  ***
-    @$VMS_HOME/OCT_VMSGPRHOST_R104_RELEASE/VMSGPRHOST_R104_B0002/ROLLBACK/ROLLBACK_DISABLE_INDEX.sql
-	PROMPT     --------------------------------------------------------------------------------	
 	
-	
-	
-
 PROMPT ROLLBACK DML
 	
-	PROMPT     *** ROLLBACK_VMS_8937_VMS_CONFIG_QUERY  ***
-    @$VMS_HOME/OCT_VMSGPRHOST_R104_RELEASE/VMSGPRHOST_R104_B0002/ROLLBACK/ROLLBACK_VMS_8937_VMS_CONFIG_QUERY.sql
+	PROMPT     *** no dml  ***
+    --@$VMS_HOME/JAN_VMSGPRHOST_R001_RELEASE/VMSGPRHOST_R104_B0002/ROLLBACK/ROLLBACK_VMS_8937_VMS_CONFIG_QUERY.sql
 	PROMPT     --------------------------------------------------------------------------------	
 	
-	
-	
-	
-
-	
-PROMPT			 	END OF RELEASE ROLLBACK_VMSGPRHOST_R104_B0002
+PROMPT			 	END OF RELEASE ROLLBACK_VMSGPRHOST_R999
 
 spool off;
 

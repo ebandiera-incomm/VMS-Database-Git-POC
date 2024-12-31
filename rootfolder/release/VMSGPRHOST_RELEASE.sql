@@ -1,8 +1,8 @@
-SPOOL $VMS_HOME/FEV_VMSGPRHOST_R004_RELEASE/LOG/VMSGPRHOST_RELEASE_VMSCMS_R004.log;
+SPOOL $VMS_HOME/MAR_VMSGPRHOST_R005_RELEASE/LOG/VMSGPRHOST_RELEASE_VMSCMS_R005.log;
 
 
 ----------------------------------------------------------------------------------------------------------------
---    Please keep VMSGPRHOST_RELEASE_R004 RELEASE folder in $VMS_HOME/ and then execute the script                        
+--    Please keep VMSGPRHOST_RELEASE_R005 RELEASE folder in $VMS_HOME/ and then execute the script                        
 --    execute all the scripts using SQL prompt of Oracle only.                             
 --    Please take a proper back up of schema before executing this scripts                    
 ------------------------------------------------------------------------------------------------------------------------------------            
@@ -16,7 +16,7 @@ set lines 1010;
 set pages 1010; 
 set serveroutput on
 
-PROMPT                 START OF RELEASE VMSGPRHOST_R004
+PROMPT                 START OF RELEASE VMSGPRHOST_R005
 ------------------------------------------------------------------------------------------------------------------------------------        
 SET DEFINE OFF
 SET ECHO OFF
@@ -25,17 +25,17 @@ SET ECHO OFF
 PROMPT DDL
 
 	PROMPT     *** CREATE_BACKUP  ***
-    @$VMS_HOME/FEV_VMSGPRHOST_R004_RELEASE/RELEASE/DDL/FUNCTIONS/FN_CURR_TAB_SIZE.fnc
+    @$VMS_HOME/MAR_VMSGPRHOST_R005_RELEASE/RELEASE/DDL/PROCEDURES/ADD_BRANCH.prc
 	PROMPT     --------------------------------------------------------------------------------	
 	
 
 PROMPT DML
 	
 	PROMPT     *** no dml  ***
-    --@$VMS_HOME/FEV_VMSGPRHOST_R004_RELEASE/VMSGPRHOST_R004_B0002/DML/VMS_8937_VMS_CONFIG_QUERY.sql
+    --@$VMS_HOME/MAR_VMSGPRHOST_R005_RELEASE/VMSGPRHOST_R005_B0002/DML/VMS_8937_VMS_CONFIG_QUERY.sql
 	PROMPT     --------------------------------------------------------------------------------
 
-PROMPT			 	END OF RELEASE VMSGPRHOST_R004
+PROMPT			 	END OF RELEASE VMSGPRHOST_R005
 
 spool off;
 

@@ -5,7 +5,7 @@ v_RPM_PLAN_CODE VARCHAR2(5);
 
 BEGIN
 
-  -- release rekease 3
+  -- release release 3
   -- code changes done for VMS1234
   BEGIN
   null;

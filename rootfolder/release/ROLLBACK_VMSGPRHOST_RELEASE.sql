@@ -26,13 +26,9 @@ SET DEFINE OFF
 --ROLLBACK
 PROMPT ROLLBACK DDL
 		
-	PROMPT     *** ROLLBACK_VMS_9234_GPP_TOKENS  ***
-    @$VMS_HOME/APR_VMSGPRHOST_R006_RELEASE/RELEASE/ROLLBACK/ADD_BRANCH.prc
+	PROMPT     *** ROLLBACK__  ***
+    @$VMS_HOME/APR_VMSGPRHOST_R006_RELEASE/RELEASE/ROLLBACK//GPP_ACCOUNTS.pkb
 	PROMPT     --------------------------------------------------------------------------------
-	
-    PROMPT     *** ROLLBACK  ***
-    @$VMS_HOME/APR_VMSGPRHOST_R006_RELEASE/RELEASE/ROLLBACK/DISPLAY.prc
-	PROMPT     --------------------------------------------------------------------------------	
 	
 PROMPT ROLLBACK DML
 	

@@ -25,12 +25,9 @@ SET ECHO OFF
 PROMPT DDL
 
 	PROMPT     *** CREATE_BACKUP  ***
-    @$VMS_HOME/APR_VMSGPRHOST_R006_RELEASE/RELEASE/DDL/PROCEDURES/ADD_BRANCH.prc
+    @$VMS_HOME/APR_VMSGPRHOST_R006_RELEASE/RELEASE/DDL/PACKAGES/PackageBody/GPP_ACCOUNTS.pkb
 	PROMPT     --------------------------------------------------------------------------------	
 
-	PROMPT     *** CREATE_BACKUP  ***
-    @$VMS_HOME/APR_VMSGPRHOST_R006_RELEASE/RELEASE/DDL/PROCEDURES/DISPLAY.prc
-	PROMPT     --------------------------------------------------------------------------------	
 	
 
 PROMPT DML

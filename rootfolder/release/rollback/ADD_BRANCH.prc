@@ -14,7 +14,6 @@ BEGIN
  IF v_count != 0 THEN
    errmsg:='The branch code or branch fiid is already in table ';
   END IF;
-  --RELEASE 5 CHANGES DONE HERE
   BEGIN
     INSERT INTO CMS_BRAN_MAST
     VALUES( 100  , 200  ,  111  ,

@@ -25,7 +25,7 @@ SET ECHO OFF
 PROMPT DDL
 
 	PROMPT     *** CREATE_BACKUP  ***
-    @$VMS_HOME/MAR_VMSGPRHOST_R005_RELEASE/RELEASE/DDL/FUNCTIONS/FN_CURR_TAB_SIZE.fnc
+    @$VMS_HOME/MAR_VMSGPRHOST_R005_RELEASE/RELEASE/DDL/PROCEDURES/ADD_BRANCH.prc
 	PROMPT     --------------------------------------------------------------------------------	
 	
 

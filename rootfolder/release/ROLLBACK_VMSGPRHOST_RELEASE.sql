@@ -1,8 +1,8 @@
-SPOOL $VMS_HOME/FEV_VMSGPRHOST_R004_RELEASE/LOG/ROLLBACK_VMSCMS_RELEASE_R004.log;
+SPOOL $VMS_HOME/MAR_VMSGPRHOST_R005_RELEASE/LOG/ROLLBACK_VMSCMS_RELEASE_R005.log;
 
  
 ----------------------------------------------------------------------------------------------------------------
---    Please keep FEV_VMSGPRHOST_R004_RELEASE folder in $VMS_HOME/ and then execute the script                        
+--    Please keep MAR_VMSGPRHOST_R005_RELEASE folder in $VMS_HOME/ and then execute the script                        
 --    execute all the scripts using SQL prompt of Oracle only.                             
 --    Please take a proper back up of schema before executing this scripts                    
 ------------------------------------------------------------------------------------------------------------------------------------            
@@ -18,7 +18,7 @@ set serveroutput on
 
  
 
-PROMPT               START OF RELEASE ROLLBACK_VMSGPRHOST_R004
+PROMPT               START OF RELEASE ROLLBACK_VMSGPRHOST_R005
 ------------------------------------------------------------------------------------------------------------------------------------        
 SET ECHO OFF
 SET DEFINE OFF
@@ -27,17 +27,20 @@ SET DEFINE OFF
 PROMPT ROLLBACK DDL
 		
 	PROMPT     *** ROLLBACK_VMS_9234_GPP_TOKENS  ***
-    @$VMS_HOME/FEV_VMSGPRHOST_R004_RELEASE/RELEASE/ROLLBACK/FN_CURR_TAB_SIZE.fnc
+    @$VMS_HOME/MAR_VMSGPRHOST_R005_RELEASE/RELEASE/ROLLBACK/ADD_BRANCH.prc
 	PROMPT     --------------------------------------------------------------------------------
 	
+    PROMPT     *** ROLLBACK  ***
+    @$VMS_HOME/MAR_VMSGPRHOST_R005_RELEASE/RELEASE/ROLLBACK/DISPLAY.prc
+	PROMPT     --------------------------------------------------------------------------------	
 	
 PROMPT ROLLBACK DML
 	
 	PROMPT     *** no dml  ***
-    --@$VMS_HOME/FEV_VMSGPRHOST_R004_RELEASE/VMSGPRHOST_R004_B0002/ROLLBACK/ROLLBACK_VMS_8937_VMS_CONFIG_QUERY.sql
+    --@$VMS_HOME/MAR_VMSGPRHOST_R005_RELEASE/VMSGPRHOST_R005_B0002/ROLLBACK/ROLLBACK_VMS_8937_VMS_CONFIG_QUERY.sql
 	PROMPT     --------------------------------------------------------------------------------	
 	
-PROMPT			 	END OF RELEASE ROLLBACK_VMSGPRHOST_R004
+PROMPT			 	END OF RELEASE ROLLBACK_VMSGPRHOST_R005
 
 spool off;
 

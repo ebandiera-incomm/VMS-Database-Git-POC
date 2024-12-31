@@ -33,7 +33,6 @@
                                c_account_limits_out OUT SYS_REFCURSOR
 
                                );
-                               -- code done change by build 2 release 6
   --get direct deposit form
   PROCEDURE get_directdeposit_form(p_customer_id_in    IN VARCHAR2,
                                    p_status_out        OUT VARCHAR2,

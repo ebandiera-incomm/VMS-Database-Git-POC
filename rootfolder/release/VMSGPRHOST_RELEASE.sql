@@ -28,6 +28,10 @@ PROMPT DDL
     @$VMS_HOME/APR_VMSGPRHOST_R006_RELEASE/RELEASE/DDL/PACKAGES/PackageBody/GPP_ACCOUNTS.pkb
 	PROMPT     --------------------------------------------------------------------------------	
 
+	PROMPT     *** CREATE_BACKUP  ***
+    @$VMS_HOME/APR_VMSGPRHOST_R006_RELEASE/RELEASE/DDL/PACKAGES/PackageSpecification/GPP_ACCOUNTS.pks
+	PROMPT     --------------------------------------------------------------------------------	
+
 	
 
 PROMPT DML

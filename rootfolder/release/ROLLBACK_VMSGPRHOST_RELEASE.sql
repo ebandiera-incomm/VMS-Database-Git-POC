@@ -27,7 +27,11 @@ SET DEFINE OFF
 PROMPT ROLLBACK DDL
 		
 	PROMPT     *** ROLLBACK__  ***
-    @$VMS_HOME/APR_VMSGPRHOST_R006_RELEASE/RELEASE/ROLLBACK//GPP_ACCOUNTS.pkb
+    @$VMS_HOME/APR_VMSGPRHOST_R006_RELEASE/RELEASE/ROLLBACK/GPP_ACCOUNTS.pkb
+	PROMPT     --------------------------------------------------------------------------------
+
+    PROMPT     *** ROLLBACK__  ***
+    @$VMS_HOME/APR_VMSGPRHOST_R006_RELEASE/RELEASE/ROLLBACK/GPP_ACCOUNTS.pks
 	PROMPT     --------------------------------------------------------------------------------
 	
 PROMPT ROLLBACK DML

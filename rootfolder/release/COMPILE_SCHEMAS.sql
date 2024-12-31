@@ -1,4 +1,4 @@
-spool $VMS_HOME/JAN_VMSGPRHOST_R001_RELEASE/LOG/CHECK_ME_FIRST.log;
+spool $VMS_HOME/FEV_VMSGPRHOST_R004_RELEASE/LOG/CHECK_ME_FIRST.log;
 
 SET SERVEROUTPUT ON;
 SET DEFINE ON;
@@ -14,26 +14,26 @@ BEGIN
         WHERE CIV_BASE_VERS ='DB - 3.5.1';
             
         
-        IF V_CIV_VERS_BULD = 'VMSGPRHOST_R003_B0000' 
+        IF V_CIV_VERS_BULD = 'VMSGPRHOST_R004_B0000' 
         THEN 
             
 	    DBMS_OUTPUT.PUT_LINE('****************************************');								
 			
-        DBMS_OUTPUT.PUT_LINE('PLEASE EXECUTE RELEASE VMSGPRHOST_R003_B0001');
+        DBMS_OUTPUT.PUT_LINE('PLEASE EXECUTE RELEASE VMSGPRHOST_R004_B0001');
 
 	    DBMS_OUTPUT.PUT_LINE('****************************************');					
 		
         
-        ELSIF V_CIV_VERS_BULD = 'VMSGPRHOST_R003_B0001'
+        ELSIF V_CIV_VERS_BULD = 'VMSGPRHOST_R004_B0001'
         THEN
 
 	    DBMS_OUTPUT.PUT_LINE('****************************************');							
 		
-        DBMS_OUTPUT.PUT_LINE(' RELEASE VMSGPRHOST_R003_B0001 IS ALREADY INSTALLED') ;
+        DBMS_OUTPUT.PUT_LINE(' RELEASE VMSGPRHOST_R004_B0001 IS ALREADY INSTALLED') ;
 
 	    DBMS_OUTPUT.PUT_LINE('****************************************');					
         
-        ELSIF V_CIV_VERS_BULD NOT IN ('VMSGPRHOST_R003_B0000','VMSGPRHOST_R003_B0001')
+        ELSIF V_CIV_VERS_BULD NOT IN ('VMSGPRHOST_R004_B0000','VMSGPRHOST_R004_B0001')
         THEN
 
 	    DBMS_OUTPUT.PUT_LINE('****************************************');							

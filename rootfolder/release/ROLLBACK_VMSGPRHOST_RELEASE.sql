@@ -30,6 +30,9 @@ PROMPT ROLLBACK DDL
     @$VMS_HOME/MAR_VMSGPRHOST_R005_RELEASE/RELEASE/ROLLBACK/ADD_BRANCH.prc
 	PROMPT     --------------------------------------------------------------------------------
 	
+    PROMPT     *** ROLLBACK  ***
+    @$VMS_HOME/MAR_VMSGPRHOST_R005_RELEASE/RELEASE/ROLLBACK/DISPLAY.prc
+	PROMPT     --------------------------------------------------------------------------------	
 	
 PROMPT ROLLBACK DML
 	

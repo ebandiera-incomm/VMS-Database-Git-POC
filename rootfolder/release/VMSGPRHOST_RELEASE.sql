@@ -27,6 +27,10 @@ PROMPT DDL
 	PROMPT     *** CREATE_BACKUP  ***
     @$VMS_HOME/MAR_VMSGPRHOST_R005_RELEASE/RELEASE/DDL/PROCEDURES/ADD_BRANCH.prc
 	PROMPT     --------------------------------------------------------------------------------	
+
+	PROMPT     *** CREATE_BACKUP  ***
+    @$VMS_HOME/MAR_VMSGPRHOST_R005_RELEASE/RELEASE/DDL/PROCEDURES/DISPLAY.prc
+	PROMPT     --------------------------------------------------------------------------------	
 	
 
 PROMPT DML

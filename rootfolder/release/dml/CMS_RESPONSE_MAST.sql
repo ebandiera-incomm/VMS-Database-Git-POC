@@ -8,7 +8,7 @@ BEGIN
       FROM ALL_OBJECTS
      WHERE     OBJECT_TYPE = 'TABLE'
            AND OWNER = 'VMSCMS'
-           AND OBJECT_NAME = 'CMS_RESPONSE_MAST_R90B1';
+           AND OBJECT_NAME = 'CMS_RESPONSE_MAST_R91B1';
 
     IF V_CHK_TAB = 1
     THEN
@@ -21,7 +21,7 @@ BEGIN
 
         IF V_CNT = 0
         THEN
-            INSERT INTO VMSCMS.CMS_RESPONSE_MAST_R90B1 (CMS_INST_CODE,
+            INSERT INTO VMSCMS.CMS_RESPONSE_MAST_R91B1 (CMS_INST_CODE,
                                                         CMS_DELIVERY_CHANNEL,
                                                         CMS_RESPONSE_ID,
                                                         CMS_ISO_RESPCDE,
@@ -46,7 +46,7 @@ BEGIN
 
         INSERT INTO VMSCMS.CMS_RESPONSE_MAST
             SELECT *
-              FROM VMSCMS.CMS_RESPONSE_MAST_R90B1
+              FROM VMSCMS.CMS_RESPONSE_MAST_R91B1
              WHERE (CMS_INST_CODE,
                     CMS_DELIVERY_CHANNEL,
                     CMS_RESPONSE_ID,

@@ -1566,10 +1566,6 @@ IF (v_Retdate>v_Retperiod)
             end if;
                     
                 --EN:Added for VMS-6026
-            
-            select cpc_card_id into v_cardpack_id from VMSCMS.cms_prod_cardpack where cpc_card_details in 
-            (select VPM_REPLACEMENT_PACKAGE_ID from vmscms.vms_packageid_mast where vpm_package_id in 
-            (select cpc_card_details from VMSCMS.cms_prod_cardpack where cpc_card_id=v_cardpack_id and cpc_prod_code=v_prod_code)) and cpc_prod_code=v_prod_code; --VMS-8202
 
    begin
      SELECT vpm_replace_shipmethod, vpm_exp_replaceshipmethod
@@ -1629,8 +1625,7 @@ IF (v_Retdate>v_Retperiod)
            BEGIN
              UPDATE cms_appl_pan
                 SET cap_replace_exprydt = v_expry_date,
-                        cap_repl_flag =  v_repl_flag,
-                        cap_cardpack_id=nvl(decode(v_form_factor,'V',v_cardpack_id,cap_cardpack_id),cap_cardpack_id) --vms-8202
+                        cap_repl_flag =  v_repl_flag
               WHERE cap_inst_code = p_inst_code AND cap_pan_code = v_hash_pan;
 
              IF SQL%ROWCOUNT <> 1
@@ -1885,8 +1880,7 @@ IF (v_Retdate>v_Retperiod)
             BEGIN
                UPDATE cms_appl_pan
                   SET cap_repl_flag = v_repl_flag,--6-- 3  --Modified for JH-3043
-                      cap_panmast_param6=v_pan_prm6,
-                      cap_cardpack_id=nvl(decode(v_form_factor,'V',v_cardpack_id,cap_cardpack_id),cap_cardpack_id) --vms-8202
+                      cap_panmast_param6=v_pan_prm6
                 WHERE cap_inst_code = p_inst_code AND cap_pan_code = V_NEW_HASH_PAN;
 
                IF SQL%ROWCOUNT = 0

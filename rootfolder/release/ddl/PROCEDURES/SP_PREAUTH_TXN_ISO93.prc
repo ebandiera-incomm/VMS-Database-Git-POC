@@ -1,5 +1,4 @@
-create or replace
-PROCEDURE             VMSCMS.SP_PREAUTH_TXN_ISO93 (P_INST_CODE         IN NUMBER,
+create or replace PROCEDURE                           vmscms.SP_PREAUTH_TXN_ISO93 (P_INST_CODE         IN NUMBER,
                                          P_MSG               IN VARCHAR2,
                                          P_RRN               VARCHAR2,
                                          P_DELIVERY_CHANNEL  VARCHAR2,
@@ -73,7 +72,7 @@ PROCEDURE             VMSCMS.SP_PREAUTH_TXN_ISO93 (P_INST_CODE         IN NUMBER
                                          ,p_expiry_date_check IN VARCHAR2 default 'Y'
 										 ,p_surchrg_ind   IN VARCHAR2 DEFAULT '2' --Added for VMS-5856
                                          ,p_resp_id   OUT VARCHAR2 --Added for sending to FSS (VMS-8018)
-    
+
                                          ) IS
   /************************************************************************************************************
 
@@ -568,7 +567,7 @@ PROCEDURE             VMSCMS.SP_PREAUTH_TXN_ISO93 (P_INST_CODE         IN NUMBER
        * Modified For     : VMS-162
        * Reviewer         : Saravanankumar
        * Build Number     : VMSGPRHOSTCSD_17.12.1
-	   
+
 	* Modified by      : Vini
     * Modified Date    : 18-Jan-2018
     * Modified For     : VMS-162
@@ -580,26 +579,33 @@ PROCEDURE             VMSCMS.SP_PREAUTH_TXN_ISO93 (P_INST_CODE         IN NUMBER
      * Purpose          : VMS-619 (RULE)
      * Reviewer         : SARAVANAKUMAR A 
      * Release Number   : R08 
-     
-     
+
+
      * Modified By      : DHINAKARAN B
      * Modified Date    : 25-FEB-2020
      * Purpose          : VMS-1985
      * Reviewer         : SARAVANAKUMAR A 
      * Release Number   : R27_build_1 
-	 
+
 	   * Modified By      : Karthick/Jey
 	   * Modified Date    : 05-19-2022
 	   * Purpose          : Archival changes.
 	   * Reviewer         : Venkat Singamaneni
 	   * Release Number   : VMSGPRHOST64 for VMS-5739/FSP-991
-	
+
 	   * Modified By      : Areshka A.
 	   * Modified Date    : 03-Nov-2023
 	   * Purpose          : VMS-8018: Added new out parameter (response id) for sending to FSS
 	   * Reviewer         : 
 	   * Release Number   : 
-	
+	   
+	   	
+	* Modified By      : Mohan E.
+    * Modified Date    : 27-DEC-2023
+    * Purpose          : VMS-8140 - Ph1: Scale Concurrent Pre-Auth Reversals Logic for Redemptions
+    * Reviewer         : Pankaj S.
+    * Release Number   : R91
+
  *****************************************************************************************************************/
   V_ERR_MSG            VARCHAR2(900) := 'OK';
   V_ACCT_BALANCE       NUMBER;
@@ -827,10 +833,10 @@ V_REMOVESPACECHAR_CUST   VARCHAR2 (10);
   v_comlfree_flag varchar2(1);
   v_alpha_cntry_code gen_cntry_mast.gcm_alpha_cntry_code%TYPE;
   v_feature_value cms_inst_param.cip_param_value%TYPE;
-  
+
   v_Retperiod  date;  --Added for VMS-5739/FSP-991
   v_Retdate  date; --Added for VMS-5739/FSP-991
-  
+
 BEGIN
 v_start_time := systimestamp;
   SAVEPOINT V_AUTH_SAVEPOINT;
@@ -1049,6 +1055,31 @@ v_start_time := systimestamp;
    end if;
 
    end if;
+
+
+     --SN added for VMS_8140 
+
+        BEGIN
+          SP_AUTONOMOUS_PREAUTH_LOG(V_AUTH_ID, P_STAN, P_TRAN_DATE,
+                V_HASH_PAN,  P_INST_CODE, P_DELIVERY_CHANNEL , V_ERR_MSG);
+
+               IF V_ERR_MSG != 'OK' THEN
+               V_RESP_CDE     := '191';
+               RAISE EXP_REJECT_RECORD;
+               END IF;
+        EXCEPTION
+          When EXP_REJECT_RECORD Then
+          raise;
+          When others then
+              V_RESP_CDE       := '12';
+              V_ERR_MSG         := 'Concurrent check Failed' || SUBSTR(SQLERRM, 1, 200);
+
+              RAISE EXP_REJECT_RECORD;
+        END;          
+   --EN added for VMS_8140 
+   
+
+
     /* ADDED FOR FSS-2065
       -----------------------------------------
       --SN: Added for Duplicate STAN check 0012198
@@ -1865,7 +1896,7 @@ end if;
 
     --Sn check for Preauth
     IF V_PREAUTH_FLAG = 1 THEN
-    
+
           BEGIN 
           select gcm_alpha_cntry_code  
           INTO  v_alpha_cntry_code  
@@ -1875,7 +1906,7 @@ end if;
           WHEN OTHERS THEN 
             v_alpha_cntry_code:=null;
           END;
-    
+
      BEGIN
        /* Start Added by Dhiraj G on 31052012 for Pre - Auth Parameter changes  */
        SP_ELAN_PREAUTHORIZE_TXN(P_CARD_NO,
@@ -2059,18 +2090,18 @@ end if;
 
      IF v_incr_indicator <> '1' AND v_stan_checkflag = 'Y' THEN
       BEGIN
-        
+
 		 --Added for VMS-5739/FSP-991
        select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
        INTO   v_Retperiod 
        FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL  
        WHERE  OPERATION_TYPE='ARCHIVE' 
        AND OBJECT_NAME='TRANSACTIONLOG_EBR';
-       
+
        v_Retdate := TO_DATE(SUBSTR(TRIM(P_TRAN_DATE), 1, 8), 'yyyymmdd');
-	   
+
 	 IF (v_Retdate>v_Retperiod) THEN                                                        --Added for VMS-5739/FSP-991
-	 
+
         SELECT COUNT(1)
          INTO V_STAN_COUNT
          FROM TRANSACTIONLOG
@@ -2080,9 +2111,9 @@ end if;
         AND   DELIVERY_CHANNEL = P_DELIVERY_CHANNEL
         AND   ADD_INS_DATE BETWEEN TRUNC(SYSDATE-1)  AND SYSDATE
         AND   SYSTEM_TRACE_AUDIT_NO = P_STAN;
-		
+
 	 ELSE
-	    
+
 		SELECT COUNT(1)
          INTO V_STAN_COUNT
          FROM VMSCMS_HISTORY.TRANSACTIONLOG_HIST                                          --Added for VMS-5739/FSP-991
@@ -2092,7 +2123,7 @@ end if;
         AND   DELIVERY_CHANNEL = P_DELIVERY_CHANNEL
         AND   ADD_INS_DATE BETWEEN TRUNC(SYSDATE-1)  AND SYSDATE
         AND   SYSTEM_TRACE_AUDIT_NO = P_STAN;
-	 
+
 	 END IF;
 
         IF V_STAN_COUNT > 0 THEN
@@ -2359,7 +2390,7 @@ end if;
                                          AND CPT_PREAUTH_VALIDFLAG = 'Y'
                                          AND CPT_EXPIRY_FLAG = 'N';
 						END IF;	
-						
+
                 EXCEPTION
                 WHEN NO_DATA_FOUND THEN
                     V_ERR_MSG :='No Matching Preauth was found for Incremental preauth ';
@@ -3195,7 +3226,7 @@ END IF;
          --En added by Pankaj S. for 10871
          );
        --En Entry for Fixed Fee
-	   
+
 	   IF V_PER_FEES <> 0 THEN --Added for VMS-5856
        V_FEE_OPENING_BAL := V_FEE_OPENING_BAL - V_FLAT_FEES;
        --Sn Entry for Percentage Fee
@@ -3791,7 +3822,7 @@ v_comp_total_fee,v_complfee_increment_type,v_comp_fee_code,v_comp_feeattach_type
                         AND cpt_preauth_validflag = 'Y'
                         AND cpt_expiry_flag = 'N'
                         AND cpt_inst_code = p_inst_code;
-						
+
 						IF SQL%ROWCOUNT = 0
                      THEN
 					    UPDATE VMSCMS_HISTORY.CMS_PREAUTH_TRANSACTION_HIST                              --Added for VMS-5739/FSP-991
@@ -4208,7 +4239,7 @@ v_comp_total_fee,v_complfee_increment_type,v_comp_fee_code,v_comp_feeattach_type
     END;
 
     ---En Updation of Usage limit and amount
-    
+
     --Sn Added by Pankaj S. for enabling limit validation
     IF v_prfl_code IS NOT NULL AND v_prfl_flag = 'Y' THEN
     BEGIN
@@ -4233,13 +4264,13 @@ v_comp_total_fee,v_complfee_increment_type,v_comp_fee_code,v_comp_feeattach_type
     END;
     END IF;
     --En Added by Pankaj S. for enabling limit validation
-    
+
     BEGIN  
         IF v_partial_appr = 'Y' AND v_resp_cde = '1' THEN
                v_resp_cde := '2';
          END IF;
     END;
-      
+
     P_RESP_ID := V_RESP_CDE; --Added for VMS-8018
     BEGIN
      SELECT CMS_B24_RESPCDE, --Changed  CMS_ISO_RESPCDE to  CMS_B24_RESPCDE for HISO SPECIFIC Response codes
@@ -4258,6 +4289,16 @@ v_comp_total_fee,v_complfee_increment_type,v_comp_fee_code,v_comp_feeattach_type
        V_RESP_CDE := '21';
        RAISE EXP_REJECT_RECORD;
     END;
+  
+--SN added for VMS_8140    
+        BEGIN
+            sp_autonomous_preauth_logclear(v_auth_id);
+        EXCEPTION
+            When others then
+            null;
+        END;
+--EN added for VMS_8140   
+    
        select (extract(day from systimestamp - v_start_time) *86400+
     extract(hour from systimestamp - v_start_time) *3600+
     extract(minute from systimestamp - v_start_time) *60+
@@ -4368,9 +4409,9 @@ v_comp_total_fee,v_complfee_increment_type,v_comp_fee_code,v_comp_feeattach_type
         IF v_delayed_amount>0 AND v_resp_cde='15' THEN
              v_resp_cde:='1000';
         END IF;
-        
+
        P_RESP_ID := V_RESP_CDE; --Added for VMS-8018
-       
+
        -- Assign the response code to the out parameter
        SELECT CMS_B24_RESPCDE, --Changed  CMS_ISO_RESPCDE to  CMS_B24_RESPCDE for HISO SPECIFIC Response codes
               cms_iso_respcde  -- Added for OLS changes
@@ -4490,6 +4531,18 @@ v_comp_total_fee,v_complfee_increment_type,v_comp_fee_code,v_comp_feeattach_type
         ROLLBACK;
         RETURN;
      END;
+
+    
+--SN added for VMS_8140    
+        BEGIN
+            sp_autonomous_preauth_logclear(v_auth_id);
+        EXCEPTION
+            When others then
+            null;
+        END;
+--EN added for VMS_8140   
+    
+
     WHEN OTHERS THEN
      ROLLBACK TO V_AUTH_SAVEPOINT;
 
@@ -4685,6 +4738,17 @@ v_comp_total_fee,v_complfee_increment_type,v_comp_fee_code,v_comp_feeattach_type
         RETURN;
      END;
      --En select response code and insert record into txn log dtl
+	 
+	     
+	--SN added for VMS_8140    
+			BEGIN
+				sp_autonomous_preauth_logclear(v_auth_id);
+			EXCEPTION
+				When others then
+				null;
+			END;
+	--EN added for VMS_8140   
+
   END;
 
   --- Sn create GL ENTRIES
@@ -5005,6 +5069,7 @@ v_comp_total_fee,v_complfee_increment_type,v_comp_fee_code,v_comp_feeattach_type
                  SUBSTR(SQLERRM, 1, 300);
   END;
   --En create a entry in txn log
+    
 
 EXCEPTION
   WHEN OTHERS THEN
@@ -5015,4 +5080,4 @@ EXCEPTION
                 SUBSTR(SQLERRM, 1, 300);
 END;
 /
-show error
+show error;

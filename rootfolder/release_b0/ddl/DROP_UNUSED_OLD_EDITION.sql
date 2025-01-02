@@ -17,7 +17,7 @@ COMMIT;
 
 ALTER SESSION SET EDITION = RELEASE_R90;
 
-DROP EDITION RELEASE_R89 CASCADE;
+DROP EDITION RELEASE_R80 CASCADE;
 
 exec dbms_editions_utilities.clean_unusable_editions;
 

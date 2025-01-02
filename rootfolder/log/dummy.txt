@@ -1,1 +1,1 @@
-.
+log folder for NOV_VMSGPRHOST_R90_RELEASE files

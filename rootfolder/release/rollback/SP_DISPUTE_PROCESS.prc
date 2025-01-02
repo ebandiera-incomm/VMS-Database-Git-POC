@@ -1037,13 +1037,6 @@ IF (v_Retdate>v_Retperiod)
          --Added for VMS-5733/FSP-991
 
 
-v_Retdate := TO_DATE(SUBSTR(TRIM(p_orgnl_business_date), 1, 8), 'yyyymmdd');
-
-       select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
-       INTO   v_Retperiod 
-       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
-       WHERE  OPERATION_TYPE='ARCHIVE' 
-       AND OBJECT_NAME='TRANSACTIONLOG_EBR';
 
 IF (v_Retdate>v_Retperiod)
     THEN

@@ -1,8 +1,8 @@
-SPOOL $VMS_HOME/APR_VMSGPRHOST_R006_RELEASE/LOG/VMSGPRHOST_RELEASE_VMSCMS_R006.log;
+SPOOL $VMS_HOME/NOV_VMSGPRHOST_R90_RELEASE/LOG/VMSGPRHOST_RELEASE_VMSCMS_R90.log;
 
 
 ----------------------------------------------------------------------------------------------------------------
---    Please keep VMSGPRHOST_RELEASE_R006 RELEASE folder in $VMS_HOME/ and then execute the script                        
+--    Please keep VMSGPRHOST_RELEASE_R90 RELEASE folder in $VMS_HOME/ and then execute the script                        
 --    execute all the scripts using SQL prompt of Oracle only.                             
 --    Please take a proper back up of schema before executing this scripts                    
 ------------------------------------------------------------------------------------------------------------------------------------            
@@ -16,7 +16,7 @@ set lines 1010;
 set pages 1010; 
 set serveroutput on
 
-PROMPT                 START OF RELEASE VMSGPRHOST_R006
+PROMPT                 START OF RELEASE VMSGPRHOST_R90
 ------------------------------------------------------------------------------------------------------------------------------------        
 SET DEFINE OFF
 SET ECHO OFF
@@ -25,11 +25,11 @@ SET ECHO OFF
 PROMPT DDL
 
 	PROMPT     *** CREATE_BACKUP  ***
-    @$VMS_HOME/APR_VMSGPRHOST_R006_RELEASE/RELEASE/DDL/PACKAGES/PackageBody/GPP_ACCOUNTS.pkb
+    @$VMS_HOME/NOV_VMSGPRHOST_R90_RELEASE/RELEASE/DDL/PACKAGES/PackageBody/GPP_ACCOUNTS.pkb
 	PROMPT     --------------------------------------------------------------------------------	
 
 	PROMPT     *** CREATE_BACKUP  ***
-    @$VMS_HOME/APR_VMSGPRHOST_R006_RELEASE/RELEASE/DDL/PACKAGES/PackageSpecification/GPP_ACCOUNTS.pks
+    @$VMS_HOME/NOV_VMSGPRHOST_R90_RELEASE/RELEASE/DDL/PACKAGES/PackageSpecification/GPP_ACCOUNTS.pks
 	PROMPT     --------------------------------------------------------------------------------	
 
 	
@@ -37,10 +37,10 @@ PROMPT DDL
 PROMPT DML
 	
 	PROMPT     *** no dml  ***
-    --@$VMS_HOME/APR_VMSGPRHOST_R006_RELEASE/VMSGPRHOST_R006_B0002/DML/VMS_8937_VMS_CONFIG_QUERY.sql
+    --@$VMS_HOME/NOV_VMSGPRHOST_R90_RELEASE/VMSGPRHOST_R90_B0002/DML/VMS_8937_VMS_CONFIG_QUERY.sql
 	PROMPT     --------------------------------------------------------------------------------
 
-PROMPT			 	END OF RELEASE VMSGPRHOST_R006
+PROMPT			 	END OF RELEASE VMSGPRHOST_R90
 
 spool off;
 

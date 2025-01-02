@@ -177,12 +177,6 @@ create or replace PROCEDURE                                                  VMS
      * Purpose          : VMS-7341
      * Reviewer         : Pankaj S.
      * Release Number   : R84
-     
-     * Modified By      : Shanmugavel
-     * Modified Date    : 23/01/2024
-     * Purpose          : VMS-8219-Remove the Default Status in the Product Category Profile Screen on the Host UI
-     * Reviewer         : Venkat/John/Pankaj
-     * Release Number   : VMSGPRHOSTR92
   *************************************************/
 
   V_INST_CODE            CMS_APPL_MAST.CAM_INST_CODE%TYPE;
@@ -1478,33 +1472,32 @@ IF v_pan_inventory_flag='N' THEN    --Added for 17.07 PAN Inventory Changes
     V_MBRLINK  := '000';
   END IF;
 
-V_CARD_STAT := '0';  -- VMS-8219
   --En entry for addon stat
   --Sn find card status and limit parameter for the profile
---  BEGIN
---    SELECT CBP_PARAM_VALUE
---     INTO V_CARD_STAT
---     FROM CMS_BIN_PARAM
---    WHERE CBP_INST_CODE = P_INSTCODE AND CBP_PROFILE_CODE = V_PROFILE_CODE AND
---         CBP_PARAM_NAME = 'Status';
---
---    IF V_CARD_STAT IS NULL THEN
---     V_ERRMSG := 'Status is null for profile code ' || V_PROFILE_CODE;
---     RAISE EXP_REJECT_RECORD;
---    END IF;
---  EXCEPTION
---    WHEN EXP_REJECT_RECORD THEN
---     RAISE;
---    WHEN NO_DATA_FOUND THEN
---     V_ERRMSG := 'Status is not defined for profile code ' ||
---               V_PROFILE_CODE;
---     RAISE EXP_REJECT_RECORD;
---    WHEN OTHERS THEN
---    -- V_ERRMSG := 'Error'|| V_PROFILE_CODE||' selecting card status ' ||
---      --         SUBSTR(SQLERRM, 1, 200);
---                    V_ERRMSG := 'Error'|| V_PROFILE_CODE||' selecting card status @';
---     RAISE EXP_REJECT_RECORD;
---  END;
+  BEGIN
+    SELECT CBP_PARAM_VALUE
+     INTO V_CARD_STAT
+     FROM CMS_BIN_PARAM
+    WHERE CBP_INST_CODE = P_INSTCODE AND CBP_PROFILE_CODE = V_PROFILE_CODE AND
+         CBP_PARAM_NAME = 'Status';
+
+    IF V_CARD_STAT IS NULL THEN
+     V_ERRMSG := 'Status is null for profile code ' || V_PROFILE_CODE;
+     RAISE EXP_REJECT_RECORD;
+    END IF;
+  EXCEPTION
+    WHEN EXP_REJECT_RECORD THEN
+     RAISE;
+    WHEN NO_DATA_FOUND THEN
+     V_ERRMSG := 'Status is not defined for profile code ' ||
+               V_PROFILE_CODE;
+     RAISE EXP_REJECT_RECORD;
+    WHEN OTHERS THEN
+    -- V_ERRMSG := 'Error'|| V_PROFILE_CODE||' selecting card status ' ||
+      --         SUBSTR(SQLERRM, 1, 200);
+                    V_ERRMSG := 'Error'|| V_PROFILE_CODE||' selecting card status @';
+     RAISE EXP_REJECT_RECORD;
+  END;
 
   --En find card status and limit parameter for the profile
 

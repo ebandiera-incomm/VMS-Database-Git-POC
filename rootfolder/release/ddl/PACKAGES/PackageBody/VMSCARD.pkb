@@ -3161,7 +3161,7 @@ PROCEDURE get_pan_srno (p_inst_code_in      IN     NUMBER,
                 L_temp_Max_Serlno := L_temp_Serlno; --89 -79   -19  9
 
 
-               If L_Temp_Serlno = 0  or  l_min_serlno > l_max_serlno Then
+               If L_Temp_Serlno = 0  or  l_min_serlno >= l_max_serlno Then
                   Exit;
                End If;
 
@@ -3336,7 +3336,7 @@ PROCEDURE get_pan_srno (p_inst_code_in      IN     NUMBER,
 
                 l_min_serlno := l_min_serlno + l_no_serials_to_gen;
                 l_temp_max_serlno := l_temp_serlno;
-                IF l_temp_serlno = 0 OR l_min_serlno > l_max_serlno THEN
+                IF l_temp_serlno = 0 OR l_min_serlno >= l_max_serlno THEN
                     EXIT;
                 END IF;
             END LOOP;

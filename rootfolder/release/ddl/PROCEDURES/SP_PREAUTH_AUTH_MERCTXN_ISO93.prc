@@ -1,4 +1,5 @@
-create or replace PROCEDURE                      vmscms.SP_PREAUTH_AUTH_MERCTXN_ISO93 (P_INST_CODE         IN NUMBER,
+create or replace
+PROCEDURE        VMSCMS.SP_PREAUTH_AUTH_MERCTXN_ISO93 (P_INST_CODE         IN NUMBER,
                                          P_MSG               IN VARCHAR2,
                                          P_RRN               VARCHAR2,
                                          P_DELIVERY_CHANNEL  VARCHAR2,
@@ -68,7 +69,6 @@ create or replace PROCEDURE                      vmscms.SP_PREAUTH_AUTH_MERCTXN_
                                           ,P_RESPTIME_DETAIL OUT VARCHAR2
                                           --EN Added by Pankaj S. for DB time logging changes
 										   ,p_surchrg_ind   IN VARCHAR2 DEFAULT '2' --Added for VMS-5856
-                                           ,p_resp_id       OUT VARCHAR2 --Added for sending to FSS (VMS-8018)
                                          ) IS
   /************************************************************************************************************
 
@@ -120,19 +120,19 @@ create or replace PROCEDURE                      vmscms.SP_PREAUTH_AUTH_MERCTXN_
       * Modified for     : FWR 70
       * Reviewer         : Spankaj
       * Release Number   : RI0027.4_B0002 
-
+      
       * Modified Date    : 16-Oct-2014
       * Modified By      : MageshKumar S
       * Modified for     : OLS Perf Improvement
       * Reviewer         : spankaj
       * Release Number   : RI0027.4.3_B0001
-
+      
       * Modified Date    : 27-Nov-2014
       * Modified By      : MageshKumar S
       * Modified for     : OLS Perf Improvement removal and keeping Duplicate RRN check commented.
       * Reviewer         : spankaj
       * Release Number   : RI0027.4.3_B0007
-
+      
       * Modified Date    : 30-DEC-2014
       * Modified By      : Dhinakaran B
       * Modified for     : MVHOST-1080/To Log the Merchant id and CountryCode
@@ -145,92 +145,92 @@ create or replace PROCEDURE                      vmscms.SP_PREAUTH_AUTH_MERCTXN_
       * Modified For     : FSS-2065 (2.4.2.4.1 and 2.4.3.1 integration)
       * Reviewer         : PANKAJ S.
       * Build Number     : RI0027.5_B0006
-
+      
       * Modified By      : MageshKumar S
       * Modified Date    : 11-FEB-2015
       * Modified for     : INSTCODE REMOVAL(2.4.2.4.2 and 2.4.3.1 integration)
       * Reviewer         : Spankaj
       * Release Number   : RI0027.5_B0007
-
+      
        * Modified By      : Abdul Hameed M.A 
      * Modified Date    : 11-FEB-2015
      * Modified for     : OLS AVS Address check and DFCTNM-4
      * Reviewer         : Spankaj
      * Release Number   : RI0027.5_B0007
-
+     
            * Modified By      : Pankaj S.
      * Modified Date    : 26-Feb-2015
      * Modified For     : 2.4.2.4.4/2.4.3.3 PERF Changes integration
      * Reviewer         : Sarvanankumar
      * Build Number     : RI0027.5_B0009  
-
+     
          * Modified By      :  Abdul Hameed M.A
      * Modified For     :  Mantis ID-16035
      * Modified Date    :  26-Feb-2015
      * Reviewer         :  Spankaj
      * Build Number     : RI0027.5_B0009   
-
+     
        * Modified By      :  Abdul Hameed M.A
      * Modified For     :  DFCTNM-4
      * Modified Date    :  1-Mar-2015
      * Reviewer         :  Spankaj
      * Build Number     : RI0027.5_B0011  
-
+     
       * Modified By      :  Abdul Hameed M.A
      * Modified For     :  OLS AVS CHANGES
      * Modified Date    :  23-Apr-2015
      * Reviewer         :  Spankaj
      * Build Number     :  RI0027.5.2_B0001  
-
+     
      * Modified By      :  Siva Kumar m
      * Modified For     :   MVCSD-5617
      * Modified Date    :  28-May-2015
      * Reviewer         :  Saravana Kumar A
      * Build Number     : VMSGPRHOSTCSD_3.0.3_B0001
-
+     
      * Modified by      : Pankaj S.
     * Modified for     : Transactionlog Functional Removal Phase-II changes
     * Modified Date    : 11-Aug-2015
     * Reviewer         : Saravanankumar
     * Build Number     : VMSGPRHOAT_3.1   
-
+   
     * Modified by      : Ramesh A
     * Modified for     : FSS-3610
     * Modified Date    : 31-Aug-2015
     * Reviewer         : Saravanankumar
     * Build Number     : VMSGPRHOST_3.1_B0008
-
+    
     * Modified by      : MageshKumar S
     * Modified for     : GPR Card Status Check Moved to Java
     * Modified Date    : 27-JAN-2016
     * Reviewer         : Saravanankumar/SPankaj
     * Build Number     : VMSGPRHOST_4.0_B0001
-
+	
 	* Modified by      : Narayanaswamy.T
     * Modified for     : FSS-4119 - ATM withdrawal transactions should contain terminal id and city in the statement
     * Modified Date    : 01-Mar-2016
     * Reviewer         : Saravanankumar
     * Build Number     : VMSGPRHOST_4.0_B0001
-
+    
      * Modified Date    : 02-Sep-2016
      * Modified By      : Sivakaminathan
      * Modified for     : MVHOST-1344
      * Reviewer         : Saravanakumar/Spankaj
      * Release Number   : VMSGPRHOSTCSD4.9_B0001
-
-
+   
+   
        * Modified By      : Saravana Kumar A
     * Modified Date    : 07/07/2017
     * Purpose          : Prod code and card type logging in statements log
     * Reviewer         : Pankaj S. 
     * Release Number   : VMSGPRHOST17.07
-
+	
     * Modified By      : Vini Pushkaran
     * Modified Date    : 25/10/2017
     * Purpose          : FSS-5303
     * Reviewer         : Saravanakumar A 
     * Release Number   : VMSGPRHOST17.10_B0004 
-
+	
 	* Modified By      : Vini Pushkaran
     * Modified Date    : 24/11/2017
     * Purpose          : VMS-64
@@ -242,7 +242,7 @@ create or replace PROCEDURE                      vmscms.SP_PREAUTH_AUTH_MERCTXN_
        * Modified For     : VMS-162
        * Reviewer         : Saravanankumar
        * Build Number     : VMSGPRHOSTCSD_17.12.1
-
+	   
     * Modified By      : Sreeja D
     * Modified Date    : 19/02/2018
     * Purpose          : 17.12.3/AVS AMEX
@@ -254,37 +254,25 @@ create or replace PROCEDURE                      vmscms.SP_PREAUTH_AUTH_MERCTXN_
      * Purpose          : VMS-619 (RULE)
      * Reviewer         : SARAVANAKUMAR A 
      * Release Number   : R08 
-
+	 
      * Modified By      : PUVANESH.N
      * Modified Date    : 03-SEP-2021
      * Purpose          : VMS-4652 - Immediate authorization of MoneySend credit transaction
      * Reviewer         : SARAVANAKUMAR A 
      * Release Number   : R51 - BUILD 1 
-
+	 
 	 * Modified By      : UBAIDUR RAHMAN.H
      * Modified Date    : 03-MAR-2022
      * Purpose          : VMS-4821 -  MR RETURN TXN SHOULD NOT DECLINE FOR NEGATIVE BAL.
      * Reviewer         : SARAVANAKUMAR A 
      * Release Number   : R59 - BUILD 1 
-
+	 
 	* Modified By      : Karthick/Jey
     * Modified Date    : 05-18-2022
     * Purpose          : Archival changes.
     * Reviewer         : Venkat Singamaneni
     * Release Number   : VMSGPRHOST64 for VMS-5739/FSP-991
-
-	* Modified By      : Areshka A.
-    * Modified Date    : 03-Nov-2023
-    * Purpose          : VMS-8018: Added new out parameter (response id) for sending to FSS
-    * Reviewer         : 
-    * Release Number   : 
-	
-	* Modified By      : Mohan E.
-    * Modified Date    : 27-DEC-2023
-    * Purpose          : VMS-8140 - Ph1: Scale Concurrent Pre-Auth Reversals Logic for Redemptions
-    * Reviewer         : Pankaj S.
-    * Release Number   : R91
-
+	 
   *****************************************************************************************************************/
   V_ERR_MSG            VARCHAR2(900) := 'OK';
   V_ACCT_BALANCE       NUMBER;
@@ -458,7 +446,7 @@ V_ADDR_ONE CMS_ADDR_MAST.CAM_ADD_ONE%type;
   V_PARAM_VALUE           	CMS_INST_PARAM.CIP_PARAM_VALUE%TYPE;
   V_PREAUTH_CR_RELEASE_HRS	CMS_PROD_CATTYPE.CPC_PREAUTH_CR_RELEASE_HRS%TYPE;
   V_UPD_MONEY_SEND_FLAG		VARCHAR2(10);
-
+  
   v_Retperiod  date;  --Added for VMS-5739/FSP-991
   v_Retdate  date; --Added for VMS-5739/FSP-991
 BEGIN
@@ -671,35 +659,12 @@ BEGIN
     --En find debit and credit flag
 --   if V_MS_PYMNT_TYPE is not null then
    --V_TRANS_DESC:='MoneySend'||' '||V_TRANS_DESC;
-
+   
    if V_MS_PYMNT_TYPE='P' then
    V_MS_PYMNT_TYPE:=null;
    end if;
-
+   
  --  end if;
-
-
-      --SN added for VMS_8140 
-
-        BEGIN
-          SP_AUTONOMOUS_PREAUTH_LOG(V_AUTH_ID, P_STAN, P_TRAN_DATE,
-                V_HASH_PAN,  P_INST_CODE, P_DELIVERY_CHANNEL , V_ERR_MSG);
-
-               IF V_ERR_MSG != 'OK' THEN
-               V_RESP_CDE     := '191';
-               RAISE EXP_REJECT_RECORD;
-               END IF;
-        EXCEPTION
-          When EXP_REJECT_RECORD Then
-          raise;
-          When others then
-              V_RESP_CDE       := '12';
-              V_ERR_MSG         := 'Concurrent check Failed' || SUBSTR(SQLERRM, 1, 200);
-
-              RAISE EXP_REJECT_RECORD;
-        END;          
-   --EN added for VMS_8140 
-
 
 /*
       -----------------------------------------
@@ -808,7 +773,7 @@ BEGIN
 
     EXCEPTION
      WHEN NO_DATA_FOUND THEN
-
+       
        V_ADDRVRIFY_FLAG    := 'Y';
        V_INTERNATIONAL_IND := 'Y';
      WHEN OTHERS THEN
@@ -1183,27 +1148,27 @@ BEGIN
  select REGEXP_REPLACE (v_addr_one||v_addr_TWO,'[^[:digit:]]')
            INTO v_removespacechar_addrcust
           FROM DUAL;
-
+          
 
         select REGEXP_REPLACE (V_ADDR_ONE,'[^[:digit:]]')
            into V_REMOVESPACECHAR_ADDRONECUST
           FROM DUAL;
-
+          
 
         select REGEXP_REPLACE (P_CUST_ADDR,'[^[:digit:]]')
              INTO V_REMOVESPACECHAR_ADDRTXN
              from DUAL;
-
+             
           SELECT REGEXP_REPLACE (P_CUST_ADDR, '([ ])', '')
            INTO V_REMOVESPACE_addrtxn
            from DUAL;
-
+           
           SELECT REGEXP_REPLACE (v_addr_one||v_addr_TWO, '([ ])', '')
            INTO V_REMOVESPACE_addrcust
            from DUAL;
      IF V_ADDRVRIFY_FLAG = 'Y'  then      
     if(P_ADDR_VERFY_RESPONSE  ='W') then
-
+    
        if(V_REMOVESPACE_ADDRCUST is not null) then
 
      if(V_REMOVESPACE_ADDRCUST=SUBSTR(V_REMOVESPACE_ADDRTXN,1,length(V_REMOVESPACE_ADDRCUST))) then
@@ -1215,8 +1180,8 @@ BEGIN
         else
         V_ADDR_VERFY:=-1;
         end if;
-
-
+        
+        
         IF(V_ADDR_VERFY          =1) THEN
           P_ADDR_VERFY_RESPONSE := 'Y';
         ELSE
@@ -1449,7 +1414,7 @@ BEGIN
             + EXTRACT (SECOND FROM SYSTIMESTAMP - v_start_time) * 1000)
       INTO v_mili
       FROM DUAL;
-
+      
     P_RESPTIME_DETAIL := '1: ' || v_mili ;
     --EN Added by Pankaj S. for DB time logging changes
 
@@ -1485,18 +1450,18 @@ BEGIN
     ------------------------------------------------------
       IF P_MSG NOT IN ('1200' ,'1120') THEN  --Added by Pankaj S. for PERF changes 
       BEGIN
-
+        
 		--Added for VMS-5739/FSP-991
        select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
        INTO   v_Retperiod 
        FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL  
        WHERE  OPERATION_TYPE='ARCHIVE' 
        AND OBJECT_NAME='TRANSACTIONLOG_EBR';
-
+       
        v_Retdate := TO_DATE(SUBSTR(TRIM(P_TRAN_DATE), 1, 8), 'yyyymmdd');
-
+	   
 	  IF (v_Retdate>v_Retperiod)  THEN                                                 --Added for VMS-5739/FSP-991
-
+	   
         SELECT COUNT(1)
          INTO V_STAN_COUNT
          FROM TRANSACTIONLOG
@@ -1506,9 +1471,9 @@ BEGIN
         AND   DELIVERY_CHANNEL = P_DELIVERY_CHANNEL
         AND   ADD_INS_DATE BETWEEN TRUNC(SYSDATE-1)  AND SYSDATE
         AND   SYSTEM_TRACE_AUDIT_NO = P_STAN;
-
+		
 	   ELSE
-
+	   
 	    SELECT COUNT(1)
          INTO V_STAN_COUNT
          FROM VMSCMS_HISTORY.TRANSACTIONLOG_HIST                                   --Added for VMS-5739/FSP-991
@@ -1518,7 +1483,7 @@ BEGIN
         AND   DELIVERY_CHANNEL = P_DELIVERY_CHANNEL
         AND   ADD_INS_DATE BETWEEN TRUNC(SYSDATE-1)  AND SYSDATE
         AND   SYSTEM_TRACE_AUDIT_NO = P_STAN;
-
+	   
 	   END IF;
 
         IF V_STAN_COUNT > 0 THEN
@@ -1553,7 +1518,7 @@ BEGIN
             + EXTRACT (SECOND FROM SYSTIMESTAMP - v_start_time) * 1000)
       INTO v_mili
       FROM DUAL;
-
+    
      P_RESPTIME_DETAIL :=  P_RESPTIME_DETAIL || ' 2: ' || v_mili ;
      --EN Added by Pankaj S. for DB time logging changes
 
@@ -1948,7 +1913,7 @@ BEGIN
      V_NARRATION := V_NARRATION || P_MERCHANT_NAME || '/';
 
     END IF;
-
+	
 	 -- Changed for FSS-4119
 	IF TRIM(P_TERM_ID) IS NOT NULL THEN
 
@@ -1961,7 +1926,7 @@ BEGIN
      V_NARRATION := V_NARRATION || P_MERCHANT_CITY || '/';
 
     END IF;	
-
+	
     IF TRIM(P_TRAN_DATE) IS NOT NULL THEN
 
      V_NARRATION := V_NARRATION || P_TRAN_DATE || '/';
@@ -2253,7 +2218,7 @@ BEGIN
 
          );
        --En Entry for Fixed Fee
-
+	   
 	   IF V_PER_FEES <> 0 THEN --Added for VMS-5856
        V_FEE_OPENING_BAL := V_FEE_OPENING_BAL - V_FLAT_FEES;
        --Sn Entry for Percentage Fee
@@ -3074,7 +3039,6 @@ BEGIN
     END;
 
     ---En Updation of Usage limit and amount
-    P_RESP_ID := V_RESP_CDE; --Added for VMS-8018
     BEGIN
      SELECT CMS_B24_RESPCDE, --Changed  CMS_ISO_RESPCDE to  CMS_B24_RESPCDE for HISO SPECIFIC Response codes
             cms_iso_respcde  -- Added for OLS changes
@@ -3092,7 +3056,7 @@ BEGIN
        V_RESP_CDE := '21';
        RAISE EXP_REJECT_RECORD;
     END;
-
+    
         --SN Added by Pankaj S. for DB time logging changes
     SELECT (  EXTRACT (DAY FROM SYSTIMESTAMP - v_start_time) * 86400
             + EXTRACT (HOUR FROM SYSTIMESTAMP - v_start_time) * 3600
@@ -3100,7 +3064,7 @@ BEGIN
             + EXTRACT (SECOND FROM SYSTIMESTAMP - v_start_time) * 1000)
       INTO v_mili
       FROM DUAL;
-
+      
      P_RESPTIME_DETAIL :=  P_RESPTIME_DETAIL || ' 3: ' || v_mili ;
      --EN Added by Pankaj S. for DB time logging changes
 
@@ -3127,17 +3091,6 @@ BEGIN
           RAISE exp_reject_record;
     END;
     END IF;
-
-   --SN added for VMS_8140    
-        BEGIN
-            sp_autonomous_preauth_logclear(v_auth_id);
-        EXCEPTION
-            When others then
-            null;
-        END;
---EN added for VMS_8140   
-    
-
     --En Added  for enabling limit validation
 
   EXCEPTION
@@ -3241,7 +3194,6 @@ BEGIN
      BEGIN
        P_RESP_MSG  := V_ERR_MSG;
        P_RESP_CODE := V_RESP_CDE;
-       P_RESP_ID   := V_RESP_CDE; --Added for VMS-8018
 
        -- Assign the response code to the out parameter
        SELECT CMS_B24_RESPCDE, --Changed  CMS_ISO_RESPCDE to  CMS_B24_RESPCDE for HISO SPECIFIC Response codes
@@ -3258,7 +3210,6 @@ BEGIN
         P_RESP_MSG  := 'Problem while selecting data from response master ' ||
                     V_RESP_CDE || SUBSTR(SQLERRM, 1, 300);
         P_RESP_CODE := '69';
-        P_RESP_ID   := '69'; --Added for VMS-8018
         ---ISO MESSAGE FOR DATABASE ERROR Server Declined
         ROLLBACK;
      END;
@@ -3348,21 +3299,11 @@ BEGIN
         P_RESP_MSG  := 'Problem while inserting data into transaction log  dtl' ||
                     SUBSTR(SQLERRM, 1, 300);
         P_RESP_CODE := '69'; -- Server Declined
-        P_RESP_ID   := '69'; --Added for VMS-8018
         ROLLBACK;
         RETURN;
      END;
 
-   
---SN added for VMS_8140    
-        BEGIN
-            sp_autonomous_preauth_logclear(v_auth_id);
-        EXCEPTION
-            When others then
-            null;
-        END;
---EN added for VMS_8140   
-    
+
 
     WHEN OTHERS THEN
      ROLLBACK TO V_AUTH_SAVEPOINT;
@@ -3455,13 +3396,11 @@ BEGIN
             CMS_RESPONSE_ID = V_RESP_CDE;
 
        P_RESP_MSG := V_ERR_MSG;
-       P_RESP_ID  := V_RESP_CDE; --Added for VMS-8018
      EXCEPTION
        WHEN OTHERS THEN
         P_RESP_MSG  := 'Problem while selecting data from response master ' ||
                     V_RESP_CDE || SUBSTR(SQLERRM, 1, 300);
         P_RESP_CODE := '69'; -- Server Declined
-        P_RESP_ID   := '69'; --Added for VMS-8018
         ROLLBACK;
      END;
 
@@ -3552,20 +3491,10 @@ BEGIN
         P_RESP_MSG  := 'Problem while inserting data into transaction log  dtl' ||
                     SUBSTR(SQLERRM, 1, 300);
         P_RESP_CODE := '69'; -- Server Decline Response 220509
-        P_RESP_ID   := '69'; --Added for VMS-8018
         ROLLBACK;
         RETURN;
      END;
      --En select response code and insert record into txn log dtl
-	 
-	 --SN added for VMS_8140    
-            BEGIN
-                sp_autonomous_preauth_logclear(v_auth_id);
-            EXCEPTION
-                When others then
-                null;
-            END;
-    --EN added for VMS_8140 
   END;
 
   --- Sn create GL ENTRIES
@@ -3640,7 +3569,7 @@ BEGIN
    end if;  */
   end if;
 
-
+  
   IF v_prod_code is NULL THEN
   BEGIN
     SELECT cap_prod_code, cap_card_type, cap_card_stat,cap_acct_no
@@ -3864,7 +3793,6 @@ BEGIN
     WHEN OTHERS THEN
      ROLLBACK;
      P_RESP_CODE := '69'; -- Server Declione
-     P_RESP_ID   := '69'; --Added for VMS-8018
      P_RESP_MSG  := 'Problem while inserting data into transaction log  ' ||
                  SUBSTR(SQLERRM, 1, 300);
   END;
@@ -3876,7 +3804,7 @@ BEGIN
             + EXTRACT (SECOND FROM SYSTIMESTAMP - v_start_time) * 1000)
       INTO v_mili
       FROM DUAL;
-
+  
      P_RESPTIME_DETAIL :=  P_RESPTIME_DETAIL || ' 4: ' || v_mili ;
      P_RESP_TIME := v_mili;
      --EN added by Pankaj S. for DB time logging changes
@@ -3885,7 +3813,6 @@ EXCEPTION
   WHEN OTHERS THEN
     ROLLBACK;
     P_RESP_CODE := '69'; -- Server Declined
-    P_RESP_ID   := '69'; --Added for VMS-8018
     P_RESP_MSG  := 'Main exception from  authorization ' ||
                 SUBSTR(SQLERRM, 1, 300);
 END;

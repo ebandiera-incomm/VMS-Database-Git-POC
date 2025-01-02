@@ -9,8 +9,7 @@ PROCEDURE               VMSCMS.SP_STOCK_ISSUANCE(P_INST_CODE     IN   NUMBER,
                                        P_STORE_ID  IN VARCHAR2,
                                        P_STOCK_CNT IN NUMBER,
                                        P_CARD_ID   IN VARCHAR2,
-                                       P_ERR_MSG   OUT VARCHAR2,
-                                       P_ACTIVATION_STICKERID IN VARCHAR2) IS
+                                       P_ERR_MSG   OUT VARCHAR2) IS
 
   /*************************************************
 
@@ -55,13 +54,8 @@ PROCEDURE               VMSCMS.SP_STOCK_ISSUANCE(P_INST_CODE     IN   NUMBER,
      * Modified Date    : 05-Feb-2023
      * Purpose          : VMS-6652
      * Reviewer         : Venkat S.
-     * Release Number   : R78
-
-    * Modified By      : Shanmugavel
-    * Modified Date    : 11/04/2024
-    * Purpose          : VMS-8523-Activation Sticker for Retail at the Order Level in Stock Issuance/Card Stock Module
-    * Reviewer         : Venkat/John/Pankaj
-    * Release Number   : VMSGPRHOSTR96_B0001
+     * Release Number   : R78      
+	      
   *************************************************/
 
   EXP_REJECT_EXCEPTION EXCEPTION;
@@ -164,8 +158,7 @@ BEGIN
       CSR_CARD_TYPE,
       CSR_CUST_CATG,
       CSR_CARD_GENERATED,
-	  CSR_CARD_ID,
-      CSR_ACTIVATION_STICKERID)
+	  CSR_CARD_ID)
     VALUES
      (P_INST_CODE,
       P_FIID,
@@ -180,8 +173,7 @@ BEGIN
         WHERE CCC_INST_CODE = P_INST_CODE -- ADDED ON 14JAN2013 Missing in queries
         AND   CCC_CATG_SNAME = P_CUST_CATG AND ROWNUM = 1),
       P_STOCK_CNT,
-	  P_CARD_ID,
-      P_ACTIVATION_STICKERID);
+	  P_CARD_ID);
   EXCEPTION
     WHEN OTHERS THEN
      P_ERR_MSG := 'Error while inserting cms_stock_report ' ||

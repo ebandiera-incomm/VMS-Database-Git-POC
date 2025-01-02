@@ -1,4 +1,4 @@
-create or replace PACKAGE BODY                    VMSCMS.GPP_RULES AS
+create or replace PACKAGE BODY           VMSCMS.GPP_RULES AS
 
   -- global variables for the FS framework
   g_config fsfw.fstype.parms_typ;
@@ -689,12 +689,26 @@ create or replace PACKAGE BODY                    VMSCMS.GPP_RULES AS
                to_char(VRR_EXECUTION_TIME,'YYYY-MM-DD HH24:MI:SS') executionTime
           FROM VMSCMS.VMS_RULECHECK_RESULTS
          WHERE VRR_TOKEN = p_token_value_in
+        UNION
+        SELECT VRR_RULE_NAME ruleName,
+               VRR_RULE_DESC ruleDescription,
+               VRR_RULE_RESULT isPassed,
+               to_char(VRR_EXECUTION_TIME,'YYYY-MM-DD HH24:MI:SS') executionTime
+          FROM VMSCMS.VMS_RULECHECK_RESULTS_HIST
+         WHERE VRR_TOKEN = p_token_value_in
          UNION
          SELECT VRR_RULE_NAME ruleName,
                VRR_RULE_DESC ruleDescription,
                VRR_RULE_RESULT isPassed,
                to_char(VRR_EXECUTION_TIME,'YYYY-MM-DD HH24:MI:SS') executionTime
           FROM VMSCMS.VMS_RULECHECK_RESULTS
+         WHERE VRR_CORRELATION_ID = L_CORRELATION_ID
+           UNION
+        SELECT VRR_RULE_NAME ruleName,
+               VRR_RULE_DESC ruleDescription,
+               VRR_RULE_RESULT isPassed,
+               to_char(VRR_EXECUTION_TIME,'YYYY-MM-DD HH24:MI:SS') executionTime
+          FROM VMSCMS.VMS_RULECHECK_RESULTS_HIST
          WHERE VRR_CORRELATION_ID = L_CORRELATION_ID;
 
 

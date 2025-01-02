@@ -6,7 +6,7 @@ v_ccm_last_name VARCHAR2(30);
 CURSOR c1 IS
 SELECT ccm_cust_code,ccm_first_name,ccm_last_name
 FROM CMS_CUST_MAST;
---release 5 build 2
+
 BEGIN
 FOR x IN c1
 LOOP

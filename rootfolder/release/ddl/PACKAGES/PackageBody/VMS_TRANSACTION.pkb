@@ -1283,7 +1283,7 @@ BEGIN
       l_txn_type                  VARCHAR2 (2);
       l_hash_pan          cms_appl_pan.cap_pan_code%TYPE;
       l_encr_pan          cms_appl_pan.cap_pan_code_encr%TYPE;
-      l_chargeback_val    VMSCMS.CMS_INST_PARAM.CIP_PARAM_VALUE%TYPE;
+      l_chargeback_val    VMSCMS.CMS_INST_PARAM.CIP_PARAM_VALUE%TYPE;      
       l_acct_no           cms_appl_pan.cap_acct_no%TYPE;
       l_card_stat         cms_appl_pan.cap_card_stat%TYPE;
       l_prod_code         cms_appl_pan.cap_prod_code%TYPE;
@@ -1377,26 +1377,8 @@ BEGIN
   * Modified Date      : 16-Oct-2023
   * Modified For       : VMS-7900
   * Modified Reason    : Add isDisputable and inDispute flags to Transaction History
-  * Reviewer           :
+  * Reviewer           : 
   * Build Number       : R87_B0002
-
-  * Modified By      : Shanmugavel
-  * Modified Date    : 29/05/2024
-  * Purpose          : VMS-8780-Send CP / CNP indicator to CHW
-  * Reviewer         : Venkat/John/Pankaj
-  * Release Number   : VMSGPRHOSTR98_B0002
-  
-  * Modified By      : Mohan E.
-  * Modified Date    : 21/06/2024
-  * Purpose          : VMS-8884 Send Dynamic Decline Responses from Accertify to CHW/IVR
-  * Reviewer         : Pankaj
-  * Release Number   : VMSGPRHOSTR99_B0003
-  
-  * Modified By      : SaravanaKumar A
-  * Modified Date    : 25/10/2024
-  * Purpose          : 
-  * Reviewer         : 
-  * Release Number   : VMSGPRHOSTR105
 *************************************************/
    BEGIN
       -- Added for VMS-7900 Getting Chargeback Timeframe
@@ -1883,14 +1865,6 @@ BEGIN
                      --'''' checkRoutingNumber,
                      --'''' checkAccountNumber,
                      '''' check_detls,
-					 (select decode(ctd_cnp_indicator,''0'',''Card Not Present'',''1'',''Card Present'',''Card Indicator Not Available'')
-                     from cms_transaction_log_dtl where ctd_rrn=rrn
-                     and ctd_customer_card_no=customer_card_no
-                     --and ctd_cust_acct_number=:l_acct_no
-                     and ctd_delivery_channel=delivery_channel
-                     and ctd_txn_code=txn_code
-                     and ctd_business_date=business_date
-                     and ctd_business_time=business_time and rownum=1) isCardPresent,--VMS-8780
                      ''PENDING'' transactionType,
                      TRIM(TO_CHAR (ledger_balance, ''99999999999999990.99''))  ledgerBalance,
                      TRIM(TO_CHAR (acct_balance, ''99999999999999990.99''))  availableBalance,
@@ -1921,10 +1895,8 @@ BEGIN
                      end state,
                      country_code country,
                      terminal_id terminalId,
-                     null ruleGroup,        --Added for VMS_7816
-					 null source,			--Added for VMS_8884
-					 null actionCode,		--Added for VMS_8884
-                     --null RULEMESSAGE,	Removed for VMS_8884
+                     null RULEGROUP,        --Added for VMS_7816
+                     null RULEMESSAGE, 
                      null isDisputable,  -- Added for VMS-7900
                      null inDispute,
                      ''False'' isFee ';  --isFee added for VMS-8002
@@ -2057,14 +2029,6 @@ BEGIN
                     and  csl_business_date = ctd_business_date
                     and  csl_business_time = ctd_business_time
                     and rownum=1) end check_detls,
-                    (select decode(ctd_cnp_indicator,''0'',''Card Not Present'',''1'',''Card Present'',''Card Indicator Not Available'')
-                     from cms_transaction_log_dtl where ctd_rrn=rrn
-                     and ctd_customer_card_no=customer_card_no
-                     --and ctd_cust_acct_number=:l_acct_no
-                     and ctd_delivery_channel=delivery_channel
-                     and ctd_txn_code=txn_code
-                     and ctd_business_date=business_date
-                     and ctd_business_time=business_time and rownum=1) isCardPresent,--VMS-8780
                     ''POSTED'' transactionType,
                      TRIM(TO_CHAR (nvl(csl_closing_balance,DECODE (CSL_ACCT_NO,CUSTOMER_ACCT_NO,ledger_balance,TOPUP_LEDGER_BALANCE)), ''99999999999999990.99''))  ledgerBalance,
                     TRIM(TO_CHAR (DECODE (CSL_ACCT_NO,CUSTOMER_ACCT_NO,acct_balance,TOPUP_ACCT_BALANCE), ''99999999999999990.99''))  availableBalance,
@@ -2095,10 +2059,8 @@ BEGIN
                      end state,
                     country_code country,
                     terminal_id terminalId,
-					null ruleGroup,         --Added for VMS_7816
-					null source,			--Added for VMS_8884
-					null actionCode,		--Added for VMS_8884
-                    --null RULEMESSAGE,		Removed for VMS_8884
+                    null RULEGROUP,
+                    null RULEMESSAGE,
                     CASE --dispute  -- Added for VMS-7900
                                  WHEN (CASE
                                          WHEN delivery_channel IN (''01'', ''02'')
@@ -2187,20 +2149,12 @@ BEGIN
                              to_char(add_ins_date, ''YYYY-MM-DD HH24:MI:SS'') transactionDate,
                              ''Debit'' crdrFlag,
                              upper(trim(NVL(trans_desc,CTM_TRAN_DESC)))  transactionDescription,
-                             TRIM(TO_CHAR (nvl(amount,0), ''99999999999999990.99'')) transactionAmount,
+                             amount transactionAmount,
                              reason reason,
                              --'''' checkDescription,
                              --'''' checkRoutingNumber,
                              --'''' checkAccountNumber,
                              '''' check_detls,
-							 (select decode(ctd_cnp_indicator,''0'',''Card Not Present'',''1'',''Card Present'',''Card Indicator Not Available'')
-                             from cms_transaction_log_dtl where ctd_rrn=rrn
-                             and ctd_customer_card_no=customer_card_no
-                             --and ctd_cust_acct_number=:l_acct_no
-                             and ctd_delivery_channel=delivery_channel
-                             and ctd_txn_code=txn_code
-                             and ctd_business_date=business_date
-                             and ctd_business_time=business_time and rownum=1) isCardPresent,--VMS-8780
                              ''DECLINED'' transactionType,
                              TRIM(TO_CHAR (ledger_balance, ''99999999999999990.99''))  ledgerBalance,
                              TRIM(TO_CHAR (acct_balance, ''99999999999999990.99''))  availableBalance,
@@ -2231,21 +2185,12 @@ BEGIN
                              end state,
                              country_code country,
                              terminal_id terminalId,
-							 rules ruleGroup,
-							 nvl(src_of_decline , (case when substr(rrn,1,1) =''X''   and DELIVERY_CHANNEL in (''01'',''02'',''16'') then ''OLS''
-                                                        when response_code =  ''199'' and DELIVERY_CHANNEL in (''01'',''02'',''16'') then ''ACC'' end ))   source,	--Added for VMS_8883
-							(select VAR_VERBAL_ACTIONCODE
-								from vmscms.VMS_ACCERTIFY_RESPONSE_DETAILS
-								where  VAR_RRN = rrn
-								and VAR_DELIVERY_CHANNEL =DELIVERY_CHANNEL
-								and VAR_TXN_CODE = txn_code
-								and to_char (VAR_INS_DATE,''YYYYMMDD'') = BUSINESS_DATE) 	actionCode,		--Added for VMS_8884
-                             /*decode (rules,(select vom_rulegroup_id from vmscms.vms_olsrulegroup_mast -- Removed for VMS_8884
+                             decode (rules,(select vom_rulegroup_id from vmscms.vms_olsrulegroup_mast
                              where vom_rulegroup_id = rules and vom_selfservice_eligibility =''Y''),
                              rules) RULEGROUP,
                              decode (rules ,(select vom_rulegroup_id from vmscms.vms_olsrulegroup_mast
                              where vom_rulegroup_id = rules  and vom_selfservice_eligibility =''Y''),
-                             (select vom_service_message from vmscms.vms_olsrulegroup_mast where vom_rulegroup_id = rules)) RULEMESSAGE,*/
+                             (select vom_service_message from vmscms.vms_olsrulegroup_mast where vom_rulegroup_id = rules)) RULEMESSAGE,
                              null isDisputable,  -- Added for VMS-7900
                              null inDispute,
                              ''False'' isFee '; --isFee added for VMS-8002
@@ -2272,9 +2217,9 @@ BEGIN
                       and  delivery_channel = ctm_delivery_channel
                       and  txn_code = ctm_tran_code
 					  and DELIVERY_CHANNEL in (''01'',''02'',''16'')
-					  and (substr((rrn),1,1) = ''X'' or response_code = ''199'')';
-					 -- and rules  = (select vom_rulegroup_id from vmscms.vms_olsrulegroup_mast
-                     --       where vom_rulegroup_id = rules  and vom_selfservice_eligibility =''Y'')';  Removed for VMS_8884
+                      and substr((rrn),1,1) = ''X''
+					  and rules  = (select vom_rulegroup_id from vmscms.vms_olsrulegroup_mast
+                             where vom_rulegroup_id = rules  and vom_selfservice_eligibility =''Y'')';
 
 
              IF l_start_date is not null and  l_end_date is not null then
@@ -2788,3 +2733,4 @@ BEGIN
 
 END vms_transaction;
 /
+SHOW ERROR

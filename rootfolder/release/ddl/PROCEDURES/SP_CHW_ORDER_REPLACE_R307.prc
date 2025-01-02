@@ -1,4 +1,4 @@
-create or replace PROCEDURE               VMSCMS.sp_chw_order_replace_r307 (
+create or replace PROCEDURE        vmscms.sp_chw_order_replace_r307 (
    p_inst_code          IN     NUMBER,
    p_msg                IN     VARCHAR2,
    p_rrn                IN     VARCHAR2,
@@ -91,16 +91,14 @@ IS
    v_token                      vms_token_info.vti_token_pan%TYPE;
    ref_cur_token                sys_refcursor;
    v_message_reasoncode         vms_token_status.vts_reason_code%TYPE;
-   v_form_factor                cms_appl_pan.cap_form_factor%TYPE;
-   v_Retperiod  date;  --Added for VMS-5739/FSP-991
-v_Retdate  date; --Added for VMS-5739/FSP-991
+   v_form_factor                cms_appl_pan.cap_form_factor%TYPE; 
 BEGIN
    v_resp_cde := '1';
    v_err_msg := 'OK';
    p_resp_msg := 'OK';
    v_mbrnumb := p_mbr_numb;
    p_remrk := 'Online Order Replacement Card';
-
+  
    --Sn create hash pan
    BEGIN
       v_hash_pan := gethash (p_card_no);
@@ -150,7 +148,7 @@ BEGIN
              cap_prod_code,
              cap_card_type,
              TO_CHAR(cap_expry_date,'MMYY'),
-             cap_form_factor
+             cap_form_factor  
         INTO v_cap_prod_catg,
              v_cap_card_stat,
              v_acct_number,
@@ -160,7 +158,7 @@ BEGIN
              v_prod_code,
              v_prod_cattype,
              v_card_expdate,
-             v_form_factor
+             v_form_factor 
         FROM cms_appl_pan
        WHERE cap_pan_code = v_hash_pan AND cap_inst_code = p_inst_code;
    EXCEPTION
@@ -225,24 +223,24 @@ BEGIN
          RAISE exp_reject_record;
       WHEN OTHERS
       THEN
-         v_resp_cde := '21';
+         v_resp_cde := '21';                          
          v_err_msg := 'Error while selecting transaction details';
          RAISE exp_reject_record;
    END;
 
    --En find debit and credit flag
-
-   -- Sn Digital Card replacement check
-
-   IF v_form_factor = 'V'
+   
+   -- Sn Digital Card replacement check 
+   
+   IF v_form_factor = 'V' 
    THEN
-         v_resp_cde := '145';
+         v_resp_cde := '145';                          
          v_err_msg := 'Replacement Not Allowed For Digital Card';
          RAISE exp_reject_record;
-   END IF;
-
-   -- En Digital Card replacement check
-
+   END IF;      
+   
+   -- En Digital Card replacement check 
+   
    --Sn Duplicate card Replacement check
    BEGIN
       SELECT COUNT (1)
@@ -438,16 +436,16 @@ BEGIN
           v_resp_cde := '21';
          RAISE exp_reject_record;
    END;
-
+   
    IF v_token_eligibility = 'Y' THEN
     BEGIN
-      select count(*)
-      INTO v_token_count
+      select count(*) 
+      INTO v_token_count 
       from vms_token_info
-      where vti_acct_no  = v_acct_number;
+      where vti_acct_no  = v_acct_number;       
     END;
-   END IF;
-
+   END IF; 
+   
    IF v_token_count > 0 THEN
      BEGIN
       SELECT vti_token_pan_ref_id
@@ -477,7 +475,7 @@ BEGIN
         v_err_msg := 'Error while selecting token status '|| SUBSTR (SQLERRM, 1, 300);
         RAISE exp_reject_record;
       END;
-   END IF;
+   END IF; 
    IF v_repl_option = 'SP' AND v_cap_card_stat <> '2'
    THEN
       IF v_profile_code IS NULL
@@ -559,19 +557,19 @@ BEGIN
             RAISE exp_reject_record;
       END;
    --En Update application status as printer pending
-
+   
         p_catg_code := v_cap_prod_catg;
 		p_new_pan := p_card_no;
-
+		
 		IF v_token_count > 0 THEN
-
+ 
    BEGIN
         v_query  := 'SELECT vti_token FROM vms_token_info  WHERE  vti_token_pan = '''||v_hash_pan||'''
                               AND vti_token_stat <>''D''';
     OPEN ref_cur_token FOR v_query;
     LOOP
       FETCH ref_cur_token
-      INTO v_token;
+      INTO v_token;  
        EXIT
     WHEN ref_cur_token%NOTFOUND;
       BEGIN
@@ -608,15 +606,15 @@ BEGIN
               v_cap_card_stat,
               'R'
             );
-
+            
          EXCEPTION
         WHEN OTHERS THEN
           v_err_msg :='Error While inserting into token_status_sync_dtls-'||SUBSTR(SQLERRM, 1, 100);
-          RAISE exp_reject_record;
-          END;
+          RAISE exp_reject_record;   
+          END;    
         END LOOP;
         END;
-
+ 
    BEGIN
         v_rrn  := LPAD(seq_auth_rrn.NEXTVAL,12,'0');
         v_stan := LPAD(seq_auth_stan.NEXTVAL,6,'0');
@@ -656,14 +654,14 @@ BEGIN
                 v_cap_card_stat,
                 'R'
               );
-
-  EXCEPTION
+      
+  EXCEPTION            
     WHEN OTHERS THEN
         v_err_msg :='Error While inserting into token_status_sync_dtls-'||SUBSTR(SQLERRM, 1, 100);
-        RAISE exp_reject_record;
+        RAISE exp_reject_record;              
    END;
 
-  END IF;
+  END IF; 
    ELSE
       IF v_repl_option='NPP' THEN
              v_prod_code:=v_new_prodcode;
@@ -997,16 +995,16 @@ BEGIN
          END;
       --End  Added for FSS-1961(Melissa)
       END IF;
-  IF v_token_count > 0 THEN
+  IF v_token_count > 0 THEN 
     IF  v_replace_provision_flag ='Y' THEN
-
+    
       BEGIN
       v_query  := 'SELECT vti_token FROM vms_token_info  WHERE  vti_token_pan = '''||v_hash_pan||'''
                           AND vti_token_stat <>''D''';
       OPEN ref_cur_token FOR v_query;
       LOOP
         FETCH ref_cur_token
-        INTO v_token;
+        INTO v_token;  
          EXIT
       WHEN ref_cur_token%NOTFOUND;
       BEGIN
@@ -1043,15 +1041,15 @@ BEGIN
               v_cap_card_stat,
               'R'
             );
-
+            
          EXCEPTION
         WHEN OTHERS THEN
           v_err_msg :='Error While inserting into token_status_sync_dtls-'||SUBSTR(SQLERRM, 1, 100);
-          RAISE exp_reject_record;
-          END;
+          RAISE exp_reject_record;   
+          END;    
         END LOOP;
         END;
-
+        
         IF v_cro_oldcard_reissue_stat = '9' THEN
          BEGIN
               BEGIN
@@ -1110,16 +1108,16 @@ BEGIN
                         v_cap_card_stat,
                         'R'
                       );
-
+              
         EXCEPTION
         WHEN exp_reject_record THEN
         RAISE;
         WHEN OTHERS THEN
           v_err_msg :='Error While inserting into token_status_sync_dtls-'||SUBSTR(SQLERRM, 1, 100);
-          RAISE exp_reject_record;
-           END;
-       END IF;
-
+          RAISE exp_reject_record;        
+           END;        
+       END IF; 
+      
     ELSE
         BEGIN
         v_query  := 'SELECT vti_token FROM vms_token_info  WHERE  vti_token_pan = '''||v_hash_pan||'''
@@ -1127,7 +1125,7 @@ BEGIN
     OPEN ref_cur_token FOR v_query;
     LOOP
       FETCH ref_cur_token
-      INTO v_token;
+      INTO v_token;  
        EXIT
     WHEN ref_cur_token%NOTFOUND;
       BEGIN
@@ -1164,12 +1162,12 @@ BEGIN
               v_cap_card_stat,
               'R'
             );
-
+           
          EXCEPTION
         WHEN OTHERS THEN
           v_err_msg :='Error While inserting into token_status_sync_dtls-'||SUBSTR(SQLERRM, 1, 100);
-          RAISE exp_reject_record;
-          END;
+          RAISE exp_reject_record;   
+          END;    
         END LOOP;
         END;
     END IF;
@@ -1260,20 +1258,7 @@ BEGIN
 
    --0010762
    BEGIN
-   
-   --Added for VMS-5739/FSP-991
- select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
-       INTO   v_Retperiod 
-       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
-       WHERE  OPERATION_TYPE='ARCHIVE' 
-       AND OBJECT_NAME='TRANSACTIONLOG_EBR';
-       
-       v_Retdate := TO_DATE(SUBSTR(TRIM(p_tran_date), 1, 8), 'yyyymmdd');
-
-
-IF (v_Retdate>v_Retperiod)
-    THEN
-      UPDATE VMSCMS.transactionlog
+      UPDATE transactionlog
          SET ipaddress = p_ipaddress
        WHERE     rrn = p_rrn
              AND business_date = p_tran_date
@@ -1281,16 +1266,6 @@ IF (v_Retdate>v_Retperiod)
              AND msgtype = p_msg
              AND business_time = p_tran_time
              AND delivery_channel = p_delivery_channel;
-ELSE
-		UPDATE VMSCMS_HISTORY.transactionlog_HIST
-         SET ipaddress = p_ipaddress
-       WHERE     rrn = p_rrn
-             AND business_date = p_tran_date
-             AND txn_code = p_txn_code
-             AND msgtype = p_msg
-             AND business_time = p_tran_time
-             AND delivery_channel = p_delivery_channel;
-END IF;			 
    EXCEPTION
       WHEN OTHERS
       THEN
@@ -1837,4 +1812,4 @@ EXCEPTION
       END;
 END;
 /
-SHOW ERROR;
+show error

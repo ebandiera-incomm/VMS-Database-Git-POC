@@ -1,4 +1,5 @@
-create or replace PACKAGE BODY           VMSCMS.VMSMMPOS AS
+create or replace
+PACKAGE BODY    VMSCMS.VMSMMPOS AS
 
 PROCEDURE  Personalized_card_load(p_inst_code_in                IN      NUMBER,
                                   p_appl_code_in                IN      NUMBER,
@@ -151,18 +152,12 @@ PROCEDURE  Personalized_card_load(p_inst_code_in                IN      NUMBER,
      * Purpose          : VMS-3846.
      * Reviewer         : Saravana Kumar.A
      * Release Number   : VMSGPRHOST_R44
-
+     
      * Modified By      : MAGESHKUMAR S
      * Modified Date    : 10-AUG-2022
      * Purpose          : VMS-5697
      * Reviewer         : Pankaj Salunkhe
      * Release Number   : VMSGPRHOST_R67
-
-     * Modified By      : Shanmugavel
-     * Modified Date    : 23/05/2024
-     * Purpose          : VMS-8526-Remove Auto Enabled Reload Alerts for Instant Personalized Category
-     * Reviewer         : Venkat/John/Pankaj
-     * Release Number   : VMSGPRHOSTR98_B0001
   ***********************************************************/
 
       l_err_msg               VARCHAR2(500);
@@ -223,7 +218,7 @@ PROCEDURE  Personalized_card_load(p_inst_code_in                IN      NUMBER,
 	   l_id_country               GEN_CNTRY_MAST.GCM_ALPHA_CNTRY_CODE%TYPE;
 	   L_Jurisdiction_Of_Tax_Res  Gen_Cntry_Mast.Gcm_Alpha_Cntry_Code%Type;
          L_Thirdparty_Count Number(2);
-   L_Occupation_Desc Vms_Occupation_Mast.Vom_Occu_Name%Type;
+   L_Occupation_Desc Vms_Occupation_Mast.Vom_Occu_Name%Type;  
       L_State_Switch_Code  Gen_State_Mast.Gsm_Switch_State_Code%Type;
    L_Cntrycode   Number(10);
     L_State_Desc  Vms_Thirdparty_Address.Vta_State_Desc%Type;
@@ -283,8 +278,8 @@ PROCEDURE  Personalized_card_load(p_inst_code_in                IN      NUMBER,
                         l_err_msg:= 'Error while selecting transflag ' || SUBSTR (SQLERRM, 1, 200);
                         RAISE EXP_REJECT_RECORD;
            END;
-
-		   BEGIN
+		   
+		   BEGIN 
 			 SELECT
 				NVL(CIP_PARAM_VALUE,'N')
 			INTO V_PROXY_GENFLAG
@@ -573,13 +568,13 @@ vmsfunutilities.get_currency_code(l_prod_code,l_card_type,p_inst_code_in,l_base_
                     RAISE EXP_REJECT_RECORD;
                END;
 
-
-     If  P_Thirdpartyenabled Is Not Null And Upper(P_Thirdpartyenabled)='Y'
+  
+     If  P_Thirdpartyenabled Is Not Null And Upper(P_Thirdpartyenabled)='Y' 
       then
-
+    
           Begin
-              select to_number(gcm_cntry_code) into l_cntryCode
-              from gen_cntry_mast
+              select to_number(gcm_cntry_code) into l_cntryCode 
+              from gen_cntry_mast 
               where GCM_ALPHA_CNTRY_CODE=upper(p_ThirdPartyCountry) or GCM_SWITCH_CNTRY_CODE=upper(p_ThirdPartyCountry)
               and Gcm_Inst_Code=p_inst_code_in;
            EXCEPTION
@@ -595,11 +590,11 @@ vmsfunutilities.get_currency_code(l_prod_code,l_card_type,p_inst_code_in,l_base_
 
     if p_thirdpartytype = '1' and p_thirdpartyoccupationType is not null and p_thirdpartyoccupationType <> '00' then
         begin
-           select vom_occu_name into l_occupation_desc
-           from vms_occupation_mast
+           select vom_occu_name into l_occupation_desc  
+           from vms_occupation_mast 
            where vom_occu_code =p_thirdpartyoccupationtype;
-
-         EXCEPTION
+               
+         EXCEPTION  
           When No_Data_Found Then
              l_err_msg   := 'Invalid ThirdParty Occupation Code' ;
              l_respcode := '49';
@@ -617,9 +612,9 @@ vmsfunutilities.get_currency_code(l_prod_code,l_card_type,p_inst_code_in,l_base_
         Select Gsm_Switch_State_Code,gsm_state_code  Into l_State_Switch_Code,l_State_Code
         from Gen_State_Mast
         Where GSM_SWITCH_STATE_CODE=upper(P_Thirdpartystate)
-        and Gsm_Cntry_Code=l_cntryCode
+        and Gsm_Cntry_Code=l_cntryCode 
         and Gsm_Inst_Code=p_inst_code_in;
-
+        
         EXCEPTION
          When No_Data_Found Then
            l_err_msg   := 'Invalid ThirdParty State Code' ;
@@ -636,8 +631,8 @@ vmsfunutilities.get_currency_code(l_prod_code,l_card_type,p_inst_code_in,l_base_
       end if;
 
     Begin
-
-     Insert Into Vms_Thirdparty_Address
+     
+     Insert Into Vms_Thirdparty_Address 
           (Vta_Inst_Code,Vta_Cust_Code,VTA_THIRDPARTY_TYPE,VTA_FIRST_NAME,VTA_LAST_NAME,VTA_ADDRESS_ONE,VTA_ADDRESS_TWO,VTA_CITY_NAME,VTA_STATE_CODE,VTA_STATE_DESC,VTA_STATE_SWITCH,VTA_CNTRY_CODE,
         Vta_Pin_Code,Vta_Occupation,Vta_Occupation_Others,VTA_NATURE_OF_BUSINESS,VTA_DOB,VTA_NATURE_OF_RELEATIONSHIP,
         VTA_CORPORATION_NAME,VTA_INCORPORATION_NUMBER,Vta_Ins_User ,Vta_Ins_Date ,Vta_Lupd_User ,Vta_Lupd_Date)
@@ -645,17 +640,17 @@ vmsfunutilities.get_currency_code(l_prod_code,l_card_type,p_inst_code_in,l_base_
     Upper(P_Thirdpartycity),L_State_Code,Upper(L_State_Desc),L_State_Switch_Code,L_Cntrycode,P_Thirdpartyzip,P_Thirdpartyoccupationtype,
     Upper(Decode(P_Thirdpartyoccupationtype,'00',P_Thirdpartyoccupation,L_Occupation_Desc)),Upper(P_Thirdpartybusiness),To_Date(P_Thirdpartydob,'MM/DD/YYYY'),Upper(P_Thirdpartynaturerelationship),Upper(P_Thirdpartycorporationname),
     upper(p_ThirdPartyCorporation),1,sysdate,1,sysdate);
-
-
+    
+    
       EXCEPTION
             When Others Then
              l_Respcode := '21';
              l_err_msg   := 'Error while Inserting third party  address details in Vms_Thirdparty_Address ' || SUBSTR(SQLERRM, 1, 300);
              Raise EXP_REJECT_RECORD;
     End ;
-  end if;
-
-
+  end if;       
+              
+              
                     BEGIN
                             SELECT cpl_lmtprfl_id
                               INTO l_lmtprfl
@@ -827,26 +822,26 @@ vmsfunutilities.get_currency_code(l_prod_code,l_card_type,p_inst_code_in,l_base_
 
                --En create a record in pan spprt
 
---            VMS-8526 : I removed the CSA_LOADORCREDIT_FLAG update in the CMS_SMSANDEMAIL_ALERT table.
---            BEGIN
---                  UPDATE CMS_SMSANDEMAIL_ALERT
---                  SET CSA_LOADORCREDIT_FLAG=3
---                  WHERE CSA_INST_CODE=p_inst_code_in AND CSA_PAN_CODE=l_hash_pan;
---
---                IF SQL%ROWCOUNT = 0 THEN
---               l_err_msg   := 'Error while Updating Optin_alerts in CMS_SMSANDEMAIL_ALERT'||Substr(Sqlerrm, 1, 200);
---               l_respcode := '21';
---               Raise EXP_REJECT_RECORD;
---             END IF;
---             EXCEPTION
---           WHEN EXP_REJECT_RECORD THEN
---                     RAISE EXP_REJECT_RECORD;
---           WHEN OTHERS THEN
---                l_err_msg   := 'Error while Updating Optin_alerts in CMS_SMSANDEMAIL_ALERT table'||Substr(Sqlerrm, 1, 200);
---                l_respcode := '21';
---           Raise EXP_REJECT_RECORD;
---
---           END;
+
+            BEGIN
+                  UPDATE CMS_SMSANDEMAIL_ALERT
+                  SET CSA_LOADORCREDIT_FLAG=3
+                  WHERE CSA_INST_CODE=p_inst_code_in AND CSA_PAN_CODE=l_hash_pan;
+
+                IF SQL%ROWCOUNT = 0 THEN
+               l_err_msg   := 'Error while Updating Optin_alerts in CMS_SMSANDEMAIL_ALERT'||Substr(Sqlerrm, 1, 200);
+               l_respcode := '21';
+               Raise EXP_REJECT_RECORD;
+             END IF;
+             EXCEPTION
+           WHEN EXP_REJECT_RECORD THEN
+                     RAISE EXP_REJECT_RECORD;
+           WHEN OTHERS THEN
+                l_err_msg   := 'Error while Updating Optin_alerts in CMS_SMSANDEMAIL_ALERT table'||Substr(Sqlerrm, 1, 200);
+                l_respcode := '21';
+           Raise EXP_REJECT_RECORD;
+
+           END;
 
 
 
@@ -1586,13 +1581,13 @@ v_Retdate  date; --Added for VMS-5739/FSP-991
                * Modified Date     :20-August-2014
                * Modified By       :Dhinakaran B
                * Modified PURPOSE  : Addind the response code for 89.
-
-
+               
+               
   * Modified by                 : DHINAKARAN B
   * Modified Date               : 26-NOV-2019
   * Modified For                : VMS-1415
   * Reviewer                    :  Saravana Kumar A
-  * Build Number                :  VMSGPRHOST_R23_B1
+  * Build Number                :  VMSGPRHOST_R23_B1                 
 /**********************************************************************************************/
 BEGIN
    v_resp_cde := '1';
@@ -1729,11 +1724,11 @@ BEGIN
       BEGIN
 	  --Added for VMS-5739/FSP-991
  select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
-       INTO   v_Retperiod
-       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL
-       WHERE  OPERATION_TYPE='ARCHIVE'
+       INTO   v_Retperiod 
+       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
+       WHERE  OPERATION_TYPE='ARCHIVE' 
        AND OBJECT_NAME='TRANSACTIONLOG_EBR';
-
+       
        v_Retdate := TO_DATE(SUBSTR(TRIM(p_tran_date), 1, 8), 'yyyymmdd');
 
 
@@ -1756,7 +1751,7 @@ ELSE
             AND rrn = p_rrn
             AND business_date = p_tran_date
             AND delivery_channel = p_delivery_channel;
-END IF;
+END IF;			
 
          IF v_rrn_count > 0
          THEN
@@ -1924,7 +1919,7 @@ END IF;
       WHERE gsm_inst_code=1
       AND gsm_cntry_code = to_number(SUBSTR(a.vai_old_val ,1,1))
       AND gsm_state_code = to_number(SUBSTR( a.vai_old_val , 3 ))
-      )
+      ) 
     ELSE a.vai_old_val
   END originalValue,
   CASE
@@ -1958,7 +1953,7 @@ FROM
     FROM vms_audit_info,
       vms_audit_mast
     WHERE vam_table_id = vai_table_id
-    AND vam_table_name <> 'CMS_SMSANDEMAIL_ALERT'
+    AND vam_table_name <> 'CMS_SMSANDEMAIL_ALERT' 
   AND vai_column_name NOT IN ('CCM_OCCUPATION','VTA_OCCUPATION','CCM_REASON_FOR_NO_TAX_ID','CCM_CANADA_CREDIT_AGENCY','CCM_CREDIT_FILE_REF_NUMBER','CCM_DATE_OF_VERIFICATION','VTA_STATE_SWITCH','O-CAM_PHONE_ONE','O-CAM_MOBL_ONE','O-CAM_EMAIL')
     AND vai_cust_code  = v_cust_code
     )
@@ -1986,113 +1981,113 @@ FROM
   )b
 WHERE a.vai_column_name=b.vai_column_name
 and ((a.vai_action_type='I' AND a.vai_action_date <>b.vai_action_date) or a.vai_action_type='U'))
-LOOP
+LOOP 
 BEGIN
    IF i.fieldName = 'CCM_FIRST_NAME' THEN
          i.fieldName := 'First Name';
-   ELSIF  i.fieldName = 'CCM_LAST_NAME' THEN
+   ELSIF  i.fieldName = 'CCM_LAST_NAME' THEN  
          i.fieldName := 'Last Name';
-   ELSIF  i.fieldName = 'CCM_LAST_NAME' THEN
+   ELSIF  i.fieldName = 'CCM_LAST_NAME' THEN  
          i.fieldName := 'Last Name';
-   ELSIF  i.fieldName = 'CCM_SSN' THEN
+   ELSIF  i.fieldName = 'CCM_SSN' THEN  
          i.fieldName := 'ID Number';
-   ELSIF  i.fieldName = 'CCM_BIRTH_DATE' THEN
+   ELSIF  i.fieldName = 'CCM_BIRTH_DATE' THEN  
          i.fieldName := 'DOB';
-   ELSIF  i.fieldName = 'CCM_AUTH_USER' THEN
+   ELSIF  i.fieldName = 'CCM_AUTH_USER' THEN  
          i.fieldName := 'Authorized User';
-   ELSIF  i.fieldName = 'CCM_ID_PROVINCE' THEN
+   ELSIF  i.fieldName = 'CCM_ID_PROVINCE' THEN  
          i.fieldName := 'ID Province';
-   ELSIF  i.fieldName = 'CCM_ID_COUNTRY' THEN
+   ELSIF  i.fieldName = 'CCM_ID_COUNTRY' THEN  
          i.fieldName := 'ID Country';
-   ELSIF  i.fieldName = 'CCM_VERIFICATION_DATE' THEN
+   ELSIF  i.fieldName = 'CCM_VERIFICATION_DATE' THEN  
          i.fieldName := 'Verification Date';
-   ELSIF  i.fieldName = 'CCM_TAX_RES_OF_CANADA' THEN
+   ELSIF  i.fieldName = 'CCM_TAX_RES_OF_CANADA' THEN  
          i.fieldName := 'Res of Canada';
-   ELSIF  i.fieldName = 'CCM_TAX_PAYER_ID_NUM' THEN
+   ELSIF  i.fieldName = 'CCM_TAX_PAYER_ID_NUM' THEN  
          i.fieldName := 'Tax Payer Id Number';
-   ELSIF  i.fieldName = 'CCM_JURISDICTION_OF_TAX_RES' THEN
+   ELSIF  i.fieldName = 'CCM_JURISDICTION_OF_TAX_RES' THEN  
          i.fieldName := 'Tax Jurisdiction Residence';
-   ELSIF  i.fieldName = 'CCM_OCCUPATION_OTHERS' THEN
+   ELSIF  i.fieldName = 'CCM_OCCUPATION_OTHERS' THEN  
          i.fieldName := 'Occupation';
-   ELSIF  i.fieldName = 'CCM_ID_TYPE' THEN
+   ELSIF  i.fieldName = 'CCM_ID_TYPE' THEN  
          i.fieldName := 'Id Type';
-   ELSIF  i.fieldName = 'CCM_IDEXPRY_DATE' THEN
+   ELSIF  i.fieldName = 'CCM_IDEXPRY_DATE' THEN  
          i.fieldName := 'Id Expiry Date';
-   ELSIF  i.fieldName = 'CCM_THIRD_PARTY_ENABLED' THEN
+   ELSIF  i.fieldName = 'CCM_THIRD_PARTY_ENABLED' THEN  
          i.fieldName := 'Third Party Enabled';
-   ELSIF  i.fieldName = 'CCM_REASON_FOR_NO_TAXID_OTHERS' THEN
+   ELSIF  i.fieldName = 'CCM_REASON_FOR_NO_TAXID_OTHERS' THEN  
          i.fieldName := 'Reason For No Tax ID';
-   ELSIF  i.fieldName = 'P-CAM_ADD_ONE' THEN
+   ELSIF  i.fieldName = 'P-CAM_ADD_ONE' THEN  
          i.fieldName := 'Physical Address 1';
-   ELSIF  i.fieldName = 'P-CAM_ADD_TWO' THEN
+   ELSIF  i.fieldName = 'P-CAM_ADD_TWO' THEN  
          i.fieldName := 'Physical Address 2';
-   ELSIF  i.fieldName = 'P-CAM_CITY_NAME' THEN
-         i.fieldName := 'Physical City';
-   ELSIF  i.fieldName = 'P-CAM_CNTRY_CODE' THEN
+   ELSIF  i.fieldName = 'P-CAM_CITY_NAME' THEN  
+         i.fieldName := 'Physical City'; 
+   ELSIF  i.fieldName = 'P-CAM_CNTRY_CODE' THEN  
          i.fieldName := 'Physical Country';
-   ELSIF  i.fieldName = 'P-CAM_STATE_CODE' THEN
+   ELSIF  i.fieldName = 'P-CAM_STATE_CODE' THEN  
          i.fieldName := 'Physical State';
-   ELSIF  i.fieldName = 'P-CAM_PIN_CODE' THEN
+   ELSIF  i.fieldName = 'P-CAM_PIN_CODE' THEN  
          i.fieldName := 'Physical ZIP';
-   ELSIF  i.fieldName = 'P-CAM_MOBL_ONE' THEN
+   ELSIF  i.fieldName = 'P-CAM_MOBL_ONE' THEN  
          i.fieldName := 'Cell Phone Number';
-   ELSIF  i.fieldName = 'P-CAM_PHONE_ONE' THEN
+   ELSIF  i.fieldName = 'P-CAM_PHONE_ONE' THEN  
          i.fieldName := 'Home Phone Number';
-   ELSIF  i.fieldName = 'P-CAM_EMAIL' THEN
+   ELSIF  i.fieldName = 'P-CAM_EMAIL' THEN  
          i.fieldName := 'Email Address';
-   ELSIF  i.fieldName = 'O-CAM_ADD_ONE' THEN
+   ELSIF  i.fieldName = 'O-CAM_ADD_ONE' THEN  
          i.fieldName := 'Mailing Address 1';
-   ELSIF  i.fieldName = 'O-CAM_ADD_TWO' THEN
+   ELSIF  i.fieldName = 'O-CAM_ADD_TWO' THEN  
          i.fieldName := 'Mailing Address 2';
-   ELSIF  i.fieldName = 'O-CAM_CITY_NAME' THEN
-         i.fieldName := 'Mailing City';
-   ELSIF  i.fieldName = 'O-CAM_CNTRY_CODE' THEN
+   ELSIF  i.fieldName = 'O-CAM_CITY_NAME' THEN  
+         i.fieldName := 'Mailing City'; 
+   ELSIF  i.fieldName = 'O-CAM_CNTRY_CODE' THEN  
          i.fieldName := 'Mailing Country';
-   ELSIF  i.fieldName = 'O-CAM_STATE_CODE' THEN
+   ELSIF  i.fieldName = 'O-CAM_STATE_CODE' THEN  
          i.fieldName := 'Mailing State';
-   ELSIF  i.fieldName = 'O-CAM_PIN_CODE' THEN
-         i.fieldName := 'Mailing ZIP';
-   ELSIF  i.fieldName = 'VTA_THIRDPARTY_TYPE' THEN
-         i.fieldName := 'Third Party Type';
+   ELSIF  i.fieldName = 'O-CAM_PIN_CODE' THEN  
+         i.fieldName := 'Mailing ZIP';  
+   ELSIF  i.fieldName = 'VTA_THIRDPARTY_TYPE' THEN  
+         i.fieldName := 'Third Party Type'; 
          IF i.originalValue = '1' THEN
             i.originalValue := 'Individual';
          ELSIF i.originalValue = '2' THEN
             i.originalValue := 'Corporation';
-         END IF;
+         END IF;   
          IF  i.updatedValue = '1' THEN
             i.updatedValue := 'Individual';
-         ELSIF  i.updatedValue = '2' THEN
-            i.updatedValue := 'Corporation';
-         END IF;
-   ELSIF  i.fieldName = 'VTA_FIRST_NAME' THEN
+         ELSIF  i.updatedValue = '2' THEN 
+            i.updatedValue := 'Corporation'; 
+         END IF;   
+   ELSIF  i.fieldName = 'VTA_FIRST_NAME' THEN  
          i.fieldName := 'Third Party First Name';
-   ELSIF  i.fieldName = 'VTA_LAST_NAME' THEN
+   ELSIF  i.fieldName = 'VTA_LAST_NAME' THEN  
          i.fieldName := 'Third Party Last Name';
-   ELSIF  i.fieldName = 'VTA_ADDRESS_ONE' THEN
+   ELSIF  i.fieldName = 'VTA_ADDRESS_ONE' THEN  
          i.fieldName := 'Third Party Address 1';
-   ELSIF  i.fieldName = 'VTA_ADDRESS_TWO' THEN
+   ELSIF  i.fieldName = 'VTA_ADDRESS_TWO' THEN  
          i.fieldName := 'Third Party Address 2';
-   ELSIF  i.fieldName = 'VTA_CITY_NAME' THEN
+   ELSIF  i.fieldName = 'VTA_CITY_NAME' THEN  
          i.fieldName := 'Third Party City Name';
-   ELSIF  i.fieldName = 'VTA_STATE_CODE' THEN
+   ELSIF  i.fieldName = 'VTA_STATE_CODE' THEN  
          i.fieldName := 'Third Party State Code';
-   ELSIF  i.fieldName = 'VTA_STATE_DESC' THEN
+   ELSIF  i.fieldName = 'VTA_STATE_DESC' THEN  
          i.fieldName := 'Third Party State Desc';
-   ELSIF  i.fieldName = 'VTA_CNTRY_CODE' THEN
+   ELSIF  i.fieldName = 'VTA_CNTRY_CODE' THEN  
          i.fieldName := 'Third Party Country Code';
-   ELSIF  i.fieldName = 'VTA_PIN_CODE' THEN
+   ELSIF  i.fieldName = 'VTA_PIN_CODE' THEN  
          i.fieldName := 'Third Party Pin Code';
-   ELSIF  i.fieldName = 'VTA_OCCUPATION_OTHERS' THEN
-         i.fieldName := 'Third Party Occupation';
-   ELSIF  i.fieldName = 'VTA_NATURE_OF_BUSINESS' THEN
+   ELSIF  i.fieldName = 'VTA_OCCUPATION_OTHERS' THEN  
+         i.fieldName := 'Third Party Occupation'; 
+   ELSIF  i.fieldName = 'VTA_NATURE_OF_BUSINESS' THEN  
          i.fieldName := 'Third Party Nature of Business';
-   ELSIF  i.fieldName = 'VTA_DOB' THEN
+   ELSIF  i.fieldName = 'VTA_DOB' THEN  
          i.fieldName := 'Third Party DOB';
-   ELSIF  i.fieldName = 'VTA_NATURE_OF_RELEATIONSHIP' THEN
+   ELSIF  i.fieldName = 'VTA_NATURE_OF_RELEATIONSHIP' THEN  
          i.fieldName := 'Third Party Nature of RelationShip';
-   ELSIF  i.fieldName = 'VTA_CORPORATION_NAME' THEN
+   ELSIF  i.fieldName = 'VTA_CORPORATION_NAME' THEN  
          i.fieldName := 'Third Party Corporation Name';
-   ELSIF  i.fieldName = 'VTA_INCORPORATION_NUMBER' THEN
+   ELSIF  i.fieldName = 'VTA_INCORPORATION_NUMBER' THEN  
          i.fieldName := 'Third Party InCorporation Name';
           END IF;
 
@@ -2108,7 +2103,7 @@ END;
  END LOOP;
  IF p_res_msg is not null AND length(p_res_msg)>0 THEN
     p_res_msg := substr(p_res_msg,1,(length(p_res_msg)-2));
- END IF;
+ END IF;   
  EXCEPTION
     WHEN exp_reject_record THEN
       RAISE exp_reject_record;
@@ -2119,7 +2114,7 @@ END;
     END;
 
   p_res_code := '00';
-
+     
    EXCEPTION
       WHEN exp_reject_record
       THEN
@@ -2323,10 +2318,10 @@ PROCEDURE sp_mmpos_cardreload_txnstatus (
         v_encr_pan         cms_appl_pan.cap_pan_code_encr%TYPE;
         v_txn_type         transactionlog.txn_type%TYPE;
         v_auth_id          transactionlog.auth_id%TYPE;
-
-        v_dr_cr_flag       cms_transaction_mast.ctm_credit_debit_flag%TYPE;
-        v_tran_type        cms_transaction_mast.ctm_tran_type%TYPE;
-
+        
+        v_dr_cr_flag       cms_transaction_mast.ctm_credit_debit_flag%TYPE;  
+        v_tran_type        cms_transaction_mast.ctm_tran_type%TYPE; 
+   
         v_prod_code        cms_appl_pan.cap_prod_code%TYPE;
         v_card_type        cms_appl_pan.cap_card_type%TYPE;
         v_resp_cde         cms_response_mast.cms_response_id%TYPE;
@@ -2365,23 +2360,17 @@ PROCEDURE sp_mmpos_cardreload_txnstatus (
                * Created By       :Dhinakaran B
                * PURPOSE          :VMS-1970
                * Reviewer         : Saravana Kumar A
-
+                              
                * Modified by                 : Mageshkumar S
                * Modified Date               : 27-JULY-2020
                * Modified For                : VMS-2875
                * Reviewer                    : Saravana Kumar A
                * Build Number                : VMSGPRHOST_R34_B1
-
-               * Modified by                 : Shanmugavel M
-               * Modified Date               : 15-DEC-2023
-               * Modified For                : VMS-8133-MMPOS - GetReloadStatus API returns "89" response code when the original RRN not found.
-               * Reviewer                    : Venkat/John/Pankaj
-               * Build Number                : VMSGPRHOST_R90_B1
 /**********************************************************************************************/
     BEGIN
         v_time_stamp := systimestamp;
         BEGIN
-
+            
 
       --Sn Get the HashPan
             BEGIN
@@ -2448,7 +2437,7 @@ PROCEDURE sp_mmpos_cardreload_txnstatus (
                 WHERE ctm_tran_code = p_txn_code
                     AND ctm_delivery_channel = p_delivery_channel
                     AND ctm_inst_code = p_inst_code;
-            EXCEPTION
+            EXCEPTION                
                 WHEN OTHERS THEN
                     v_resp_cde := '21';
                     v_err_msg := 'Error while selecting transaction details'
@@ -2466,14 +2455,14 @@ PROCEDURE sp_mmpos_cardreload_txnstatus (
                     cap_prod_code,
                     cap_card_type,
                     cap_acct_no,
-                    cap_proxy_number
+                    cap_proxy_number                    
                 INTO
                     v_card_stat,v_prod_code,v_card_type,v_acct_number,v_proxy_number
                 FROM cms_appl_pan
                 WHERE  cap_inst_code = p_inst_code
                 AND cap_pan_code = v_hash_pan
                 AND CAP_MBR_NUMB = '000';
-            EXCEPTION
+            EXCEPTION                
                 WHEN OTHERS THEN
                     v_resp_cde := '12';
                     v_err_msg := 'Problem while selecting card detail'
@@ -2567,7 +2556,7 @@ PROCEDURE sp_mmpos_cardreload_txnstatus (
                     AND vap_attribute_value = p_client_refno
                     AND vap_attribute_name = 'ClientRefNo'
                     AND vap_channel = p_delivery_channel
-                    AND vap_trans_code in('10','80','81','82','85','86','88','92','93')
+                    AND vap_trans_code in('80','81','82','85','86','88','92')
 		    ORDER BY VAP_INS_DATE ASC )WHERE ROWNUM=1;
             EXCEPTION
                  WHEN NO_DATA_FOUND THEN
@@ -2581,33 +2570,31 @@ PROCEDURE sp_mmpos_cardreload_txnstatus (
                     RAISE exp_reject_record;
             END;
           --En Get the original details from vms_additional_parameters
-
+          
           --Sn Get the original txn status from trasactionlog
             BEGIN
-                SELECT response_code INTO p_res_code FROM (SELECT response_code
+                SELECT response_code INTO p_res_code FROM (SELECT response_code  
                 FROM VMSCMS.TRANSACTIONLOG	--Added for VMS-5733/FSP-991
                 WHERE RRN = p_orgnl_rrn
                     AND DELIVERY_CHANNEL = v_orgl_channel
+                    AND TXN_CODE = v_orgl_txncode
                     AND ADD_INS_DATE  >= v_orgl_date
-                    AND TXN_CODE IN(v_orgl_txncode,'10','80','81','82','85','86','88','92','93')
-                    ORDER BY ADD_INS_DATE ASC)
+                    AND TXN_CODE IN('80','81','82','85','86','88','92')
+                    ORDER BY ADD_INS_DATE ASC) 
                     WHERE ROWNUM=1;
-					IF SQL%ROWCOUNT = 0 THEN
-					 SELECT response_code INTO p_res_code FROM (SELECT response_code
+					IF SQL%ROWCOUNT = 0 THEN 
+					 SELECT response_code INTO p_res_code FROM (SELECT response_code  
                 FROM VMSCMS_HISTORY.TRANSACTIONLOG_HIST	--Added for VMS-5733/FSP-991
                 WHERE RRN = p_orgnl_rrn
                     AND DELIVERY_CHANNEL = v_orgl_channel
+                    AND TXN_CODE = v_orgl_txncode
                     AND ADD_INS_DATE  >= v_orgl_date
-                    AND TXN_CODE IN(v_orgl_txncode,'10','80','81','82','85','86','88','92','93')
-                    ORDER BY ADD_INS_DATE ASC)
+                    AND TXN_CODE IN('80','81','82','85','86','88','92')
+                    ORDER BY ADD_INS_DATE ASC) 
                     WHERE ROWNUM=1;
 					END IF;
-
+                    
             EXCEPTION
-            WHEN NO_DATA_FOUND THEN
-                    v_resp_cde := '97';
-                    v_err_msg := 'Original Not found,Retry  ';
-                    RAISE exp_reject_record;
                 WHEN OTHERS THEN
                     v_resp_cde := '21';
                     v_err_msg := ' Error while  getting the original status of the reload transaction  '
@@ -2615,7 +2602,7 @@ PROCEDURE sp_mmpos_cardreload_txnstatus (
                     RAISE exp_reject_record;
             END;
           --En Get the original txn status from trasactionlog
-
+          
 			v_resp_cde :='1';
 
        /*  BEGIN
@@ -2820,6 +2807,6 @@ PROCEDURE sp_mmpos_cardreload_txnstatus (
     END;
 
 end;
-
+ 
 /
 show error;

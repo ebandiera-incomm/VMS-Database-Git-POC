@@ -15,8 +15,7 @@ PROCEDURE             VMSCMS.SP_ELAN_PREAUTHORIZE_TXN(
    prm_hold_days          OUT      NUMBER,                      -- need to add
    prm_err_code           OUT      VARCHAR2,
    prm_err_msg            OUT      VARCHAR2,
-   prm_acqInstAlphaCntrycode      IN  VARCHAR2 DEFAULT NULL,
-   prm_card_present_indicator	 IN  VARCHAR2 DEFAULT NULL		--Added for VMS_9272
+   prm_acqInstAlphaCntrycode      IN  VARCHAR2 DEFAULT NULL
 )
 IS
      /*************************************************
@@ -64,12 +63,6 @@ IS
      * Purpose          : VMS-1042 (Tip Tolerance Filter Enhancement: Transaction Filter Override)
      * Reviewer         : SARAVANAKUMAR A 
      * Release Number   : R09_B0002
-	 
-	 * Modified By      : Mohan E.
-     * Modified Date    : 29-OCT-2024
-     * Purpose          : VMS-9272 MCC Pre-Auths: Card Not Present (CNP) Rule Subset Creation
-     * Reviewer         : Venkat
-     * Release Number   : R105B3
 
    *************************************************/
    v_rulecnt_card         PLS_INTEGER;
@@ -279,8 +272,7 @@ END;
       prm_hold_days          OUT      NUMBER,
       prm_goto_nextpre          OUT      NUMBER ,-- Added by Dhiraj Gaikwad  on 26092012
       prm_err_flag           OUT      VARCHAR2,
-      prm_err_msg            OUT      VARCHAR2,
-      prm_card_present_indicator IN  VARCHAR2 DEFAULT NULL		--Added for VMS_9272
+      prm_err_msg            OUT      VARCHAR2
    )
    IS
       v_check_cnt                PLS_INTEGER;
@@ -291,34 +283,16 @@ END;
       v_ctr_hold_days            cms_txncode_rule.ctr_hold_days%TYPE;
 
       v_null_found               NUMBER (2)                              := 0; -- Added on 21092012
-      V_PARAM_VALUE              VARCHAR2(20);      --Added for VMS_9272
    BEGIN
 
 
-      --IF prm_delivery_channel IN ('02', '01') AND prm_tran_code = '11'     --Commented on 07-Nov-2013 
- 
-		BEGIN
-             SELECT CIP_PARAM_VALUE
-               INTO V_PARAM_VALUE
-               FROM CMS_INST_PARAM
-              WHERE CIP_PARAM_KEY = 'VMS_9272_TOGGLE' AND CIP_INST_CODE = PRM_INST_CODE;			--Added for VMS_9272
-        EXCEPTION
-            WHEN NO_DATA_FOUND THEN
-               V_PARAM_VALUE := 'Y'; 
-            WHEN OTHERS THEN
-               prm_err_flag := '21';
-               prm_err_msg  := 'Error while selecting param value ';
-              RETURN;
-        END;
-		
+      --IF prm_delivery_channel IN ('02', '01') AND prm_tran_code = '11'     --Commented on 07-Nov-2013              
+
       IF prm_delivery_channel IN ('02', '01') AND  v_dr_cr_flag='NA' AND  v_tran_preauth_flag='Y' AND v_adjustment_flag='N' --Added on 07-Nov-2013
       -- onlly for Elan channel and transaction code 11
       THEN
          FOR i IN (SELECT   b.ctr_fixedhold_amount,b.ctr_perhold_amount,
-                            b.ctr_hold_days,b.ctr_mcc_code,b.ctr_merchant_groupid,
-                            b.ctr_fixedhold_amount_cnp, b.ctr_perhold_amount_cnp, b.ctr_hold_days_cnp,   --Added for VMS_9272
-                            b.ctr_fixedhold_amount_cp, b.ctr_perhold_amount_cp, b.ctr_hold_days_cp,      --Added for VMS_9272
-                            b.ctr_authorization_type_cnp, b.ctr_authorization_type_cp                    --Added for VMS_9272
+                            b.ctr_hold_days,b.ctr_mcc_code,b.ctr_merchant_groupid
                        FROM cms_txncode_rule b, cms_txncodegrp_txncode a
                       WHERE a.ctt_txnrule_grpcode = prm_txnrule_groupid
                         AND a.ctt_txnrule_id = b.ctr_txnrule_id
@@ -353,22 +327,11 @@ END;
                   RAISE excp_decline_transaction;
             END;
 
-
             IF v_check_cnt IS NOT NULL
             THEN
-            IF   prm_card_present_indicator = '0' and i.ctr_authorization_type_cnp = 'N' and V_PARAM_VALUE = 'Y' then       --Added for VMS_9272
-               v_ctr_fixedhold_amount := i.ctr_fixedhold_amount_cnp;
-               v_ctr_perhold_amount := i.ctr_perhold_amount_cnp;
-               v_ctr_hold_days := i.ctr_hold_days_cnp;
-            ELSIF  prm_card_present_indicator = '1' and i.ctr_authorization_type_cp = 'Y' and V_PARAM_VALUE = 'Y'then       --Added for VMS_9272
-               v_ctr_fixedhold_amount := i.ctr_fixedhold_amount_cp;
-               v_ctr_perhold_amount := i.ctr_perhold_amount_cp;
-               v_ctr_hold_days := i.ctr_hold_days_cp;
-            ELSE
                v_ctr_fixedhold_amount := i.ctr_fixedhold_amount;
                v_ctr_perhold_amount := i.ctr_perhold_amount;
                v_ctr_hold_days := i.ctr_hold_days;
-            END IF;
               v_null_found := 3; -- Added on 21092012
               prm_goto_nextpre:=v_null_found ; -- Added by Dhiraj Gaikwad  on 26092012
                EXIT;
@@ -378,10 +341,7 @@ END;
          IF v_check_cnt IS  NULL
                     THEN
             FOR i IN (SELECT   b.ctr_fixedhold_amount,b.ctr_perhold_amount,
-                            b.ctr_hold_days,b.ctr_mcc_code,b.ctr_merchant_groupid,
-                             b.ctr_fixedhold_amount_cnp, b.ctr_perhold_amount_cnp, b.ctr_hold_days_cnp, --Added for VMS_9272
-                             b.ctr_fixedhold_amount_cp, b.ctr_perhold_amount_cp, b.ctr_hold_days_cp,    --Added for VMS_9272
-                             b.ctr_authorization_type_cnp,  b.ctr_authorization_type_cp                 --Added for VMS_9272
+                            b.ctr_hold_days,b.ctr_mcc_code,b.ctr_merchant_groupid
                        FROM cms_txncode_rule b, cms_txncodegrp_txncode a
                       WHERE a.ctt_txnrule_grpcode = prm_txnrule_groupid
                         AND a.ctt_txnrule_id = b.ctr_txnrule_id
@@ -408,19 +368,9 @@ END;
 
             IF v_check_cnt IS NOT NULL
             THEN
-             IF   prm_card_present_indicator = '0' and i.ctr_authorization_type_cnp = 'N' and V_PARAM_VALUE = 'Y' then       --Added for VMS_9272
-               v_ctr_fixedhold_amount := i.ctr_fixedhold_amount_cnp;
-               v_ctr_perhold_amount := i.ctr_perhold_amount_cnp;
-               v_ctr_hold_days := i.ctr_hold_days_cnp;               
-            ELSIF  prm_card_present_indicator = '1' and i.ctr_authorization_type_cp = 'Y' and V_PARAM_VALUE = 'Y' then    --Added for VMS_9272
-               v_ctr_fixedhold_amount := i.ctr_fixedhold_amount_cp;
-               v_ctr_perhold_amount := i.ctr_perhold_amount_cp;
-               v_ctr_hold_days := i.ctr_hold_days_cp;
-            ELSE
                v_ctr_fixedhold_amount := i.ctr_fixedhold_amount;
                v_ctr_perhold_amount := i.ctr_perhold_amount;
                v_ctr_hold_days := i.ctr_hold_days;
-            END IF;
               v_null_found := 3; -- Added on 21092012
               prm_goto_nextpre:=v_null_found ; -- Added by Dhiraj Gaikwad  on 26092012
                EXIT;
@@ -1123,8 +1073,7 @@ BEGIN
                                                   prm_hold_days,
                                                   prm_goto_nextpre ,-- Added by Dhiraj Gaikwad  on 26092012
                                                   v_err_flag,
-                                                  v_err_msg,
-                                                  prm_card_present_indicator  --Added for VMS_9272
+                                                  v_err_msg
                                                  );
 
                      IF v_err_flag <> '1' AND v_err_msg <> 'OK'

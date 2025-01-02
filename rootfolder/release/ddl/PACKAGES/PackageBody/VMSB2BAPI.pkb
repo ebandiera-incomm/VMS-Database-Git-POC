@@ -1,4 +1,4 @@
-create or replace PACKAGE BODY                VMSCMS.VMSB2BAPI
+create or replace PACKAGE BODY                vmscms.VMSB2BAPI
 IS
    -- Private type declarations
 
@@ -7,77 +7,77 @@ IS
    -- Private variable declarations
 
    -- Function and procedure implementations
-
-
-
+   
+   
+   
 /************************************************************************************************************
 
     * Modified by      : UBAIDUR RAHMAN.H
     * Modified Date    : 02-April-2019
     * Modified For     : VMS-823
     * Reviewer         : Saravanankumar
-    * Build Number     : VMSR14_B0002
+    * Build Number     : VMSR14_B0002 
 
      * Modified By      : Ubaidur Rahman H
      * Modified Date    : 29-AUG-2019
      * Purpose          : VMS-1084 (Pan genaration process from sequential to shuffled - B2B & Retail)
      * Reviewer         : Saravanakumar A
-     * Release Number   : VMSGPRHOSTR20_B1
+     * Release Number   : VMSGPRHOSTR20_B1    
 
       * Modified By      : Ubaidur Rahman H
      * Modified Date    : 03-Oct-2019
      * Purpose          : VMS-1052 B2B Order processing validation Enhancement
      * Reviewer         : Saravanakumar A
-     * Release Number   : VMSGPRHOSTR21_B2
+     * Release Number   : VMSGPRHOSTR21_B2    
 
      * Modified By      : Ubaidur Rahman H
      * Modified Date    : 30-OCT-2019
      * Purpose          : VMS-1248 (Improve Query performance for BOL SQL for card creation)
-     * Reviewer         : Saravanakumar A
+     * Reviewer         : Saravanakumar A 
 
      * Modified By      : Ubaidur Rahman H
      * Modified Date    : 14-NOV-2019
      * Purpose          : Fix for dead lock issue
-     * Reviewer         : Saravanakumar A
-     * Build Number     : VMS_RSI0226
-
+     * Reviewer         : Saravanakumar A 
+     * Build Number     : VMS_RSI0226 
+          
      * Modified By      : DHINAKARAN B
      * Modified Date    : 09-JUL-2020
-     * Purpose          : VMS-2810 - Order postback message has to
-     				correct when the inventory is not available.
-     * Reviewer         : Saravanakumar A.
+     * Purpose          : VMS-2810 - Order postback message has to 
+     				correct when the inventory is not available. 
+     * Reviewer         : Saravanakumar A. 
      * Build Number     : R33 - BUILD 1
-
+	 
 	  * Modified By      : Puvanesh. N
      * Modified Date    : 07-June-2021
-     * Purpose          : VMS-4403 Order V2 "isrecipientaddress" flag-CCF-B2B Spec Consolidation
-     * Reviewer         : Saravanakumar A.
+     * Purpose          : VMS-4403 Order V2 "isrecipientaddress" flag-CCF-B2B Spec Consolidation 
+     * Reviewer         : Saravanakumar A. 
      * Build Number     : R47 - BUILD 3
-
+     
      * Modified By      : Mageshkumar.S
      * Modified Date    : 31-August-2021
      * Purpose          : VMS-4895:Initial amount is getting doubled for rejected cards after processing the response file.
      * Reviewer         : Saravanakumar A.
      * Build Number     : R51 - BUILD 1
-
+	 
 	 * Modified By      : Ubaidur Rahman.H
      * Modified Date    : 29-09-2021
      * Purpose          : VMS-5015:Virtual Card replacement without address is updating system passed default name & address for Customer Profile.
      * Reviewer         : Saravanakumar A.
      * Build Number     : R52 - BUILD 2
-
+	 
 	 * Modified By      : Mageshkumar.S
      * Modified Date    : 25-01-2022
      * Purpose          : VMS-5432:C - Order V1/V2 with Initial Load Amount--Access to Funds-- --B2B Spec Consolidation
      * Reviewer         : Saravanakumar A.
      * Build Number     : R57.1 - BUILD 1
-
+     
      * Modified By      : Mageshkumar.S
      * Modified Date    : 22-03-2022
      * Purpose          : VMS-5673:Delay access to funds
      * Reviewer         : Saravanakumar A.
      * Build Number     : R60 - BUILD 2
-
+	 
      * Modified By      : Mageshkumar.S
      * Modified Date    : 04-04-2022
      * Purpose          : VMS-5814:System not updating the CVK Key ID(Key used to generate the CVV) in CMS_APPL_PAN table for Virtual Card CVV generation
@@ -98,9 +98,9 @@ PRAGMA AUTONOMOUS_TRANSACTION;
 
 BEGIN
   p_error_out:='OK';
-
+  
  BEGIN
-    SELECT VIC_CONTROL_NUMBER
+    SELECT VIC_CONTROL_NUMBER 
     INTO p_start_control_number_out
     FROM VMS_INVENTORY_CONTROL
     WHERE VIC_PROD_CODE=p_prod_code_in
@@ -111,9 +111,9 @@ BEGIN
         p_error_out:= 'Error while selecting VMS_INVENTORY_CONTROL '||substr(sqlerrm,1,200);
         raise l_exp;
  END;
-
+ 
   p_end_control_number_out:=p_start_control_number_out+p_quantity_in-1;
-
+  
   BEGIN
     UPDATE VMS_INVENTORY_CONTROL
     SET VIC_CONTROL_NUMBER =p_end_control_number_out+1
@@ -124,7 +124,7 @@ BEGIN
         p_error_out:= 'Error while updating VMS_INVENTORY_CONTROL '||substr(sqlerrm,1,200);
         raise l_exp;
  END;
-
+ 
  COMMIT;
  EXCEPTION
      WHEN l_exp THEN
@@ -146,7 +146,7 @@ AS
      * Modified By      : PANDU GANDHAM
      * Modified Date    : 29-SEP-2020
      * Purpose          : VMS-3066 - Product Setup re-Vamp - BIN.
-     * Reviewer         : Puvanesh / Ubaidur
+     * Reviewer         : Puvanesh / Ubaidur 
      * Build Number     : R36 - BUILD 3
 
 *********************************************************************************/
@@ -164,7 +164,7 @@ BEGIN
 	LOOP
 
     UPDATE VMS_PANGEN_SUMMARY
-    SET vps_avail_cards =  vps_avail_cards - I.V_QUANTITY
+    SET vps_avail_cards =  vps_avail_cards - I.V_QUANTITY 
     WHERE VPS_PROD_CODE = p_prod_code_in
     AND VPS_CARD_TYPE = p_card_type_in
 	AND VPS_CARDRANGE_ID = I.CAP_CARDRANGE_ID;
@@ -190,61 +190,61 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
 
      * Modified By      : UBAIDUR RAHMAN H
      * Modified Date    : 28-AUG-2020
-     * Purpose          : VMS-2888 - VPS_AVAIL_CARDS Column on VMS_PANGEN_SUMMARY
-					Table has incorrect value.
-     * Reviewer         : Saravanakumar A.
+     * Purpose          : VMS-2888 - VPS_AVAIL_CARDS Column on VMS_PANGEN_SUMMARY 
+					Table has incorrect value. 
+     * Reviewer         : Saravanakumar A. 
      * Build Number     : R35 - BUILD 3
-
+     
      * Modified By      : PANDU GANDHAM
      * Modified Date    : 29-SEP-2020
      * Purpose          : VMS-3066 - Product Setup re-Vamp - BIN.
-     * Reviewer         : Puvanesh / Ubaidur
+     * Reviewer         : Puvanesh / Ubaidur 
      * Build Number     : R36 - BUILD 3
-
+     
      * Modified By      : UBAIDUR RAHMAN.H
      * Modified Date    : 06-MAY-2021
      * Purpose          : VMS-4192 -  Order V2 is failing for Virtual Product
      * Reviewer         : SARAVANA KUMAR A
      * Build Number     : R46 - BUILD 2
-
+     
      * Modified By      : UBAIDUR RAHMAN.H
      * Modified Date    : 14-Sep-2021
-     * Purpose          : VMS-5088 - Virtual Order Process via V2 should log the
+     * Purpose          : VMS-5088 - Virtual Order Process via V2 should log the 
      					cardpack id in APPL PAN table.
      * Reviewer         : SARAVANA KUMAR A
      * Build Number     : R51 - BUILD 1
-
+     
      * Modified By      : Ubaidur Rahman.H
      * Modified Date    : 51-NOV-2021
      * Purpose          : VMS-5328 - Dormancy Fee Helath Care on Load date VIA V2
-     * Reviewer         : SARAVANAKUMAR A
+     * Reviewer         : SARAVANAKUMAR A 
      * Release Number   : R55 - BUILD 3
-
+     
      * Modified By      :  Ubaidur Rahman.H
      * Modified Date    :  03-Dec-2021
      * Modified Reason  :  VMS-5253 / 5372 - Do not pass sytem generated value from VMS to CCA.
      * Reviewer         :  Saravanakumar
      * Build Number     :  VMSGPRHOST_R55_RELEASE
-
+     
      * Modified By      : Mageshkumar.S
      * Modified Date    : 25-01-2022
      * Purpose          : VMS-5432:C - Order V1/V2 with Initial Load Amount--Access to Funds-- --B2B Spec Consolidation
      * Reviewer         : Saravanakumar A.
      * Build Number     : R57.1 - BUILD 1
-
+     
      * Modified By      : Mageshkumar.S
      * Modified Date    : 22-03-2022
      * Purpose          : VMS-5673:Delay access to funds
      * Reviewer         : Saravanakumar A.
      * Build Number     : R60 - BUILD 2
-
+	 
      * Modified By      : Mageshkumar.S
      * Modified Date    : 04-04-2022
      * Purpose          : VMS-5814:System not updating the CVK Key ID(Key used to generate the CVV) in CMS_APPL_PAN table for Virtual Card CVV generation
      * Reviewer         : Saravanakumar A.
      * Build Number     : R60.1 - BUILD 1
-
-	* Modified By      : Bhavani E.
+     
+    * Modified By      : Bhavani E.
     * Modified Date    : 04-05-2023
     * Purpose          : VMS-7274 :  Expiry Date Randomization - Exclude sweep products
     * Reviewer         : Venkat S.
@@ -310,7 +310,7 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
       l_delayed_accessto_firstload_flag CMS_PROD_CATTYPE.CPC_DELAYED_FIRSTLOAD_ACCESS%TYPE;
       l_delayed_access_date CMS_CUST_MAST.CCM_DELAYEDACCESS_DATE%TYPE;
       l_multikey_flag CMS_PROD_CATTYPE.CPC_MULTIKEY_FLAG%TYPE;
-	   l_date_of_birth VMS_ORDER_DETAILS.vod_date_of_birth%type;
+         l_date_of_birth VMS_ORDER_DETAILS.vod_date_of_birth%type;
          l_id_type    VMS_ORDER_DETAILS.vod_id_type%type;
          l_id_number_chck varchar2(40);
          l_id_number  VMS_ORDER_DETAILS.vod_id_number%type;
@@ -321,7 +321,7 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
             l_first_name 		        vms_order_details.VOD_FIRSTNAME%type;
     l_last_name			        vms_order_details.VOD_LASTNAME%type;
     l_prod_portfolio    cms_prod_cattype.CPC_PRODUCT_PORTFOLIO%TYPE;
-	--sn vms-7274
+    --sn vms-7274
     l_expry_arry vmscms.EXPRY_ARRAY_TYP := vmscms.EXPRY_ARRAY_TYP ();
     l_sweep_flag vmscms.cms_prod_cattype.cpc_sweep_flag%type;
     l_isexpry_randm vmscms.cms_prod_cattype.cpc_expdate_randomization%type;
@@ -358,12 +358,12 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
 			    WHERE a.cap_prod_code= prodcode
 			    AND a.cap_card_type  = prodcatg
 			    AND a.cap_issue_stat ='N'
-				AND ROWNUM <= quantity + 1000000 /*Performance Issue Fix - Dead lock issue
+				AND ROWNUM <= quantity + 1000000 /*Performance Issue Fix - Dead lock issue 
 			    ORDER BY dbms_random.value
 			    )
 			  WHERE ROWNUM <= quantity
 			  ) FOR UPDATE;*/
-	---Modified for VMS-1084 (Pan genaration process from sequential to shuffled - B2B & Retail)
+	---Modified for VMS-1084 (Pan genaration process from sequential to shuffled - B2B & Retail)		  
 
       TYPE t_cards IS TABLE OF cur_cards%ROWTYPE;
 
@@ -576,7 +576,7 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
     * Modified For     : VMS-5231 - Card Staus Update to Shipped Enrties Logging For Virtual Cards.
     * Reviewer         : Saravanankumar
     * Build Number     : VMSR53_B0003
-
+	
     * Modified By      : Mageshkumar.S
     * Modified Date    : 04-04-2022
     * Purpose          : VMS-5814:System not updating the CVK Key ID(Key used to generate the CVV) in CMS_APPL_PAN table for Virtual Card CVV generation
@@ -587,7 +587,7 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
       BEGIN
          p_errmsg_out := 'OK';
 
-	--- Modified for VMS-4192 - Order V2 is failing for Virtual Product.
+	--- Modified for VMS-4192 - Order V2 is failing for Virtual Product.	
 
        /*  IF l_serl_flag = 'Y'
          THEN
@@ -648,10 +648,10 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
             --                     EXIT;
             --               END;
             --            END IF;
-
+            
             BEGIN
 
-                           l_exec_query := 'SELECT  cbp_key_id from(SELECT  cbp_key_id from vmscms.cms_bin_param
+                           l_exec_query := 'SELECT  cbp_key_id from(SELECT  cbp_key_id from vmscms.cms_bin_param 
                                            WHERE   cbp_param_type = ''Emboss Parameter''
                                            AND CBP_PROFILE_CODE = :p_profile_code
                                            ORDER BY CBP_INS_DATE '|| case when p_multikey_flag= 'Y' then 'DESC ' else 'ASC ' end||') where rownum=1' ;
@@ -700,7 +700,7 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                   EXIT;
             END;
 
- IF p_api_version = 'V2' and p_prod_portfolio not like '%GPR%'  THEN
+            IF p_api_version = 'V2' and p_prod_portfolio not like '%GPR%'  THEN
             BEGIN
                UPDATE cms_cust_mast
                   SET ccm_kyc_flag = 'A'
@@ -714,7 +714,7 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                      || SUBSTR (SQLERRM, 1, 200);
                   EXIT;
             END;
-  END IF;
+            END IF;
 
             BEGIN
                INSERT INTO cms_smsandemail_alert (csa_inst_code,
@@ -788,16 +788,16 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                      || SUBSTR (SQLERRM, 1, 200);
                   EXIT;
             END;
-
+            
             --- Added for VMS-5231 - Card Staus Update to Shipped Enrties Logging For Virtual Cards.
             BEGIN
-                  SELECT nvl(CTM_TXN_LOG_FLAG,'T')
+                  SELECT nvl(CTM_TXN_LOG_FLAG,'T')		 
                     INTO L_AUDIT_FLAG
                     FROM CMS_TRANSACTION_MAST
                    WHERE CTM_INST_CODE = 1
                      AND CTM_DELIVERY_CHANNEL = '05'
                      AND CTM_TRAN_CODE = '06';
-            EXCEPTION
+            EXCEPTION                
                 WHEN OTHERS
                THEN
                   p_errmsg_out :=
@@ -805,10 +805,10 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                      || SUBSTR (SQLERRM, 1, 200);
                   EXIT;
             END;
-
+            
             IF L_AUDIT_FLAG = 'T'         --- Modified for VMS-5231 - Card Staus Update to Shipped Enrties Logging For Virtual Cards.
             THEN
-
+            
             BEGIN
                sp_log_cardstat_chnge (p_inst_code_in,
                                       p_cards_in (i).cap_pan_code,
@@ -834,12 +834,12 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                      || SUBSTR (SQLERRM, 1, 200);
                   EXIT;
             END;
-
+            
             END IF;
 
             BEGIN
-
-	    	--- Modified for VMS-4192 - Order V2 is failing for Virtual Product.
+	    
+	    	--- Modified for VMS-4192 - Order V2 is failing for Virtual Product.	 
 --               l_proxy_pin_encr :=
 --                  fn_emaps_main_b2b (l_proxy_no || '|' || p_pins_in (i),
 --                                     l_encr_key_in);
@@ -888,10 +888,10 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                    vod_activation_code,DECODE(UPPER(VOD_PRINT_ORDER),'TRUE','P','F'),DECODE(UPPER(vod_accept_partial),'TRUE','Y','N'),
 				   vod_api_version,vod_isrecipient_addrflag,vod_address_line1,vod_address_line2,vod_address_line3,
 				   vod_city,fn_dmaps_main(vod_state),vod_postalcode,fn_dmaps_main(vod_country),VOD_DATE_OF_BIRTH, VOD_ID_TYPE, VOD_ID_NUMBER
-                   , VOD_OCCUPATION	, VOD_FIRSTNAME , VOD_LASTNAME
+                   , VOD_OCCUPATION	, VOD_FIRSTNAME , VOD_LASTNAME	
               INTO l_card_stat, l_channel_code,l_activation_code, l_print_order,l_accept_partial,l_api_version,l_isrecipient_addrflag,		  l_address_line1,l_address_line2,
 	      		l_address_line3,l_city,l_state,l_postalcode,l_country,l_date_of_birth, l_id_type, l_id_number
-                , l_occupation, l_first_name , l_last_name
+                , l_occupation, l_first_name , l_last_name			
               FROM vms_order_details
              WHERE     vod_order_id = p_order_id_in
                    AND vod_partner_id = p_partner_id_in
@@ -1033,7 +1033,7 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                      RAISE excp_error;
                END;
 
-             IF l_api_version = 'V2' and (l_prod_portfolio like '%GPR%') and (L_ID_TYPE = 'SSN' or (l_first_name is not null and l_last_name is not null and l_date_of_birth is not null))
+IF l_api_version = 'V2' and (l_prod_portfolio like '%GPR%') and (L_ID_TYPE = 'SSN' or (l_first_name is not null and l_last_name is not null and l_date_of_birth is not null))
 		THEN
            BEGIN
            select decode( L_ID_TYPE ,'SSN',vmscms.fn_dmaps_main(L_ID_NUMBER), null ) into l_id_number_chck from dual;
@@ -1048,7 +1048,7 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                                  gethash(UPPER(l_first_name)||UPPER(l_last_name)||to_date(l_date_of_birth,'mmddyyyy')),
                                  l_idx.vol_quantity
                                  );
-          IF v_resp_msg_out <> 'OK'
+          IF v_resp_msg_out <> 'OK'  
           THEN
              L_resp_code := '158';
              RAISE excp_error;
@@ -1064,7 +1064,7 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
              RAISE excp_error;
        END;
 		END IF;
-				IF l_prod_type = 'V'
+               IF l_prod_type = 'V'
                THEN
                   BEGIN
 --                     SELECT cbp_param_value
@@ -1072,15 +1072,15 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
 --                       FROM cms_bin_param
 --                      WHERE cbp_profile_code = l_profile_code
 --                            AND cbp_param_name = 'Virtual Card EncrKey';
-
+			    
 		      SELECT cip_param_value
 		        INTO l_encr_key
 			FROM cms_inst_param
 		       WHERE cip_inst_code = p_inst_code_in
 		       	 AND cip_param_key = 'FSAPIKEY';
-
-
-
+			    
+			    
+			    
                   EXCEPTION
                      WHEN OTHERS
                      THEN
@@ -1089,13 +1089,13 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                            || SUBSTR (SQLERRM, 1, 200);
                         RAISE excp_error;
                   END;
-
-		  --- Added for  VMS-5088 - Virtual Order Process via V2 should log the
+                  
+		  --- Added for  VMS-5088 - Virtual Order Process via V2 should log the 
      			---		cardpack id in APPL PAN table.
-
+                  
                   IF l_api_version = 'V2'
                   THEN
-
+                  
                       BEGIN
                               SELECT cpc_card_id
                                 INTO l_card_id
@@ -1104,19 +1104,19 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                                  AND cpc_prod_code = l_prod_code
                                  AND cpc_card_details = l_idx.vol_package_id ;
                         EXCEPTION
-                            WHEN NO_DATA_FOUND
+                            WHEN NO_DATA_FOUND 
                             THEN
                             v_resp_msg_out   := 'No card id configured for package id ' || l_idx.vol_package_id;
-                            RAISE excp_error;
-
-                            WHEN OTHERS THEN
+                            RAISE excp_error;   
+				  
+                            WHEN OTHERS THEN                                     
                             v_resp_msg_out   := 'Error while selecting card id for Line Item' ||
                                                    SUBSTR (SQLERRM, 1, 200);
-                            RAISE excp_error;
+                            RAISE excp_error;   
                         END;
-
+                 
                  END IF;
-
+                                     
                END IF;
 
                IF l_idx.vol_embossedline IS NULL
@@ -1164,7 +1164,7 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                      BULK COLLECT INTO l_pins
                      FROM DUAL
                CONNECT BY LEVEL <= l_idx.vol_quantity;
-
+               
               BEGIN
                 get_inventory_control_number(l_prod_code,
                                       l_card_type,
@@ -1175,7 +1175,7 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                  IF v_resp_msg_out <> 'OK' THEN
                     RAISE excp_error;
                  END IF;
-
+                 
               EXCEPTION
                 WHEN excp_error THEN
                     RAISE;
@@ -1196,10 +1196,9 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                   EXIT WHEN cards.COUNT = 0;
 
                   l_count := l_count + cards.count;
-
-				  --SN: Added for VMS-7274
+                  --SN: Added for VMS-7274
                   l_qntity:=cards.count;
-
+                  
                   IF l_isexpry_randm = 'Y' AND l_sweep_flag='N' THEN
                     BEGIN
                         vmscms.vmsfunutilities.get_expiry_date (p_inst_code_in,
@@ -1275,7 +1274,7 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                                 cards (i).cap_cust_catg,
                                 cards (i).cap_pan_code,
                                 cards (i).cap_cust_code,
-								l_expry_arry(i), --l_expry_date, --Modified for VMS-7274
+                                l_expry_arry(i), --l_expry_date, --Modified for VMS-7274
                                 cards (i).cap_acct_id,
                                 cards (i).cap_acct_no,
                                 cards (i).cap_bill_addr,
@@ -1304,12 +1303,12 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                                 l_activation_code,
                                 decode(l_idx.VOL_PRODUCT_FUNDING,'1','Y','N'),
                                 l_print_order,l_card_id,
-                                CASE
-                                WHEN (l_delivery_channel = '17' and l_txn_code = '04' and L_DORMANCY_ONCORPORATELOAD = 'Y')
+                                CASE 
+                                WHEN (l_delivery_channel = '17' and l_txn_code = '04' and L_DORMANCY_ONCORPORATELOAD = 'Y') 
                                 AND  (l_idx.VOL_PRODUCT_FUNDING = '1' OR (l_idx.VOL_PRODUCT_FUNDING ='2' AND l_idx.vol_fund_amount = '1' and l_prod_type = 'V' and l_card_stat = '1'))
                                 THEN SYSDATE
                                 ELSE NULL
-                                END )
+                                END )                                                            
                           INTO cms_cardissuance_status (ccs_inst_code,
                                                         ccs_pan_code,
                                                         ccs_card_status,
@@ -1366,10 +1365,10 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                            || SUBSTR (SQLERRM, 1, 200);
                         END;
 
-       IF l_delayed_accessto_firstload_flag = 'Y'
+       IF l_delayed_accessto_firstload_flag = 'Y' 
        AND l_idx.VOL_PRODUCT_FUNDING = '1' AND NVL(UPPER(l_api_version),'V1') = 'V1'
        THEN
-
+       
        BEGIN
 
     SELECT LAST_DAY(SYSDATE)
@@ -1381,7 +1380,7 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
           v_resp_msg_out := 'Error while selecting last day in a month' || SUBSTR(SQLERRM,1,200);
           EXIT;
     END;
-
+    
     IF NVL(UPPER(l_api_version),'V1') = 'V1'
        THEN
        BEGIN
@@ -1399,14 +1398,14 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                         EXIT;
                   END;
        END IF;
-
-
+       
+       
        END IF;
 
 
 		IF l_api_version = 'V2'
 		THEN
-
+				  
 		IF NVL(UPPER(l_isrecipient_addrflag),'FALSE') = 'TRUE'
         THEN
             BEGIN
@@ -1428,8 +1427,8 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                            || SUBSTR (SQLERRM, 1, 200);
                     EXIT;
              END;
-
-			BEGIN
+				  
+			BEGIN 			
 				FORALL i IN 1 .. cards.COUNT
                INSERT INTO cms_addr_mast (cam_inst_code,
                                           cam_cust_code,
@@ -1478,10 +1477,10 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                                           DECODE(l_postalcode,NULL,NULL,DECODE(l_encryption_flag,'N',fn_emaps_main(l_postalcode),l_postalcode)),
                                           DECODE(l_encryption_flag,'N',fn_emaps_main(l_idx.VOL_RECIPIENT_EMAIL),l_idx.VOL_RECIPIENT_EMAIL)
 							FROM CMS_ADDR_MAST
-							WHERE cam_inst_code = p_inst_code_in
+							WHERE cam_inst_code = p_inst_code_in 
 						   AND cam_cust_code = cards(i).cap_cust_code
-						   AND cam_addr_flag = 'P';
-
+						   AND cam_addr_flag = 'P'; 
+                    
             EXCEPTION
                WHEN OTHERS
                THEN
@@ -1490,8 +1489,8 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                      || SUBSTR (SQLERRM, 1, 200);
                   EXIT;
             END;
-
-
+				  
+				  
 				  BEGIN
                      FORALL i IN 1 .. cards.COUNT
                         UPDATE cms_addr_mast
@@ -1504,14 +1503,14 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                                CAM_EMAIL = l_idx.VOL_RECIPIENT_EMAIL,
                                CAM_PHONE_ONE = l_idx.VOL_RECIPIENT_PHONE,
                                CAM_MOBL_ONE = l_idx.VOL_RECIPIENT_PHONE,
-							   cam_cntry_code =  l_cntry_code,
+							   cam_cntry_code =  l_cntry_code,	
                                cam_state_code = l_state_code,
 							   cam_add_one_encr = DECODE(l_encryption_flag,'N',fn_emaps_main(l_address_line1),l_address_line1),
 							   cam_add_two_encr = DECODE(l_address_line2,NULL,NULL,DECODE(l_encryption_flag,'N',fn_emaps_main(l_address_line2),l_address_line2)),
 							   cam_city_name_encr = DECODE(l_city,NULL,NULL,DECODE(l_encryption_flag,'N',fn_emaps_main(l_city),l_city)),
                                cam_pin_code_encr = DECODE(l_postalcode,NULL,NULL,DECODE(l_encryption_flag,'N',fn_emaps_main(l_postalcode),l_postalcode)),
-                               CAM_EMAIL_ENCR =   DECODE(l_encryption_flag,'N',fn_emaps_main(l_idx.VOL_RECIPIENT_EMAIL),l_idx.VOL_RECIPIENT_EMAIL)
-                         WHERE cam_inst_code = p_inst_code_in
+                               CAM_EMAIL_ENCR =   DECODE(l_encryption_flag,'N',fn_emaps_main(l_idx.VOL_RECIPIENT_EMAIL),l_idx.VOL_RECIPIENT_EMAIL)                 
+                         WHERE cam_inst_code = p_inst_code_in 
 						   AND cam_cust_code = cards (i).cap_cust_code
 						   AND cam_addr_flag = 'P';
                   EXCEPTION
@@ -1522,7 +1521,7 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                            || SUBSTR (SQLERRM, 1, 200);
                         EXIT;
                   END;
-
+                  
                   			--- Added for VMS-5253 / VMS-5372
                   BEGIN
                   FORALL i IN 1 .. cards.COUNT
@@ -1534,7 +1533,7 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                            ccm_occupation = l_occupation,
                            ccm_id_type = l_id_type,
                            ccm_birth_date = to_date(l_date_of_birth,'mmddyyyy'),
-                           ccm_kyc_flag  = CASE WHEN l_prod_portfolio like '%GPR%' and l_prod_type = 'V' THEN 'Y' ELSE CCM_KYC_FLAG END,
+                           ccm_kyc_flag  = CASE WHEN l_prod_portfolio like '%GPR%' and l_prod_type = 'V' THEN 'Y' ELSE CCM_KYC_FLAG END, 
                            ccm_kyc_source = '05',
                            CCM_FLNAMEDOB_HASHKEY = gethash(UPPER(l_first_name)||UPPER(l_last_name)||to_date(l_date_of_birth,'mmddyyyy'))
                          WHERE ccm_inst_code = p_inst_code_in
@@ -1547,8 +1546,8 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                            || SUBSTR (SQLERRM, 1, 200);
                         EXIT;
                   END;
-				  IF l_prod_portfolio like '%GPR%' and l_prod_type = 'V' THEN          --Added for VMS-6815
-                  BEGIN
+                  IF l_prod_portfolio like '%GPR%' and l_prod_type = 'V' THEN          --Added for VMS-6815
+                  BEGIN     
                   FORALL i IN 1 .. cards.COUNT
                   UPDATE cms_caf_info_entry
                   SET cci_kyc_flag = 'Y',
@@ -1567,19 +1566,19 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                   END IF;
 
 		  END IF;
-
+          
           IF NVL(UPPER(l_isrecipient_addrflag),'FALSE') = 'FALSE'
             THEN
             BEGIN
                      FORALL i IN 1 .. cards.COUNT
                         UPDATE cms_addr_mast
-                           SET
+                           SET 
                                CAM_EMAIL = NVL(l_idx.VOL_RECIPIENT_EMAIL,CAM_EMAIL),
                                CAM_PHONE_ONE = NVL(l_idx.VOL_RECIPIENT_PHONE,CAM_PHONE_ONE),
                                CAM_MOBL_ONE = NVL(l_idx.VOL_RECIPIENT_PHONE,CAM_MOBL_ONE),
                                CAM_EMAIL_ENCR =   DECODE(l_idx.VOL_RECIPIENT_EMAIL,NULL,NULL,DECODE(l_encryption_flag,'N',fn_emaps_main(l_idx.VOL_RECIPIENT_EMAIL),
-                                                    l_idx.VOL_RECIPIENT_EMAIL))
-                         WHERE cam_inst_code = p_inst_code_in
+                                                    l_idx.VOL_RECIPIENT_EMAIL))                 
+                         WHERE cam_inst_code = p_inst_code_in 
 						   AND cam_cust_code = cards (i).cap_cust_code;
                   EXCEPTION
                      WHEN OTHERS
@@ -1590,10 +1589,10 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                         EXIT;
                   END;
             END IF;
-
-		  IF  l_idx.vol_recipient_firstname IS NOT NULL
+		  
+		  IF  l_idx.vol_recipient_firstname IS NOT NULL 
 		  THEN
-
+		  
 		  BEGIN
                      FORALL i IN 1 .. cards.COUNT
                         UPDATE cms_cust_mast
@@ -1614,9 +1613,9 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                            || SUBSTR (SQLERRM, 1, 200);
                         EXIT;
                   END;
-
-                  ELSE
-
+                  
+                  ELSE 
+                  
                   BEGIN
                   FORALL i IN 1 .. cards.COUNT
                         UPDATE cms_cust_mast
@@ -1648,7 +1647,7 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                                          L_STARTER_CARD,
                                          l_prod_portfolio,
                                          l_prod_type
-										 );
+                                         );
 
                      IF v_resp_msg_out <> 'OK'
                      THEN
@@ -1682,7 +1681,7 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                               || SUBSTR (SQLERRM, 1, 200);
                            EXIT;
                      END;
-                  END IF;
+                  END IF;                    
 
                  IF l_idx.VOL_PRODUCT_FUNDING ='1' OR (l_idx.VOL_PRODUCT_FUNDING ='2' AND l_idx.vol_fund_amount = '1' and l_prod_type = 'V' and l_card_stat = '1')   -- Modified for VMS-4192
                  THEN
@@ -1892,7 +1891,7 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                      END;
                   END LOOP;
 
-                  END IF;
+                  END IF;  
 
                   IF v_resp_msg_out <> 'OK'
                   THEN
@@ -2003,7 +2002,7 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
 
                   IF v_resp_msg_out <> 'OK'
                   THEN
-                     EXIT;
+                     EXIT;                    
                   END IF;
                END LOOP;
 
@@ -2015,18 +2014,18 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                ELSIF l_count = l_idx.vol_quantity THEN
                   l_succ_count := l_succ_count + 1;
                ELSIF l_count <> l_idx.vol_quantity THEN
-                  v_resp_msg_out := 'Required card numbers are not available in inventory';   -- Modified for VMS-2810
+                  v_resp_msg_out := 'Required card numbers are not available in inventory';   -- Modified for VMS-2810 
                   l_reject_flag := 'Y';
-
-		--- Added for VMS-2888 - VPS_AVAIL_CARDS Column on VMS_PANGEN_SUMMARY
-
+                
+		--- Added for VMS-2888 - VPS_AVAIL_CARDS Column on VMS_PANGEN_SUMMARY					   
+                  
                   UPDATE vms_pangen_summary
                   SET vps_avail_cards = vps_avail_cards + nvl(l_idx.vol_quantity- l_count,0)
                 WHERE vps_prod_code = l_prod_code
                       AND vps_card_type = l_card_type
-					  AND vps_avail_cards < 0;
-
-		--- Modified for VMS-3066 - Product Setup re-Vamp - BIN.
+					  AND vps_avail_cards < 0;			  
+		
+		--- Modified for VMS-3066 - Product Setup re-Vamp - BIN.			  
 
                END IF;
             EXCEPTION
@@ -2056,13 +2055,13 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                    AND vol_order_id = l_idx.vol_order_id
                    AND vol_partner_id = l_idx.vol_partner_id;
 
-		--- Added for VMS-2888 - VPS_AVAIL_CARDS Column on VMS_PANGEN_SUMMARY
-
-
+		--- Added for VMS-2888 - VPS_AVAIL_CARDS Column on VMS_PANGEN_SUMMARY					 
+		
+		
             IF v_resp_msg_out <> 'OK' and l_reject_flag = 'N'
             THEN
                BEGIN
-
+                    
                         UPDATE cms_appl_pan_inv
                            SET cap_issue_stat = 'E'
                          WHERE cap_prod_code = l_prod_code
@@ -2075,10 +2074,10 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                      THEN
                         v_resp_msg_out :=
                            'Error While Updating Cards Issue Stat:'
-                           || SUBSTR (SQLERRM, 1, 200);
+                           || SUBSTR (SQLERRM, 1, 200);                       
                   END;
 
-
+               
             END IF;
 
             COMMIT;
@@ -2087,7 +2086,7 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
          IF l_succ_count = 0 OR (l_reject_flag = 'Y' and l_accept_partial = 'N')
          THEN
             IF l_reject_flag = 'Y' THEN
-                v_resp_msg_out:= 'Required card numbers are not available in inventory';  -- Modified for VMS-2810.
+                v_resp_msg_out:= 'Required card numbers are not available in inventory';  -- Modified for VMS-2810. 
 
             BEGIN
                 UPDATE  vms_order_lineitem
@@ -2341,7 +2340,7 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                                WHERE cam_acct_no = v_cap_acct_no
 			       and cam_inst_code=1;
 
-                               if l_cam_acct_bal > 0 Then
+                               if l_cam_acct_bal > 0 Then 
 
                               UPDATE cms_acct_mast
                                  SET cam_acct_bal = 0,
@@ -3207,21 +3206,21 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
            FROM vms_order_details
           WHERE vod_order_id = p_order_id_in
             AND vod_partner_id = p_partner_id_in;
-      EXCEPTION
-       WHEN OTHERS
+      EXCEPTION        
+       WHEN OTHERS 
             THEN
-            p_postback_url_out := NULL;
+            p_postback_url_out := NULL;  
      END;
 
       END IF;
    END cancel_order_process;
-
-   PROCEDURE replace_card_b2b_v2
+   
+   PROCEDURE replace_card_b2b_v2 
    			(p_customer_id_in IN NUMBER,
                          p_isexpedited_in IN VARCHAR2,
                          p_isfeewaived_in IN VARCHAR2,
-                         p_comment_in     IN VARCHAR2,
-                         p_createnewcard_in IN VARCHAR2 DEFAULT 'FALSE',
+                         p_comment_in     IN VARCHAR2,                         
+                         p_createnewcard_in IN VARCHAR2 DEFAULT 'FALSE',                         
                          p_loadamounttype_in   IN VARCHAR2,
                          p_loadamount_in          IN VARCHAR2,
                          p_merchantid_in          IN VARCHAR2,
@@ -3282,14 +3281,14 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
     l_resp_code                 VARCHAR2(5);
     l_resp_msg                  VARCHAR2(500);
     l_capture_date              DATE;
-
+   
     l_field_name                VARCHAR2(20);
     l_flag                      PLS_INTEGER := 0;
     l_rrn                       transactionlog.rrn%TYPE;
-
+    
     l_txn_code                  VARCHAR2(20);
     l_fee_flag                  CHAR(1);
-
+    
     l_check_tokens          NUMBER;
     l_card_stat             vmscms.cms_appl_pan.cap_card_stat%TYPE;
     l_action                VARCHAR2(10);
@@ -3297,7 +3296,7 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
     l_token_eligibility     cms_prod_cattype.cpc_token_eligibility%TYPE;
     l_cvvplus_eligibility   cms_prod_cattype.cpc_cvvplus_eligibility%TYPE;
     l_replace_optn          cms_prod_cattype.cpc_renew_replace_option%TYPE;
-
+    
     l_acct_balance          cms_acct_mast.cam_acct_bal%TYPE;
     l_ledger_balance        cms_acct_mast.cam_ledger_bal%TYPE;
     l_acct_type             cms_acct_mast.cam_type_code%TYPE;
@@ -3353,27 +3352,27 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
     V_EXP_REJECTION         EXCEPTION;
 
 
-
+   
 /************************************************************************************************************
 
     * Modified by      : UBAIDUR RAHMAN.H
     * Modified Date    : 06-May-2021
-    * Modified For     : VMS-4223 - B2B Replace card for virtual product is not creating card in Active status
+    * Modified For     : VMS-4223 - B2B Replace card for virtual product is not creating card in Active status 
     * Reviewer         : Saravanankumar
     * Build Number     : VMSR46_B0002
-
+    
      * Modified By      : Puvanesh P
      * Modified Date    : 28-JUL-2021
      * Purpose          : VMS-4754- Update Address/Email for B2B initiated Replacement--B2B Spec Consolidation
      * Reviewer         : Saravanakumar A
      * Release Number   : VMSGPRHOST_R50_B1
-
+	 
 	 * Modified By      : Ubaidur Rahman.H
      * Modified Date    : 13-OCT-2021
      * Purpose          : VMS-5205
      * Reviewer         : Saravanakumar A
-     * Release Number   : VMSGPRHOST_R52_B2
-
+     * Release Number   : VMSGPRHOST_R52_B2 
+     
      * Modified By      :  Ubaidur Rahman.H
      * Modified Date    :  03-Dec-2021
      * Modified Reason  :  VMS-5253 / 5372 - Do not pass sytem generated value from VMS to CCA.
@@ -3381,19 +3380,19 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
      * Build Number     :  VMSGPRHOST_R55_RELEASE
 ************************************************************************************************************/
   BEGIN
-
+    
     p_istoken_eligible_out   := 'FALSE';
     p_iscvvplus_eligible_out := 'FALSE';
     p_forward_instcode_out   := '000000';
     l_loadamounttype_in := upper(p_loadamounttype_in);
 
-
-
+    
+    
 	  l_loadamount:= to_number(nvl(p_loadamount_in,
                                  0));
-
-    BEGIN
-
+                                 
+    BEGIN 
+    
     SELECT to_char(substr(to_char(SYSDATE,
                                   'YYMMDDHHMMSS'),
                           1,
@@ -3403,20 +3402,20 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                         '0')),
            lpad(seq_auth_stan.nextval,
                 6,
-                '0')
+                '0') 
       INTO l_rrn,
-           p_stan_out
+           p_stan_out 
       FROM dual;
 
     p_rrn_out := l_rrn;
 
 	EXCEPTION
         WHEN OTHERS THEN
-          p_status_out :=  '49';
+          p_status_out :=  '49'; 
           p_err_msg_out := 'Error while selecting Curr code / RRN' || SUBSTR(SQLERRM,1,300);
           RAISE V_EXP_REJECTION;
     END;
-
+                             
     CASE
       WHEN upper(p_isexpedited_in) = 'TRUE'
            AND upper(p_isfeewaived_in) = 'TRUE' THEN
@@ -3435,7 +3434,7 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
         l_txn_code := '22';
         l_fee_flag := 'Y';
     END CASE;
-
+    
     --Check for mandatory fields
     CASE
       WHEN p_customer_id_in IS NULL THEN
@@ -3457,30 +3456,30 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
         NULL;
     END CASE;
     --Fetching the active PAN for the input customer id
+    
 
-
-
-	BEGIN
+	
+	BEGIN 
         SELECT  ccm_cust_code
           INTO l_cust_code
           FROM cms_cust_mast
          WHERE ccm_cust_id = p_customer_id_in;
 
-
-
+    
+	
 	EXCEPTION
-		WHEN NO_DATA_FOUND THEN
-		  p_status_out :=  '49';
+		WHEN NO_DATA_FOUND THEN 
+		  p_status_out :=  '49'; 
           p_err_msg_out := 'Customer Id not found in VMS -'|| p_customer_id_in;
-          RAISE V_EXP_REJECTION;
+          RAISE V_EXP_REJECTION;		
         WHEN OTHERS THEN
-          p_status_out :=  '49';
+          p_status_out :=  '49'; 
           p_err_msg_out := 'Error while selecting Customer_code' || SQLERRM;
           RAISE V_EXP_REJECTION;
       END;
-
-
-
+	
+	
+	
     --Performance Fix
     BEGIN
       SELECT cap_pan_code,
@@ -3490,9 +3489,9 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
              cap_mbr_numb,
              cap_card_type,
              cap_acct_no,
-             cap_card_stat,
+             cap_card_stat, 
              nvl(cap_cvvplus_reg_flag,
-                 'N'),
+                 'N'), 
              cap_serial_number,
              cap_proxy_number,
              cap_cardpack_id,
@@ -3507,8 +3506,8 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
              l_mbr_numb,
              l_card_type,
              l_acct_no,
-             l_card_stat,
-             l_cvvplus_eligibility,
+             l_card_stat, 
+             l_cvvplus_eligibility, 
              l_serial_number,
              l_proxy_number,
              l_cardpack_id,
@@ -3524,8 +3523,8 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                      cap_mbr_numb,
                      cap_card_type,
                      cap_acct_no,
-                     cap_card_stat,
-                     cap_cvvplus_reg_flag,
+                     cap_card_stat, 
+                     cap_cvvplus_reg_flag, 
                      cap_serial_number,
                      cap_proxy_number,
                      cap_cardpack_id,
@@ -3534,7 +3533,7 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                      cap_cust_code,
 					 cap_form_factor
                 FROM cms_appl_pan
-               WHERE cap_cust_code = l_cust_code
+               WHERE cap_cust_code = l_cust_code                     
                  AND cap_inst_code = 1
                  AND cap_active_date IS NOT NULL
                  AND cap_card_stat NOT IN ('9')
@@ -3551,9 +3550,9 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                  cap_mbr_numb,
                  cap_card_type,
                  cap_acct_no,
-                 cap_card_stat,
+                 cap_card_stat, 
                  nvl(cap_cvvplus_reg_flag,
-                     'N'),
+                     'N'), 
                  cap_serial_number,
                  cap_proxy_number,
                  cap_cardpack_id,
@@ -3568,8 +3567,8 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                  l_mbr_numb,
                  l_card_type,
                  l_acct_no,
-                 l_card_stat,
-                 l_cvvplus_eligibility,
+                 l_card_stat, 
+                 l_cvvplus_eligibility, 
                  l_serial_number,
                  l_proxy_number,
                  l_cardpack_id,
@@ -3585,8 +3584,8 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                          cap_mbr_numb,
                          cap_card_type,
                          cap_acct_no,
-                         cap_card_stat,
-                         cap_cvvplus_reg_flag,
+                         cap_card_stat, 
+                         cap_cvvplus_reg_flag, 
                          cap_serial_number,
                          cap_proxy_number,
                          cap_cardpack_id,
@@ -3611,9 +3610,9 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                      cap_mbr_numb,
                      cap_card_type,
                      cap_acct_no,
-                     cap_card_stat,
+                     cap_card_stat, 
                      nvl(cap_cvvplus_reg_flag,
-                         'N'),
+                         'N'), 
                      cap_serial_number,
                      cap_proxy_number,
                      cap_cardpack_id,
@@ -3628,8 +3627,8 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                      l_mbr_numb,
                      l_card_type,
                      l_acct_no,
-                     l_card_stat,
-                     l_cvvplus_eligibility,
+                     l_card_stat, 
+                     l_cvvplus_eligibility, 
                      l_serial_number,
                      l_proxy_number,
                      l_cardpack_id,
@@ -3645,8 +3644,8 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                              cap_mbr_numb,
                              cap_card_type,
                              cap_acct_no,
-                             cap_card_stat,
-                             cap_cvvplus_reg_flag,
+                             cap_card_stat, 
+                             cap_cvvplus_reg_flag, 
                              cap_serial_number,
                              cap_proxy_number,
                              cap_cardpack_id,
@@ -3671,9 +3670,9 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                          cap_mbr_numb,
                          cap_card_type,
                          cap_acct_no,
-                         cap_card_stat,
+                         cap_card_stat, 
                          nvl(cap_cvvplus_reg_flag,
-                             'N'),
+                             'N'), 
                          cap_serial_number,
                          cap_proxy_number,
                          cap_cardpack_id,
@@ -3688,8 +3687,8 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                          l_mbr_numb,
                          l_card_type,
                          l_acct_no,
-                         l_card_stat,
-                         l_cvvplus_eligibility,
+                         l_card_stat, 
+                         l_cvvplus_eligibility, 
                          l_serial_number,
                          l_proxy_number,
                          l_cardpack_id,
@@ -3705,8 +3704,8 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                                  cap_mbr_numb,
                                  cap_card_type,
                                  cap_acct_no,
-                                 cap_card_stat,
-                                 cap_cvvplus_reg_flag,
+                                 cap_card_stat, 
+                                 cap_cvvplus_reg_flag, 
                                  cap_serial_number,
                                  cap_proxy_number,
                                  cap_cardpack_id,
@@ -3722,11 +3721,11 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                 EXCEPTION
 
                   WHEN no_data_found THEN
-
+                   
                     l_hash_pan    := NULL;
                     l_encr_pan    := NULL;
                     l_expiry_date := NULL;
-
+                    
                     p_err_msg_out := 'PAN is unavailable For Cust Id - ' || p_customer_id_in;
                     p_status_out := '167';
                     RAISE V_EXP_REJECTION;
@@ -3743,9 +3742,9 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
 
 		RAISE V_EXP_REJECTION;
     END IF;
-
+    
     --- Added for VMS-4754- Update Address/Email for B2B initiated Replacement--B2B Spec Consolidation.
-
+    
     IF l_form_factor = 'V' and p_email_in IS NULL
     THEN
 		p_err_msg_out :=  'Email is mandatory for Virtual Card Replacement.';
@@ -3760,7 +3759,7 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
         p_err_msg_out := 'Invalid Load Amount Type';
         RAISE V_EXP_REJECTION;
     end if;
-
+    
       BEGIN
         SELECT cam_acct_bal,
                cam_ledger_bal,
@@ -3775,7 +3774,7 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
            AND cam_inst_code = 1;
       EXCEPTION
         WHEN OTHERS THEN
-          p_status_out :=  '49';
+          p_status_out :=  '49'; 
           p_err_msg_out := 'Error while selecting acct dtl' || SQLERRM;
           RAISE V_EXP_REJECTION;
       END;
@@ -3789,18 +3788,18 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
           RAISE V_EXP_REJECTION;
       END IF;
 
-
+     
     l_date := to_char(SYSDATE,
                               'yyyymmdd');
-
+                              
     l_time := to_char(SYSDATE,'HH24MISS');
 
     l_plain_pan := fn_dmaps_main(l_encr_pan);
-
+  
     p_cardno_out := l_plain_pan;
-
-	BEGIN
-
+ 
+	BEGIN 
+	
     SELECT nvl(cpc_token_eligibility,
                'N'),
            nvl(cpc_user_identify_type,
@@ -3819,14 +3818,14 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
      WHERE cpc_inst_code = 1
        AND cpc_prod_code = l_prod_code
        AND cpc_card_type = l_card_type;
-
+	 
 	EXCEPTION
         WHEN OTHERS THEN
-          p_status_out :=  '49';
+          p_status_out :=  '49'; 
           p_err_msg_out := 'Error while selecting from Prod cattype' || SQLERRM;
           RAISE V_EXP_REJECTION;
       END;
-
+	   
 
     IF l_user_type IN ( '1', '4')   and NVL(l_form_factor,'P') <> 'V'        --- 1 Anonymous Gift \ 4 Personalised Gift
     THEN
@@ -3849,7 +3848,7 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
         ELSE
           NULL;
       END CASE;
-
+      
     END IF;
 
     IF l_flag = 1
@@ -3858,7 +3857,7 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                             ' is mandatory for Anonymous User';
 		p_status_out := '49';
 	RAISE V_EXP_REJECTION;
-
+ 
     END IF;
 
     IF l_token_eligibility = 'Y'
@@ -3870,15 +3869,15 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
     THEN
       p_iscvvplus_eligible_out := 'TRUE';
     END IF;
-
-
+    
+    
     IF upper(p_createnewcard_in) = 'TRUE'
     THEN
       l_newcard_flag := 'Y';
     END IF;
-
-	BEGIN
-
+    
+	BEGIN 
+     
     --Performance Fix
     SELECT cbp_param_value
       INTO l_curr_code
@@ -3886,32 +3885,32 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
      WHERE cbp_inst_code = 1
        AND cbp_profile_code = l_profile_code
        AND cbp_param_name = 'Currency';
-
+	
 	EXCEPTION
         WHEN OTHERS THEN
-          p_status_out :=  '49';
+          p_status_out :=  '49'; 
           p_err_msg_out := 'Error while selecting bin param ' || SUBSTR(SQLERRM,1,300);
           RAISE V_EXP_REJECTION;
-      END;
+      END;  
 
 
-    BEGIN
-
+    BEGIN 
+      
       SELECT gpp_feeplan.get_fee_plan(l_hash_pan,
                                              l_prod_code,
                                              l_card_type)
         INTO l_fee_plan
         FROM dual;
-
-    EXCEPTION
-    WHEN OTHERS
-    THEN
+        
+    EXCEPTION 
+    WHEN OTHERS 
+    THEN     
     	p_err_msg_out :=  'Error while fetching feeplan' || SUBSTR(SQLERRM,1,300);
 		p_status_out := '49';
-	RAISE V_EXP_REJECTION;
+	RAISE V_EXP_REJECTION; 
     END;
-
-
+ 
+	
 	BEGIN
         SELECT TRIM(to_char(a.cfm_fee_amt,
                             '9999999999999990.00'))
@@ -3932,9 +3931,9 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
           l_fee_amt := '0.00';
       END;
 
-
+	
       BEGIN
-
+                                    
               sp_csr_order_replace('1',
                                   '0200',
                                   l_rrn,
@@ -3951,15 +3950,15 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                                   l_curr_code,
                                   NULL,
                                   l_expiry_date,
-                                  p_stan_out,
-                                  l_mbr_numb,
+                                  p_stan_out,  
+                                  l_mbr_numb,  
                                   '0',
-                                  NULL,
+                                  NULL, 
                                   NULL,
                                   NULL,
                                   p_comment_in,
                                   l_fee_flag,
-                                  p_activationcode_out,
+                                  p_activationcode_out,  
                                   l_resp_code,
                                   l_resp_msg,
                                   l_capture_date,
@@ -3970,32 +3969,32 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                                   l_expiry_date_parameter,
                                   l_new_expiry_date_parameter,
                                   l_replace_optn,
-                                  l_newcard_flag
+                                  l_newcard_flag 
                                   );
+                                  
+                                  
 
-
-
-        IF l_resp_msg <> 'OK'
+        IF l_resp_msg <> 'OK'    
 		THEN
           p_status_out  := l_resp_code;
           p_err_msg_out := l_resp_msg;
           dbms_output.put_line ('l_resp_msg -'||l_resp_msg );
           RAISE V_EXP_REJECTION;
 		END IF;
-
+	   
       EXCEPTION
-      WHEN V_EXP_REJECTION
-      THEN
+      WHEN V_EXP_REJECTION 
+      THEN 
       RAISE;
-	  WHEN OTHERS THEN
-
+	  WHEN OTHERS THEN     
+      
           p_status_out  := '49';
           p_err_msg_out := 'Error from procedure sp_chw_order_replace ' || substr(sqlerrm,1,300);
           RAISE V_EXP_REJECTION;
       END;
 
  dbms_output.put_line ('After sp chw order replace -'||l_resp_msg );
-
+ 
       p_exprydate_out     := to_char(l_expiry_date_parameter,
                                      'MMYY');
       p_new_exprydate_out := to_char(l_new_expiry_date_parameter,
@@ -4073,13 +4072,13 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                                    ', Error: ' || p_err_msg_out;
 				p_status_out  := '49';
 				RAISE V_EXP_REJECTION;
-
+                
                 END IF;
               ELSE
                 l_action := 'N';
               END IF;
             END IF;
-
+			
             IF p_err_msg_out = 'OK'
                AND l_action IN ('N',
                                 'D')
@@ -4091,19 +4090,19 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
               p_forward_instcode_out   := '';
               p_message_reasoncode_out := '';
             END IF;
-
+			
           END IF;
         EXCEPTION
           WHEN V_EXP_REJECTION
-          THEN
+          THEN 
           RAISE V_EXP_REJECTION;
           WHEN no_data_found THEN
             l_new_pan                := l_plain_pan;
             p_message_reasoncode_out := '3720';
-            p_req_reason_out         := 'Same PAN Relpacement By Program Manager';
+            p_req_reason_out         := 'Same PAN Relpacement By Program Manager';  
         END;
 
-     BEGIN
+     BEGIN 
         UPDATE cms_appl_pan
            SET cap_replace_merchant_id = p_merchantid_in,
                cap_replace_terminal_id = p_terminalid_in,
@@ -4123,9 +4122,9 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
          WHERE cap_pan_code = gethash(l_new_pan)
            AND cap_mbr_numb = l_mbr_numb
            AND cap_inst_code = 1;
-
-
-
+	   
+	   
+	
 
 	IF l_form_factor = 'V'
         THEN
@@ -4133,39 +4132,39 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
         UPDATE cms_cardissuance_status
         SET ccs_card_status = 15   				--- SHIPPED
         where ccs_pan_code =  gethash(l_new_pan);
-
-        END IF;
-
-	   EXCEPTION
-		 WHEN OTHERS
-		 THEN
+ 
+        END IF; 
+		
+	   EXCEPTION 
+		 WHEN OTHERS 
+		 THEN 
           p_status_out  := '49';
           p_err_msg_out := 'Error while updating cms_appl_pan / card_issuance ' || substr(sqlerrm,1,300);
           RAISE V_EXP_REJECTION;
       END;
-
-
-
-		--- 3 KYC \ 2 Personalised
-
+	  
+	
+		
+		--- 3 KYC \ 2 Personalised 
+		
 	--- Added for VMS-4754- Update Address/Email for B2B initiated Replacement--B2B Spec Consolidation
-
-	      IF p_firstname_in IS NOT NULL
-	        THEN
+	
+	      IF p_firstname_in IS NOT NULL 
+	        THEN 
 			UPDATE vmscms.cms_cust_mast
                                    SET ccm_first_name = l_first_name,
                                        ccm_mid_name = nvl(l_mid_name,ccm_mid_name),
                                        ccm_last_name = nvl(l_last_name,ccm_last_name),
                                        ccm_first_name_encr = vmscms.fn_emaps_main(p_firstname_in),
-                                       ccm_last_name_encr = nvl(vmscms.fn_emaps_main(p_lastname_in),trim(ccm_last_name_encr))
+                                       ccm_last_name_encr = nvl(vmscms.fn_emaps_main(p_lastname_in),trim(ccm_last_name_encr))    
                                  WHERE ccm_inst_code = 1
                                    AND ccm_cust_code = l_cust_code;
-
+                         
 
 	      END IF;
-
-
-       	BEGIN
+       
+       
+       	BEGIN 
         SELECT fn_dmaps_main(ccm_first_name),
                fn_dmaps_main(ccm_last_name),
                ccm_business_name
@@ -4176,28 +4175,28 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
          WHERE ccm_cust_id = p_customer_id_in;
 
     l_embname := FN_B2B_EMBNAME(l_cust_first_name, l_cust_last_name, l_length);
-
+    
     EXCEPTION
     WHEN OTHERS THEN
-          p_status_out :=  '49';
+          p_status_out :=  '49'; 
           p_err_msg_out := 'Error while selecting Emboss NaME' || SQLERRM;
           RAISE V_EXP_REJECTION;
       END;
-
-
+       
+       
        	IF l_encrypt_enable = 'Y'
       THEN
         l_encr_embname       := fn_emaps_main(l_embname);
-        l_cust_business_name := fn_emaps_main(l_cust_business_name);
+        l_cust_business_name := fn_emaps_main(l_cust_business_name);	
       ELSE
         l_encr_embname       := l_embname;
-        l_cust_business_name := l_cust_business_name;
+        l_cust_business_name := l_cust_business_name;	 
       END IF;
-
-
+		
+		
         IF p_addrone_in IS NOT NULL and p_city_in IS NOT NULL and
         p_state_in IS NOT NULL and p_postalcode_in IS NOT NULL and p_countrycode_in IS NOT NULL
-
+		 
         THEN
            BEGIN
                   SELECT gsm_state_code
@@ -4225,10 +4224,10 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                       CAM_PIN_CODE       = l_postal_code,
                       CAM_CNTRY_CODE     = l_cntry_code,
                       CAM_LUPD_DATE      = sysdate,
-                      CAM_ADD_ONE_ENCR   = vmscms.fn_emaps_main(p_addrone_in),
+                      CAM_ADD_ONE_ENCR   = vmscms.fn_emaps_main(p_addrone_in),         
                       CAM_ADD_TWO_ENCR   = vmscms.fn_emaps_main(p_addrtwo_in),
                       CAM_CITY_NAME_ENCR = vmscms.fn_emaps_main(p_city_in),
-                      CAM_PIN_CODE_ENCR  = vmscms.fn_emaps_main(p_postalcode_in)
+                      CAM_PIN_CODE_ENCR  = vmscms.fn_emaps_main(p_postalcode_in)        
                   WHEN NOT MATCHED THEN
                       INSERT (
                               CAM_INST_CODE,
@@ -4242,7 +4241,7 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                               CAM_ADDR_FLAG,
                               CAM_INS_DATE,
                               CAM_STATE_CODE,
-                              CAM_ADD_ONE_ENCR,
+                              CAM_ADD_ONE_ENCR,                             
                               CAM_ADD_TWO_ENCR,
                               CAM_PIN_CODE_ENCR,
                               CAM_CITY_NAME_ENCR,
@@ -4262,16 +4261,16 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                               'O',
                               sysdate,
                               l_state_code,
-                              fn_emaps_main(p_addrone_in),
+                              fn_emaps_main(p_addrone_in),         
                               fn_emaps_main(p_addrtwo_in),
                               fn_emaps_main(p_postalcode_in),
                               fn_emaps_main(p_city_in),
 							  1,
 							  1
                             );
-
+			
 			IF l_user_type in ('1','4') THEN
-
+			    
 				 UPDATE vmscms.cms_addr_mast
 							SET CAM_ADD_ONE      = l_addr_one,
 							  CAM_ADD_TWO        = l_addr_two,
@@ -4280,18 +4279,18 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
 							  CAM_PIN_CODE       = l_postal_code,
 							  CAM_CNTRY_CODE     = l_cntry_code,
 							  CAM_LUPD_DATE      = sysdate,
-							  CAM_ADD_ONE_ENCR   = vmscms.fn_emaps_main(p_addrone_in),
+							  CAM_ADD_ONE_ENCR   = vmscms.fn_emaps_main(p_addrone_in),      
 							  CAM_ADD_TWO_ENCR   = vmscms.fn_emaps_main(p_addrtwo_in),
 							  CAM_CITY_NAME_ENCR = vmscms.fn_emaps_main(p_city_in),
-							  CAM_PIN_CODE_ENCR  = vmscms.fn_emaps_main(p_postalcode_in)
+							  CAM_PIN_CODE_ENCR  = vmscms.fn_emaps_main(p_postalcode_in)  
 				 WHERE CAM_INST_CODE = 1
 					   AND CAM_CUST_CODE = l_cust_code
 				   AND CAM_ADDR_FLAG  = 'P' ;
-
+		 
 			END IF;
             					--- Added for VMS-5253 / VMS-5372
-
-            		UPDATE CMS_CUST_MAST
+						
+            		UPDATE CMS_CUST_MAST 
 	                   SET CCM_SYSTEM_GENERATED_PROFILE = 'N'
 	                   WHERE CCM_INST_CODE = 1
 	                    AND CCM_CUST_CODE = l_cust_code;
@@ -4305,19 +4304,19 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                   RAISE V_EXP_REJECTION;
             END;
         END IF;
-
-
+	
+	
 	--- Added for VMS-4754- Update Address/Email for B2B initiated Replacement--B2B Spec Consolidation
-
+	
 	IF p_email_in IS NOT NULL
 	THEN
-
+	
 	UPDATE CMS_ADDR_MAST
         SET CAM_EMAIL = l_virtual_email,
         CAM_EMAIL_ENCR = fn_emaps_main(p_email_in)
         WHERE CAM_CUST_CODE = l_cust_code
-        AND CAM_INST_CODE = 1;
-
+        AND CAM_INST_CODE = 1; 
+	
 	END IF;
 
 
@@ -4338,7 +4337,7 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
 
           IF l_user_type = '1' THEN
 
-            BEGIN
+            BEGIN 
                 SELECT lineitem.vol_embossedline,
                        lineitem.vol_embossed_line1
                 INTO l_encr_embname,
@@ -4358,8 +4357,8 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
 
           END IF;
 
-
-		  BEGIN
+          
+		  BEGIN 
 
           SELECT vpm_replace_shipmethod,
                  vpm_exp_replaceshipmethod,
@@ -4377,9 +4376,9 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                            WHERE cpc_prod_code = l_prod_code
                              AND cpc_card_id = nvl(l_cardpack_id,
                                                    l_card_id)));
-
-		EXCEPTION
-			WHEN OTHERS
+												   
+		EXCEPTION 
+			WHEN OTHERS 
 			THEN
                   p_status_out  := '49';
                   p_err_msg_out :=  'Error while selecting replacement package id details.' || substr(sqlerrm,1,300);
@@ -4393,14 +4392,14 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
             l_shipping_method := l_replace_shipmethod;
           END IF;
 
-		BEGIN
+		BEGIN 
           SELECT vsm_shipment_key
             INTO l_shipment_key
             FROM vms_shipment_tran_mast
            WHERE vsm_shipment_id = l_shipping_method;
-
-		 EXCEPTION
-			WHEN OTHERS
+		   
+		 EXCEPTION 
+			WHEN OTHERS 
 			THEN
                   p_status_out  := '49';
                   p_err_msg_out :=  'Error while selecting shipment key' || substr(sqlerrm,1,300);
@@ -4408,22 +4407,22 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
 		END;
 
 
-		BEGIN
+		BEGIN                
 		   SELECT vpl_logo_id
 			INTO l_logo_id
 			FROM VMS_PACKID_LOGOID_MAPPING
 			WHERE vpl_package_id = l_package_id
-			  AND vpl_default_flag = 'Y';
+			  AND vpl_default_flag = 'Y';	
 		EXCEPTION
-			WHEN OTHERS
+			WHEN OTHERS 
 			THEN l_logo_id :='000000';
 		END;
-
+        
         IF p_firstname_in IS  NULL AND p_lastname_in IS NULL
         THEN
-
-        BEGIN
-                SELECT ord.vod_firstname,
+        
+        BEGIN 
+                SELECT ord.vod_firstname, 
                        ord.vod_lastname
                 INTO l_ord_first_name,
                      l_ord_last_name
@@ -4437,11 +4436,11 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
             WHEN OTHERS THEN
                 NULL;
             END;
+        
+         END IF; 
 
-         END IF;
 
-
-		BEGIN
+		BEGIN 
           INSERT INTO vms_order_details
             (vod_order_id,
              vod_partner_id,
@@ -4522,9 +4521,9 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
              l_parent_id,
              decode(l_form_factor,'V',2,1),
              NULL,
-             l_encr_embname,
-             l_cust_business_name,
-			 l_logo_id);
+             l_encr_embname,          
+             l_cust_business_name,    
+			 l_logo_id);   
 
           INSERT INTO vms_line_item_dtl
             (vli_pan_code,
@@ -4540,26 +4539,26 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
              l_line_item_id,
              l_parent_id,
              l_serial_number);
-
-		EXCEPTION
-			WHEN OTHERS
+			 
+		EXCEPTION 
+			WHEN OTHERS 
 			THEN
                   p_status_out  := '49';
                   p_err_msg_out :=  'Error while inserting into order related tables.' || substr(sqlerrm,1,300);
                   RAISE V_EXP_REJECTION;
 		END;
 
-
+		
         END IF;
 
       END IF;
 
                  IF l_loadamounttype_in='INITIAL_LOAD_AMOUNT' THEN
-                    l_load_amt         :=l_initialload_amt;
+                    l_load_amt         :=l_initialload_amt; 
                   ELSIF l_loadamounttype_in='OTHER_AMOUNT' THEN
-                    l_load_amt            := l_loadamount;
+                    l_load_amt            := l_loadamount;  
                   END IF;
-
+				  
                   IF l_load_amt IS NOT NULL THEN
                     UPDATE cms_acct_mast
                     SET cam_new_initialload_amt=l_load_amt
@@ -4567,18 +4566,18 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                     AND cam_acct_no            =l_acct_no
                     AND cam_initialload_amt    < l_load_amt ;
                   END IF;
-
+                  
                   dbms_output.put_line ('l_new_pan -'||l_new_pan );
-
+				  
          IF l_load_amt <>0 and l_loadamounttype_in <> 'CURRENT_BALANCE' THEN
          BEGIN
 				sp_manual_adj_csr(1,
                                  '000',
                                  '0200',
                                  '03',
-                                 '14',
+                                 '14', 
                                  '0',
-                                 l_date,
+                                 l_date,  
                                  l_time,
                                  l_new_pan,
                                  l_rrn,
@@ -4597,34 +4596,34 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                                  NULL,
                                  NULL,
                                  l_acct_no,
-                                 1,
+                                 1, 
                                 null,
                                  1,
                                  NULL,
                                  l_final_bal,
                                  l_resp_code,
                                  l_resp_msg);
-
+								 
 			IF l_resp_msg <>'OK'
-			THEN
+			THEN 			
 			p_status_out  := '49';
 			p_err_msg_out := 'Error from sp_manual_adj_csr - ' ||  l_resp_msg;
-			RAISE V_EXP_REJECTION;
-
+			RAISE V_EXP_REJECTION;		
+			
 			END IF;
       EXCEPTION
 		WHEN V_EXP_REJECTION THEN
 		RAISE V_EXP_REJECTION;
-
+		
         WHEN OTHERS THEN
 
           p_status_out  := '49';
-          p_err_msg_out := 'Error from sp_manual_adj_csr - ' || substr(sqlerrm,1,300);
+          p_err_msg_out := 'Error from sp_manual_adj_csr - ' || substr(sqlerrm,1,300);   
           RAISE V_EXP_REJECTION;
       END;
       END iF;
 
-
+ 
 
      IF l_acct_balance<>0  and l_loadamounttype_in <> 'CURRENT_BALANCE'  THEN
       BEGIN
@@ -4632,9 +4631,9 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                                  '000',
                                  '0200',
                                  '03',
-                                 '13',
+                                 '13', 
                                  '0',
-                                 l_date,
+                                 l_date, 
                                  l_time,
                                  l_new_pan,
                                  l_rrn,
@@ -4650,36 +4649,36 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                                  0,
                                  l_curr_code,
                                  NULL,
-                                 NULL,
+                                 NULL, 
                                  l_session_id,
                                  l_acct_no,
-                                 1,
+                                 1, 
                                   null,
                                  1,
                                  NULL,
                                  l_final_bal,
                                  l_resp_code,
                                  l_resp_msg);
-
+								 
 			IF l_resp_msg <>'OK'
-			THEN
+			THEN 			
 				p_status_out  := '49';
 				p_err_msg_out := 'Error from sp_manual_adj_csr - ' ||  l_resp_msg;
-				RAISE V_EXP_REJECTION;
-
+				RAISE V_EXP_REJECTION;		
+			
 			END IF;
       EXCEPTION
-		WHEN V_EXP_REJECTION
+		WHEN V_EXP_REJECTION 
 		THEN
 		RAISE V_EXP_REJECTION;
-
+		
         WHEN OTHERS THEN
 
           p_status_out  := '49';
-          p_err_msg_out := 'Error from sp_manual_adj_csr - ' || substr(sqlerrm,1,300);
+          p_err_msg_out := 'Error from sp_manual_adj_csr - ' || substr(sqlerrm,1,300); 
           RAISE V_EXP_REJECTION;
       END;
-
+	  
       IF l_resp_code = '00'
       THEN
       BEGIN
@@ -4687,15 +4686,15 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                                         l_plain_pan,
                                         '000',
                                         l_resp_msg);
-
+                                        
                                 IF l_resp_msg <> 'OK'
-                                THEN
+                                THEN 
                                   p_status_out  :=  '49';
                                   p_err_msg_out := 'Error from sp_clawback_recovery - '|| l_resp_msg;
-                                    RAISE V_EXP_REJECTION;
-
+                                    RAISE V_EXP_REJECTION;                               
+                                
                                 END IF;
-
+                                
           EXCEPTION
            WHEN V_EXP_REJECTION
            THEN RAISE V_EXP_REJECTION;
@@ -4703,8 +4702,8 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
 					p_status_out  :=  '49';
                     p_err_msg_out := 'Error from sp_clawback_recovery - '|| SUBSTR(SQLERRM,1,300);
                 RAISE V_EXP_REJECTION;
-
-          END;
+                
+          END; 
       END IF;
      END IF;
 
@@ -4727,41 +4726,27 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
 
 
 
-
-      UPDATE VMSCMS.TRANSACTIONLOG		--Added for VMS-5733/FSP-991
+     
+      UPDATE transactionlog
 	  SET
              merchant_id   =   p_merchantid_in,
              terminal_id   =   p_terminalid_in
        WHERE rrn = l_rrn;
-
-	   IF SQL%ROWCOUNT = 0 THEN
-
-	   UPDATE VMSCMS_HISTORY.TRANSACTIONLOG_HIST		--Added for VMS-5733/FSP-991
-	  SET
-             merchant_id   =   p_merchantid_in,
-             terminal_id   =   p_terminalid_in
-       WHERE rrn = l_rrn;
-	   END IF;
-
+      
        IF p_locationid_in IS NOT NULL THEN
-           UPDATE VMSCMS.CMS_TRANSACTION_LOG_DTL	--Added for VMS-5733/FSP-991
+           UPDATE vmscms.cms_transaction_log_dtl
               SET ctd_location_id = p_locationid_in
            WHERE ctd_rrn = l_rrn;
-		   IF SQL%ROWCOUNT = 0 THEN
-		    UPDATE VMSCMS_HISTORY.CMS_TRANSACTION_LOG_DTL_HIST	--Added for VMS-5733/FSP-991
-              SET ctd_location_id = p_locationid_in
-           WHERE ctd_rrn = l_rrn;
-		   END IF;
        END IF;
 
       p_status_out  := '00';
-      p_err_msg_out := 'SUCCESS';
-
-
+      p_err_msg_out := 'SUCCESS'; 
+     
+    
   EXCEPTION
 
     WHEN V_EXP_REJECTION
-    THEN
+    THEN 	 
     ROLLBACK;
                       INSERT INTO transactionlog
                         (msgtype,
@@ -4809,7 +4794,7 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                          to_char(SYSDATE,
                              'hh24miss'),
                          'C',
-                         p_status_out,
+                         p_status_out,   
                          p_activationcode_out,
                          '1',
                          SYSDATE,
@@ -4827,7 +4812,7 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                          l_prod_code,
                          l_card_type,
                          p_stan_out);
-
+  
 		INSERT INTO vmscms.cms_transaction_log_dtl
                         (ctd_delivery_channel,
                          ctd_txn_code,
@@ -4864,15 +4849,15 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                          l_acct_no,
                          p_stan_out,
                          p_activationcode_out);
-
+			
 	WHEN OTHERS
-    THEN
-
+    THEN 	
+    
     ROLLBACK;
-
+				 
 					p_status_out  :=  '49';
                     p_err_msg_out := SUBSTR(SQLERRM,1,300);
-
+				
                       INSERT INTO transactionlog
                         (msgtype,
                          rrn,
@@ -4923,7 +4908,7 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
 								FROM cms_response_mast
 								WHERE cms_inst_code = 1
 								AND cms_delivery_channel = 17
-								AND cms_response_id = p_status_out),
+								AND cms_response_id = p_status_out),   
                          p_activationcode_out,
                          '1',
                          SYSDATE,
@@ -4937,7 +4922,7 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                          l_prod_code,
                          l_card_type,
                          p_stan_out);
-
+  
 		INSERT INTO cms_transaction_log_dtl
                         (ctd_delivery_channel,
                          ctd_txn_code,
@@ -4974,8 +4959,10 @@ PROCEDURE process_order_request (p_inst_code_in    IN     NUMBER,
                          l_acct_no,
                          p_stan_out,
                          p_activationcode_out);
-
+ 
 
   END replace_card_b2b_v2;
 
 END VMSB2BAPI;
+/
+show error;

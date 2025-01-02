@@ -1,3 +1,4 @@
+
 SET DEFINE OFF;
 create or replace PACKAGE BODY    vmscms.GPP_PROFILE IS
 
@@ -85,7 +86,7 @@ create or replace PACKAGE BODY    vmscms.GPP_PROFILE IS
        AND ccd_pan_code = l_hash_pan;
     --rrn
     SELECT to_char(to_char(SYSDATE,
-                           'YYMMDDHH24MISS') ||    --Changes VMS-8279 ~ HH has been replaced as HH24
+                           'YYMMDDHHMISS') ||
                    lpad(vmscms.seq_deppending_rrn.nextval,
                         3,
                         '0'))
@@ -324,7 +325,7 @@ create or replace PACKAGE BODY    vmscms.GPP_PROFILE IS
 
     --fetching the rrn
     SELECT to_char(to_char(SYSDATE,
-                           'YYMMDDHH24MISS') ||   --Changes VMS-8279 ~ HH has been replaced as HH24
+                           'YYMMDDHHMISS') ||
                    lpad(vmscms.seq_deppending_rrn.nextval,
                         3,
                         '0'))
@@ -1264,7 +1265,7 @@ create or replace PACKAGE BODY    vmscms.GPP_PROFILE IS
        AND ccd_pan_code = l_hash_pan;
 
     SELECT to_char(to_char(SYSDATE,
-                           'YYMMDDHH24MISS') ||   --Changes VMS-8279 ~ HH has been replaced as HH24
+                           'YYMMDDHHMISS') ||
                    lpad(vmscms.seq_deppending_rrn.nextval,
                         3,
                         '0'))
@@ -1451,7 +1452,7 @@ create or replace PACKAGE BODY    vmscms.GPP_PROFILE IS
        AND ccd_pan_code = l_hash_pan;
 
     SELECT to_char(to_char(SYSDATE,
-                           'YYMMDDHH24MISS') ||    --Changes VMS-8279 ~ HH has been replaced as HH24
+                           'YYMMDDHHMISS') ||
                    lpad(vmscms.seq_deppending_rrn.nextval,
                         3,
                         '0'))
@@ -1647,7 +1648,7 @@ create or replace PACKAGE BODY    vmscms.GPP_PROFILE IS
        AND ccd_pan_code = l_hash_pan;
 
     SELECT to_char(to_char(SYSDATE,
-                           'YYMMDDHH24MISS') ||    --Changes VMS-8279 ~ HH has been replaced as HH24
+                           'YYMMDDHHMISS') ||
                    lpad(vmscms.seq_deppending_rrn.nextval,
                         3,
                         '0'))
@@ -2006,13 +2007,6 @@ BEGIN
          * Reviewed Date      : 17-Jan-2020
          * Build Number       : R25_B0002
 	
-        * Modified By        : John G
-         * Modified Date      : 1-Aug-2024
-         * Modified Reason    : VMS-8942 - Display Alert Log Details on CCA
-         * Reviewer           : 
-         * Reviewed Date      : 
-         * Build Number       : R101_B0002
-
 ***************************************************************************************/
 BEGIN
     p_err_msg_out := 'OK';
@@ -2181,7 +2175,7 @@ BEGIN
     
 --Fetching alert log details
     OPEN c_alert_log_out FOR
-        SELECT id,tran_date,mobile,email,alert_type,alert_mode,status, messageDetails  
+        SELECT id,tran_date,mobile,email,alert_type,alert_mode,status  
         FROM (SELECT a.*,rownum  r
         FROM
           (SELECT csl_rrn id,
@@ -2191,8 +2185,7 @@ BEGIN
             vmscms.fn_dmaps_main(csl_email_id) email,
             csl_alert_type alert_type,
             DECODE(csl_alertmsg_type,'1','SMS','2','Email','SMS & Email') alert_mode,
-            DECODE(csl_process_msg,'Success','Successful',csl_process_msg) status,
-            CSL_ALERT_MSG messageDetails --Added for VMS-8942
+            DECODE(csl_process_msg,'Success','Successful',csl_process_msg) status
           FROM VMSCMS.CMS_SMSANDEMAIL_LOG
           WHERE csl_inst_code   = 1
           AND csl_pan_code      = l_hash_pan

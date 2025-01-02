@@ -1,4 +1,4 @@
-create or replace PACKAGE BODY                                                                         VMSCMS.GPP_TRANSACTION IS
+create or replace PACKAGE BODY                                                                  VMSCMS.GPP_TRANSACTION IS
 
   -- PL/SQL Package using FS Framework
   -- Author  : Rojalin
@@ -75,7 +75,7 @@ create or replace PACKAGE BODY                                                  
          * Modified Reason    : VMS-1719 - CCA RRN Logging Issue.
          * Reviewer           : SaravanaKumar A
          * Reviewed Date      : 17-Jan-2020
-         * Build Number       : R25_B0001
+         * Build Number       : R25_B0002
 
 ****************************************************************************/
   BEGIN
@@ -202,7 +202,7 @@ create or replace PACKAGE BODY                                                  
                       '');
     --g_debug.display('l_time' || l_time);
     SELECT to_char(to_char(SYSDATE,
-                           'YYMMDDHH24MISS') ||   --Changes VMS-8279 ~ HH has been replaced as HH24
+                           'YYMMDDHHMISS') ||
                    lpad(vmscms.seq_deppending_rrn.nextval,
                         3,
                         '0'))
@@ -490,7 +490,7 @@ PROCEDURE get_transaction_detail(p_customer_id_in      IN VARCHAR2,
 		                            Token and Device details to CCA(VMS-447).
          * Reviewer           : SaravanaKumar A
          * Reviewed Date      : 07-Feb-2019
-         * Build Number       : R12_B0002
+         * Build Number       : R12_B0003
 
          * Modified by        : Jahnavi B
          * Modified Date      : 21-May-19
@@ -512,14 +512,14 @@ PROCEDURE get_transaction_detail(p_customer_id_in      IN VARCHAR2,
          * Modified Reason    : VMS-1719 - CCA RRN Logging Issue.
          * Reviewer           : SaravanaKumar A
          * Reviewed Date      : 17-Jan-2020
-         * Build Number       : R25_B0001
+         * Build Number       : R25_B0002
 
 	 * Modified By        : Ubaidur Rahman.H
          * Modified Date      : 07-May-2020
          * Modified Reason    : VMS-1021 FSAPI - Cuentas Banking Alternative Transaction Description
          * Reviewer           : SaravanaKumar A
          * Reviewed Date      : 08-May-2020
-         * Build Number       : R30_B0002
+         * Build Number       : R30_B0003
 	 * Modified by        : UBAIDUR RAHMAN H
          * Modified Date      : 22-Mar-2021.
          * Modified For       : VMS-3832.
@@ -533,18 +533,6 @@ PROCEDURE get_transaction_detail(p_customer_id_in      IN VARCHAR2,
          * Modified Reason    : Send POS entry mode, CNP and Network identifier to CCA
          * Reviewer           : Pankaj S
          * Build Number       : R80
-
-		 * Modified By      : Mohan E.
-		 * Modified Date    : 21/06/2024
-		 * Purpose          : VMS-8883 Send Dynamic Decline Responses from Accertify to CCA
-		 * Reviewer         : Pankaj
-		 * Release Number   : VMSGPRHOSTR99_B0002
-
-		 * Modified By      : Mohan E.
-		 * Modified Date    : 31/07/2024
-		 * Purpose          : VMS_8739 Display Anticipated Verification Amount on CCA
-		 * Reviewer         : Pankaj
-		 * Release Number   : VMSGPRHOSTR101_B0002
 ***************************************************************************************/
 
   BEGIN
@@ -1048,17 +1036,7 @@ PROCEDURE get_transaction_detail(p_customer_id_in      IN VARCHAR2,
             k.vtt_device_langcode devicelanguage,
            (select vwm_wallet_name from vmscms.vms_wallet_mast where vwm_wallet_id = nvl(k.vtt_wallet_identifier,
                  k.vtt_token_requestorid)) walletid,
-            k.vtt_secure_elementid seid,
-			rules ruleGroup,         		--Added for VMS_8883
-			nvl(src_of_decline , (case when substr(rrn,1,1) ='X'   and DELIVERY_CHANNEL in ('01','02','16') then 'OLS'
-                                       when response_code =  '199' and DELIVERY_CHANNEL in ('01','02','16') then 'ACC' end ))   source,			--Added for VMS_8883
-			(select VAR_VERBAL_ACTIONCODE
-					from vmscms.VMS_ACCERTIFY_RESPONSE_DETAILS
-					where  VAR_RRN = rrn
-					and VAR_DELIVERY_CHANNEL =DELIVERY_CHANNEL
-					and VAR_TXN_CODE = txn_code
-					and to_char (VAR_INS_DATE,'YYYYMMDD') = BUSINESS_DATE)  actionCode,			--Added for VMS_8883
-			anticipated_amount AnticipatedAmount  --Added for VMS_8739
+            k.vtt_secure_elementid seid
         FROM vmscms.transactionlog           a,
              vmscms.cms_transaction_mast,
              vmscms.cms_preauth_transaction,
@@ -1152,14 +1130,27 @@ PROCEDURE get_transaction_detail(p_customer_id_in      IN VARCHAR2,
 	     to_char(VRR_EXECUTION_TIME,'YYYY-MM-DD HH24:MI:SS') executionTime		-- Added to return individual fraud rule executionTime
              FROM vmscms.VMS_RULECHECK_RESULTS
              WHERE VRR_TOKEN = l_token
+             UNION
+             SELECT VRR_RULE_NAME ruleName,
+             VRR_RULE_DESC ruleDescription,
+             VRR_RULE_RESULT isPassed,
+	     to_char(VRR_EXECUTION_TIME,'YYYY-MM-DD HH24:MI:SS') executionTime		-- Added to return individual fraud rule executionTime
+             FROM vmscms.VMS_RULECHECK_RESULTS_HIST
+             WHERE VRR_TOKEN = l_token
              union
               SELECT VRR_RULE_NAME ruleName,
              VRR_RULE_DESC ruleDescription,
              VRR_RULE_RESULT isPassed,
 	     to_char(VRR_EXECUTION_TIME,'YYYY-MM-DD HH24:MI:SS') executionTime		-- Added to return individual fraud rule executionTime
              FROM vmscms.VMS_RULECHECK_RESULTS
+             WHERE VRR_CORRELATION_ID = l_correlation_id
+              union
+              SELECT VRR_RULE_NAME ruleName,
+             VRR_RULE_DESC ruleDescription,
+             VRR_RULE_RESULT isPassed,
+	     to_char(VRR_EXECUTION_TIME,'YYYY-MM-DD HH24:MI:SS') executionTime		-- Added to return individual fraud rule executionTime
+             FROM vmscms.VMS_RULECHECK_RESULTS_HIST
              WHERE VRR_CORRELATION_ID = l_correlation_id;
-
     --time taken
     l_end_time := dbms_utility.get_time;
     g_debug.display('l_end_time' || l_end_time);
@@ -1281,14 +1272,14 @@ PROCEDURE get_transaction_detail(p_customer_id_in      IN VARCHAR2,
          * Modified Reason    : VMS-1719 - CCA RRN Logging Issue.
          * Reviewer           : SaravanaKumar A
          * Reviewed Date      : 17-Jan-2020
-         * Build Number       : R25_B0001
+         * Build Number       : R25_B0002
 
 	 * Modified By        : Ubaidur Rahman.H
          * Modified Date      : 07-May-2020
          * Modified Reason    : VMS-1021 FSAPI - Cuentas Banking Alternative Transaction Description
          * Reviewer           : SaravanaKumar A
          * Reviewed Date      : 08-May-2020
-         * Build Number       : R30_B0002
+         * Build Number       : R30_B0003
 
 	 * Modified by        : UBAIDUR RAHMAN H
          * Modified Date      : 01-Apr-2021.
@@ -1499,7 +1490,7 @@ PROCEDURE get_transaction_detail(p_customer_id_in      IN VARCHAR2,
     END;
 
     --savings
-    l_wrapper_query := q'[SELECT * FROM (SELECT txns.*, rownum rnum FROM (]';
+    l_wrapper_query := q'[SELECT txns.* FROM (]';
     CASE
       WHEN l_account_type = 'SAVINGS'
            AND l_txn_filter_type = 'POSTED' THEN
@@ -5308,7 +5299,7 @@ PROCEDURE get_transaction_detail(p_customer_id_in      IN VARCHAR2,
                       ''' AND c.vtt_pan_code = a.customer_card_no
            AND c.vtt_rrn = a.rrn  AND c.vtt_auth_id  = a.auth_id) '
                    END || 'order by ' || l_order_by ||
-                   ')txns) WHERE rnum BETWEEN :l_rec_start_no AND :l_rec_end_no';
+                   ')txns WHERE rownum BETWEEN :l_rec_start_no AND :l_rec_end_no';
 
     --
     --            l_row_query :=
@@ -5499,7 +5490,7 @@ PROCEDURE get_transaction_detail(p_customer_id_in      IN VARCHAR2,
         AND response_code = p_response_code_in;
 
 
-     SELECT to_char(to_char(SYSDATE, 'YYMMDDHH24MISS') ||   --Changes VMS-8279 ~ HH has been replaced as HH24
+     SELECT to_char(to_char(SYSDATE, 'YYMMDDHHMISS') ||
                     lpad(vmscms.seq_deppending_rrn.nextval, 3, '0')),
             lpad(vmscms.seq_auth_id.nextval, 6, '0'),
             lpad(vmscms.seq_auth_stan.nextval, 6, '0')
@@ -5754,7 +5745,7 @@ PROCEDURE get_transaction_detail(p_customer_id_in      IN VARCHAR2,
          * Modified Reason    : VMS-1719 - CCA RRN Logging Issue.
          * Reviewer           : SaravanaKumar A
          * Reviewed Date      : 17-Jan-2020
-         * Build Number       : R25_B0001
+         * Build Number       : R25_B0002
 
 ****************************************************************************/
 BEGIN
@@ -5883,7 +5874,7 @@ BEGIN
                           vai_action_type,
                           vmscms.fn_dmaps_main(decode(vai_action_type,'I',TO_CHAR(vai_new_val),TO_CHAR(vai_old_val)))  vai_old_val,
                           vai_action_date,
-                           ROW_NUMBER () OVER (PARTITION BY vai_cust_code,vai_column_name ORDER BY vai_action_date DESC)r
+                          ROW_NUMBER () OVER (PARTITION BY vai_cust_code,vai_column_name ORDER BY vai_action_date ASC)r
                         FROM vmscms.vms_audit_info,
                              vmscms.vms_audit_mast
                         WHERE vam_table_id = vai_table_id
@@ -5975,7 +5966,7 @@ BEGIN
                           vai_action_type,
                           vmscms.fn_dmaps_main(decode(vai_action_type,'I',TO_CHAR(vai_new_val),TO_CHAR(vai_old_val))) vai_old_val,
                           vai_action_date,
-                          ROW_NUMBER () OVER (PARTITION BY vai_cust_code,vai_column_name ORDER BY vai_action_date DESC)r
+                          ROW_NUMBER () OVER (PARTITION BY vai_cust_code,vai_column_name ORDER BY vai_action_date ASC)r
                         FROM vmscms.vms_audit_info,
                              vmscms.vms_audit_mast
                         WHERE vam_table_id                   = vai_table_id
@@ -5988,7 +5979,7 @@ BEGIN
                           WHERE vai_rrn      =p_txn_id_in
                           AND vai_del_chnnl  =p_delivery_channel_in
                           AND vai_txn_code   =p_txn_code_in
-                          AND TRUNC(vai_action_date)=TRUNC(to_date(p_txn_date_in,'YYYY-MM-DD HH24:MI:SS'))
+                          AND vai_action_date=to_date(p_txn_date_in,'YYYY-MM-DD HH24:MI:SS')
                           )
                         )
                       WHERE r=1
@@ -6009,7 +6000,7 @@ BEGIN
                       AND vai_rrn        =p_txn_id_in
                       AND vai_del_chnnl  =p_delivery_channel_in
                       AND vai_txn_code   =p_txn_code_in
-                      AND TRUNC(vai_action_date)=TRUNC(to_date(p_txn_date_in,'YYYY-MM-DD HH24:MI:SS'))
+                      AND vai_action_date=to_date(p_txn_date_in,'YYYY-MM-DD HH24:MI:SS')
                       ) b
                     WHERE a.vai_column_name=b.vai_column_name;
 

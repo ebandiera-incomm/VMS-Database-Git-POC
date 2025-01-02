@@ -65,7 +65,6 @@ IS
                            p_mobile_deliverymode_out  OUT VARCHAR2,
                            p_email_deliverymode_out   OUT VARCHAR2,
                            p_reason_code_out          OUT VARCHAR2,  --Added for VMS-6617 Changes
-                           p_allowredemptions_out     OUT VARCHAR2, --Added for VMS-8677
                            p_transactions_out         OUT SYS_REFCURSOR);
 
     PROCEDURE validate_pin(p_inst_code_in             IN NUMBER,

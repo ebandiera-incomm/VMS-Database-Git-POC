@@ -66,13 +66,7 @@ AS
       * Modified Date    : 01-MAR-2019
       * Purpose          : VMS-809 (Decline Request for Web-account Username if Username is Already Taken)
       * Reviewer         : Saravanakumar A
-      * Build Number     : VMSGPRHOST_R13_B0002    
-
-    * Modified By      : venkat Singamaneni
-    * Modified Date    : 5-02-2022
-    * Purpose          : Archival changes.
-    * Reviewer         : Karthick/Jay
-    * Release Number   : VMSGPRHOST60 for VMS-5735/FSP-991 
+      * Build Number     : VMSGPRHOST_R13_B0002     
 *************************************************/
 
 V_RRN_COUNT             NUMBER;
@@ -107,8 +101,6 @@ v_resp_cde              transactionlog.response_id%TYPE;
 v_encrypt_enable        cms_prod_cattype.cpc_encrypt_enable%type;
 v_user_name             cms_cust_mast.ccm_user_name%type;
 EXP_REJECT_RECORD       EXCEPTION;
-v_Retperiod  date;  --Added for VMS-5735/FSP-991
-v_Retdate  date; --Added for VMS-5735/FSP-991
    
 BEGIN
    V_TXN_TYPE := '1';
@@ -176,32 +168,12 @@ BEGIN
 
        --Sn Duplicate RRN Check
         BEGIN
---Added for VMS-5735/FSP-991
- select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
-       INTO   v_Retperiod 
-       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
-       WHERE  OPERATION_TYPE='ARCHIVE' 
-       AND OBJECT_NAME='TRANSACTIONLOG_EBR';
-       
-       v_Retdate := TO_DATE(SUBSTR(TRIM(P_TRAN_DATE), 1, 8), 'yyyymmdd');
-
-
-IF (v_Retdate>v_Retperiod)
-    THEN
           SELECT COUNT(1)
           INTO V_RRN_COUNT
           FROM TRANSACTIONLOG
           WHERE RRN         = P_RRN
           AND BUSINESS_DATE = P_TRAN_DATE AND INSTCODE=P_INST_CODE                
           and DELIVERY_CHANNEL = P_DELIVERY_CHANNEL;
-ELSE
-     SELECT COUNT(1)
-          INTO V_RRN_COUNT
-          FROM VMSCMS_HISTORY.TRANSACTIONLOG_HIST --Added for VMS-5733/FSP-991
-          WHERE RRN         = P_RRN
-          AND BUSINESS_DATE = P_TRAN_DATE AND INSTCODE=P_INST_CODE                
-          and DELIVERY_CHANNEL = P_DELIVERY_CHANNEL;
-END IF;
 
           IF V_RRN_COUNT    > 0 THEN
             P_RESP_CODE     := '22';
@@ -321,19 +293,6 @@ END IF;
            --Sn Updtated transactionlog For regarding FSS-1144          
                       
             BEGIN
---Added for VMS-5735/FSP-991
- select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
-       INTO   v_Retperiod 
-       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
-       WHERE  OPERATION_TYPE='ARCHIVE' 
-       AND OBJECT_NAME='CMS_TRANSACTION_LOG_DTL_EBR';
-       
-       v_Retdate := TO_DATE(SUBSTR(TRIM(P_TRAN_DATE), 1, 8), 'yyyymmdd');
-
-
-IF (v_Retdate>v_Retperiod)
-    THEN
-
               UPDATE CMS_TRANSACTION_LOG_DTL
               SET CTD_USER_NAME= v_user_name,--P_USERNAME,                                      
               CTD_MOBILE_NUMBER=P_MOB_NO,
@@ -344,19 +303,6 @@ IF (v_Retdate>v_Retperiod)
               AND CTD_TXN_CODE=P_TXN_CODE 
               AND CTD_MSG_TYPE=P_MSG
               AND CTD_INST_CODE=P_INST_CODE;
-ELSE
-UPDATE VMSCMS_HISTORY.cms_transaction_log_dtl_HIST --Added for VMS-5733/FSP-991
-              SET CTD_USER_NAME= v_user_name,--P_USERNAME,                                      
-              CTD_MOBILE_NUMBER=P_MOB_NO,
-              CTD_DEVICE_ID=P_DEVICE_ID
-              WHERE CTD_RRN=P_RRN AND CTD_BUSINESS_DATE=P_TRAN_DATE
-              AND CTD_BUSINESS_TIME=P_TRAN_TIME
-              AND CTD_DELIVERY_CHANNEL=P_DELIVERY_CHANNEL
-              AND CTD_TXN_CODE=P_TXN_CODE 
-              AND CTD_MSG_TYPE=P_MSG
-              AND CTD_INST_CODE=P_INST_CODE;
-END IF;
-
               
              IF SQL%ROWCOUNT = 0 THEN
                 V_ERRMSG  := 'ERROR WHILE UPDATING CMS_TRANSACTION_LOG_DTL ';
@@ -372,7 +318,7 @@ END IF;
                 SUBSTR(SQLERRM, 1, 200);
                RAISE EXP_REJECT_RECORD;
             END; 
-   
+        
          
  
 
@@ -437,10 +383,6 @@ END IF;
         --Sn Updtated transactionlog For regarding FSS-1144          
                       
             BEGIN
-
-
-IF (v_Retdate>v_Retperiod)
-    THEN
               UPDATE CMS_TRANSACTION_LOG_DTL
               SET CTD_USER_NAME= v_user_name,
               CTD_MOBILE_NUMBER=P_MOB_NO,
@@ -451,19 +393,6 @@ IF (v_Retdate>v_Retperiod)
               AND CTD_TXN_CODE=P_TXN_CODE 
               AND CTD_MSG_TYPE=P_MSG
               AND CTD_INST_CODE=P_INST_CODE;
-ELSE
-             UPDATE VMSCMS_HISTORY.cms_transaction_log_dtl_HIST --Added for VMS-5733/FSP-991
-              SET CTD_USER_NAME= v_user_name,
-              CTD_MOBILE_NUMBER=P_MOB_NO,
-              CTD_DEVICE_ID=P_DEVICE_ID
-              WHERE CTD_RRN=P_RRN AND CTD_BUSINESS_DATE=P_TRAN_DATE
-              AND CTD_BUSINESS_TIME=P_TRAN_TIME
-              AND CTD_DELIVERY_CHANNEL=P_DELIVERY_CHANNEL
-              AND CTD_TXN_CODE=P_TXN_CODE 
-              AND CTD_MSG_TYPE=P_MSG
-              AND CTD_INST_CODE=P_INST_CODE;
-END IF;
-
               
              IF SQL%ROWCOUNT = 0 THEN
                 V_ERRMSG  := 'ERROR WHILE UPDATING CMS_TRANSACTION_LOG_DTL ';
@@ -503,18 +432,6 @@ END IF;
 
        --Sn update topup card number details in translog
         BEGIN
---Added for VMS-5735/FSP-991
- select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
-       INTO   v_Retperiod 
-       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
-       WHERE  OPERATION_TYPE='ARCHIVE' 
-       AND OBJECT_NAME='TRANSACTIONLOG_EBR';
-       
-	          v_Retdate := TO_DATE(SUBSTR(TRIM(P_TRAN_DATE), 1, 8), 'yyyymmdd');
-
-
-IF (v_Retdate>v_Retperiod)
-    THEN
 
           Update Transactionlog
           Set  
@@ -523,15 +440,6 @@ IF (v_Retdate>v_Retperiod)
            TXN_CODE = P_TXN_CODE AND BUSINESS_DATE = P_TRAN_DATE AND
            BUSINESS_TIME = P_TRAN_TIME AND  MSGTYPE = P_MSG AND
            CUSTOMER_CARD_NO = V_HASH_PAN AND INSTCODE=P_INST_CODE;
-ELSE
-Update VMSCMS_HISTORY.TRANSACTIONLOG_HIST --Added for VMS-5733/FSP-991
-          Set  
-                IPADDRESS=P_IPADDRESS 
-          WHERE RRN = P_RRN AND DELIVERY_CHANNEL = P_DELIVERY_CHANNEL AND
-           TXN_CODE = P_TXN_CODE AND BUSINESS_DATE = P_TRAN_DATE AND
-           BUSINESS_TIME = P_TRAN_TIME AND  MSGTYPE = P_MSG AND
-           CUSTOMER_CARD_NO = V_HASH_PAN AND INSTCODE=P_INST_CODE;
-END IF;
 
           IF SQL%ROWCOUNT <> 1 THEN
            P_RESP_CODE := '21';

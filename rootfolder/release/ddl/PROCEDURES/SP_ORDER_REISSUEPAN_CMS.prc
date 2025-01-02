@@ -107,12 +107,6 @@ create or replace PROCEDURE                      VMSCMS.SP_ORDER_REISSUEPAN_CMS(
      * Reviewer         : Venkat S.
      * Release Number   : R78
      
-     * Modified By      : Shanmugavel
-     * Modified Date    : 23/01/2024
-     * Purpose          : VMS-8219-Remove the Default Status in the Product Category Profile Screen on the Host UI
-     * Reviewer         : Venkat/John/Pankaj
-     * Release Number   : VMSGPRHOSTR92
-
   *************************************************************************************/
 
   V_INST_CODE             CMS_APPL_PAN.CAP_INST_CODE%TYPE;
@@ -1403,19 +1397,18 @@ IF v_pan_inventory_flag='N' THEN    --Added for 17.07 PAN Inventory Changes
   ---------------------------------------En entry for addon stat-------------------------------------
   -----------------------------------------Sn find card status and limit parameter for the profile---------------------------------------
   --Sn find card status and limit parameter for the profile
-  V_CARD_STAT := '0';  -- VMS-8219
---  BEGIN
---    SELECT CBP_PARAM_VALUE
---     INTO V_CARD_STAT
---     FROM CMS_BIN_PARAM
---    WHERE CBP_INST_CODE = PRM_INSTCODE AND
---         CBP_PROFILE_CODE = v_cardtype_profile_code AND CBP_PARAM_NAME = 'Status';
---  EXCEPTION
---    WHEN OTHERS THEN
---     V_ERRMSG := 'Error while selecting carad status data ' ||
---               SUBSTR(SQLERRM, 1, 200);
---     RAISE EXP_REJECT_RECORD;
---  END;
+  BEGIN
+    SELECT CBP_PARAM_VALUE
+     INTO V_CARD_STAT
+     FROM CMS_BIN_PARAM
+    WHERE CBP_INST_CODE = PRM_INSTCODE AND
+         CBP_PROFILE_CODE = v_cardtype_profile_code AND CBP_PARAM_NAME = 'Status';
+  EXCEPTION
+    WHEN OTHERS THEN
+     V_ERRMSG := 'Error while selecting carad status data ' ||
+               SUBSTR(SQLERRM, 1, 200);
+     RAISE EXP_REJECT_RECORD;
+  END;
 
   BEGIN
     --dbms_output.put_line('test Main test for error 3458787');

@@ -48,12 +48,6 @@ IS
      * Purpose          : VMS-3066 - Product Setup re-Vamp - BIN.
      * Reviewer         : Puvanesh / Ubaidur 
      * Build Number     : R36 - BUILD 3
-     
-     * Modified By      : Shanmugavel
-     * Modified Date    : 23/01/2024
-     * Purpose          : VMS-8219-Remove the Default Status in the Product Category Profile Screen on the Host UI
-     * Reviewer         : Venkat/John/Pankaj
-     * Release Number   : VMSGPRHOSTR92
 
 *************************************************/    
    
@@ -137,34 +131,33 @@ IS
             RETURN;
       END;
 
-l_card_stat := '0';  -- VMS-8219
---      BEGIN
---         SELECT cbp_param_value
---           INTO l_card_stat
---           FROM cms_bin_param
---          WHERE     cbp_inst_code = p_instcode_in
---                AND cbp_profile_code = l_profile_code
---                AND cbp_param_name = 'Status';
---
---         IF l_card_stat IS NULL
---         THEN
---            p_errmsg_out :=
---               'Status is null for profile code ' || l_profile_code;
---            RETURN;
---         END IF;
---      EXCEPTION
---         WHEN NO_DATA_FOUND
---         THEN
---            p_errmsg_out :=
---               'Status is not defined for profile code ' || l_profile_code;
---            RETURN;
---         WHEN OTHERS
---         THEN
---            p_errmsg_out :=
---               'Error while selecting card status '
---               || SUBSTR (SQLERRM, 1, 200);
---            RETURN;
---      END;
+      BEGIN
+         SELECT cbp_param_value
+           INTO l_card_stat
+           FROM cms_bin_param
+          WHERE     cbp_inst_code = p_instcode_in
+                AND cbp_profile_code = l_profile_code
+                AND cbp_param_name = 'Status';
+
+         IF l_card_stat IS NULL
+         THEN
+            p_errmsg_out :=
+               'Status is null for profile code ' || l_profile_code;
+            RETURN;
+         END IF;
+      EXCEPTION
+         WHEN NO_DATA_FOUND
+         THEN
+            p_errmsg_out :=
+               'Status is not defined for profile code ' || l_profile_code;
+            RETURN;
+         WHEN OTHERS
+         THEN
+            p_errmsg_out :=
+               'Error while selecting card status '
+               || SUBSTR (SQLERRM, 1, 200);
+            RETURN;
+      END;
 
       BEGIN
          vmsfunutilities.get_expiry_date (p_instcode_in,

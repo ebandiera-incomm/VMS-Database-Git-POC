@@ -1,4 +1,5 @@
-create or replace PROCEDURE             VMSCMS.SP_PREAUTH_ADJUSTMENT_TXN (
+create or replace
+PROCEDURE      VMSCMS.SP_PREAUTH_ADJUSTMENT_TXN (
    p_inst_code              IN       NUMBER,
    p_msg                    IN       VARCHAR2,
    p_rrn                             VARCHAR2,
@@ -60,7 +61,6 @@ create or replace PROCEDURE             VMSCMS.SP_PREAUTH_ADJUSTMENT_TXN (
    ,P_MERCHANT_CNTRYCODE IN       VARCHAR2  DEFAULT NULL
     ,P_acqInstAlphaCntrycode_in IN       VARCHAR2  DEFAULT NULL
 	 ,p_surchrg_ind   IN VARCHAR2 DEFAULT '2' --Added for VMS-5856
-     ,p_resp_id       OUT VARCHAR2 --Added for sending to FSS (VMS-8018)
 )
 IS
 /*************************************************
@@ -250,21 +250,14 @@ IS
      * Modified By      : DHINAKARAN B
      * Modified Date    : 15-NOV-2018
      * Purpose          : VMS-619 (RULE)
-     * Reviewer         : SARAVANAKUMAR A
-     * Release Number   : R08
-
+     * Reviewer         : SARAVANAKUMAR A 
+     * Release Number   : R08 
+	 
        * Modified By      : Karthick/Jey
        * Modified Date    : 05-18-2022
        * Purpose          : Archival changes.
        * Reviewer         : Venkat Singamaneni
        * Release Number   : VMSGPRHOST64 for VMS-5739/FSP-991
-
-       * Modified By      : Areshka A.
-       * Modified Date    : 03-Nov-2023
-       * Purpose          : VMS-8018: Added new out parameter (response id) for sending to FSS
-       * Reviewer         :
-       * Release Number   :
-
 *************************************************/
    v_err_msg              VARCHAR2 (900)                              := 'OK';
    v_acct_balance         NUMBER;
@@ -425,10 +418,10 @@ IS
   V_PREAUTH_EXP_PERIOD        VARCHAR2(10);
   -- FSS-4960 - UPI Enhancement_Preauth-Cancel Reversal end
   V_adj_amt number;
-
+  
   v_Retperiod  date;  --Added for VMS-5739/FSP-991
   v_Retdate  date; --Added for VMS-5739/FSP-991
-
+  
 BEGIN
    SAVEPOINT v_auth_savepoint;
    v_resp_cde := '1';
@@ -573,7 +566,7 @@ BEGIN
       END;
 
       --En find debit and credit flag
-
+      
        IF (p_txn_amt >= 0)
       THEN
          v_tran_amt := p_txn_amt;
@@ -616,8 +609,8 @@ BEGIN
       END IF;
 
       --En find the tran amt
-
-
+      
+      
       IF p_adj_resp_code >= 100
       THEN
          v_resp_cde := '1';
@@ -700,18 +693,18 @@ BEGIN
       BEGIN
          IF p_msg = '1121'
          THEN
-
+		 
 				--Added for VMS-5739/FSP-991
 		   select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
-		   INTO   v_Retperiod
-		   FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL
-		   WHERE  OPERATION_TYPE='ARCHIVE'
+		   INTO   v_Retperiod 
+		   FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL  
+		   WHERE  OPERATION_TYPE='ARCHIVE' 
 		   AND OBJECT_NAME='TRANSACTIONLOG_EBR';
-
+       
            v_Retdate := TO_DATE(SUBSTR(TRIM(p_tran_date), 1, 8), 'yyyymmdd');
-
+		   
 		IF (v_Retdate>v_Retperiod) THEN                                             --Added for VMS-5739/FSP-991
-
+		
             SELECT COUNT (*)
               INTO v_saf_txn_count
               FROM transactionlog
@@ -723,9 +716,9 @@ BEGIN
                AND response_code = '00'
                AND msgtype = '1120'
                AND txn_code = p_txn_code;
-
+			   
 		ELSE
-
+		   
 		      SELECT COUNT (*)
               INTO v_saf_txn_count
               FROM VMSCMS_HISTORY.TRANSACTIONLOG_HIST                           --Added for VMS-5739/FSP-991
@@ -737,8 +730,8 @@ BEGIN
                AND response_code = '00'
                AND msgtype = '1120'
                AND txn_code = p_txn_code;
-
-
+		
+		
 		END IF;
 
             IF v_saf_txn_count > 0
@@ -765,11 +758,11 @@ BEGIN
 
       --En SAF  txn Check
       BEGIN
-
+	  
 	    v_Retdate := TO_DATE(SUBSTR(TRIM(p_orgnl_business_date), 1, 8), 'yyyymmdd');
-
+		   
 	  IF (v_Retdate>v_Retperiod) THEN                                                          --Added for VMS-5739/FSP-991
-
+	  
          SELECT COUNT (1)
            INTO v_dup_txn_check
            FROM transactionlog
@@ -781,9 +774,9 @@ BEGIN
             AND delivery_channel = p_delivery_channel
             AND msgtype IN ('1120', '1121')
             AND txn_code = p_txn_code;
-
+			
 	   ELSE
-
+	   
 	       SELECT COUNT (1)
            INTO v_dup_txn_check
            FROM VMSCMS_HISTORY.TRANSACTIONLOG_HIST                                        --Added for VMS-5739/FSP-991
@@ -795,8 +788,8 @@ BEGIN
             AND delivery_channel = p_delivery_channel
             AND msgtype IN ('1120', '1121')
             AND txn_code = p_txn_code;
-
-
+	   
+	   
 	   END IF;
 
          IF v_dup_txn_check > 0
@@ -861,15 +854,15 @@ BEGIN
          RAISE exp_reject_record;
       END IF;
 
-
+     
 
       --En find Preauth detail
       BEGIN
-
+	  
 	  v_Retdate := TO_DATE(SUBSTR(TRIM(p_orgnl_business_date), 1, 8), 'yyyymmdd');             --Added for VMS-5739/FSP-991
-
+		   
 	  IF (v_Retdate>v_Retperiod) THEN                                                          --Added for VMS-5739/FSP-991
-
+	  
          SELECT Z.rrn INTO v_preauth_rrn from (SELECT   rrn
              FROM transactionlog
             WHERE system_trace_audit_no = p_orgnl_stan
@@ -880,9 +873,9 @@ BEGIN
               AND delivery_channel = p_delivery_channel
               AND response_code = '00' ORDER BY add_ins_date DESC)Z
               WHERE ROWNUM = 1; --Modified for 12296(review comments)
-
+			  
 	   ELSE
-
+	   
 	         SELECT Z.rrn INTO v_preauth_rrn from (SELECT   rrn
              FROM VMSCMS_HISTORY.TRANSACTIONLOG_HIST                                --Added for VMS-5739/FSP-991
             WHERE system_trace_audit_no = p_orgnl_stan
@@ -892,10 +885,10 @@ BEGIN
             --  AND instcode = p_inst_code --For Instcode removal of 2.4.2.4.2 release
               AND delivery_channel = p_delivery_channel
               AND response_code = '00' ORDER BY add_ins_date DESC)Z
-              WHERE ROWNUM = 1; --Modified for 12296(review comments)
-
+              WHERE ROWNUM = 1; --Modified for 12296(review comments)	   
+	   
 	   END IF;
-
+	   
       EXCEPTION
          WHEN NO_DATA_FOUND
          THEN
@@ -908,18 +901,18 @@ BEGIN
       END;
 
       BEGIN
-
+	  
 				 --Added for VMS-5739/FSP-991
 		   select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
-		   INTO   v_Retperiod
-		   FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL
-		   WHERE  OPERATION_TYPE='ARCHIVE'
+		   INTO   v_Retperiod 
+		   FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL  
+		   WHERE  OPERATION_TYPE='ARCHIVE' 
 		   AND OBJECT_NAME='CMS_PREAUTH_TRANSACTION_EBR';
-
+		   
 		   v_Retdate := TO_DATE(SUBSTR(TRIM(p_orgnl_business_date), 1, 8), 'yyyymmdd');
-
+		   
 	  IF (v_Retdate>v_Retperiod) THEN                                                   --Added for VMS-5739/FSP-991
-
+		   
          SELECT cpt_totalhold_amt,cpt_completion_fee --Added for FSS 837
            INTO v_preauthhold_amnt,v_completion_fee --Added for FSS 837
            FROM cms_preauth_transaction
@@ -931,9 +924,9 @@ BEGIN
             AND cpt_txn_time = p_orgnl_business_time
             AND cpt_preauth_validflag <> 'N'
             AND cpt_expiry_flag = 'N';
-
+			
 	  ELSE
-
+	  
 	       SELECT cpt_totalhold_amt,cpt_completion_fee --Added for FSS 837
            INTO v_preauthhold_amnt,v_completion_fee --Added for FSS 837
            FROM VMSCMS_HISTORY.CMS_PREAUTH_TRANSACTION_HIST                                  --Added for VMS-5739/FSP-991
@@ -945,43 +938,10 @@ BEGIN
             AND cpt_txn_time = p_orgnl_business_time
             AND cpt_preauth_validflag <> 'N'
             AND cpt_expiry_flag = 'N';
-
+	  
 	  END IF;
-
-      EXCEPTION                          --added for VMS-8550
-         WHEN NO_DATA_FOUND 
-         THEN
-         BEGIN
-             IF (v_Retdate>v_Retperiod) THEN                                                   --Added for VMS-5739/FSP-991
-    
-             SELECT cpt_totalhold_amt,cpt_completion_fee --Added for FSS 837
-               INTO v_preauthhold_amnt,v_completion_fee --Added for FSS 837
-               FROM cms_preauth_transaction
-              WHERE cpt_rrn = v_preauth_rrn
-                --AND cpt_txn_date = p_orgnl_business_date
-                AND cpt_inst_code = p_inst_code
-                AND cpt_mbr_no = p_mbr_numb
-                AND cpt_card_no = v_hash_pan
-                --AND cpt_txn_time = p_orgnl_business_time
-                AND cpt_preauth_validflag <> 'N'
-                AND cpt_expiry_flag = 'N';
-    
-          ELSE
-    
-               SELECT cpt_totalhold_amt,cpt_completion_fee --Added for FSS 837
-               INTO v_preauthhold_amnt,v_completion_fee --Added for FSS 837
-               FROM VMSCMS_HISTORY.CMS_PREAUTH_TRANSACTION_HIST                                  --Added for VMS-5739/FSP-991
-              WHERE cpt_rrn = v_preauth_rrn
-                --AND cpt_txn_date = p_orgnl_business_date
-                AND cpt_inst_code = p_inst_code
-                AND cpt_mbr_no = p_mbr_numb
-                AND cpt_card_no = v_hash_pan
-                --AND cpt_txn_time = p_orgnl_business_time
-                AND cpt_preauth_validflag <> 'N'
-                AND cpt_expiry_flag = 'N';
-    
-          END IF;
-         EXCEPTION
+	  
+      EXCEPTION
          WHEN NO_DATA_FOUND
          THEN
          -- FSS-4960 - UPI Enhancement_Preauth-Cancel Reversal beg
@@ -1117,12 +1077,6 @@ BEGIN
     -- FSS-4960 - UPI Enhancement_Preauth-Cancel Reversal end
        WHEN OTHERS
        THEN
-          v_resp_cde := '12';
-          v_err_msg := 'Error while selecting the hold amount' || SQLERRM;
-          RAISE exp_reject_record;
-        END;
-    WHEN OTHERS
-    THEN
           v_resp_cde := '12';
           v_err_msg := 'Error while selecting the hold amount' || SQLERRM;
           RAISE exp_reject_record;
@@ -1421,18 +1375,18 @@ BEGIN
     ------------------------------------------------------
 
       BEGIN
-
+	     
 			 --Added for VMS-5739/FSP-991
 		   select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
-		   INTO   v_Retperiod
-		   FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL
-		   WHERE  OPERATION_TYPE='ARCHIVE'
+		   INTO   v_Retperiod 
+		   FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL  
+		   WHERE  OPERATION_TYPE='ARCHIVE' 
 		   AND OBJECT_NAME='TRANSACTIONLOG_EBR';
-
+       
          v_Retdate := TO_DATE(SUBSTR(TRIM(p_tran_date), 1, 8), 'yyyymmdd');
-
+		
         IF (v_Retdate>v_Retperiod) THEN	                                                  --Added for VMS-5739/FSP-991
-
+		
          SELECT COUNT (1)
            INTO v_stan_count
            FROM transactionlog
@@ -1442,9 +1396,9 @@ BEGIN
             AND delivery_channel = p_delivery_channel
             AND   ADD_INS_DATE BETWEEN TRUNC(SYSDATE-1)  AND SYSDATE
             AND system_trace_audit_no = p_stan;
-
+			
 	    ELSE
-
+		
 		   SELECT COUNT (1)
            INTO v_stan_count
            FROM VMSCMS_HISTORY.TRANSACTIONLOG_HIST                                   --Added for VMS-5739/FSP-991
@@ -1454,7 +1408,7 @@ BEGIN
             AND delivery_channel = p_delivery_channel
             AND   ADD_INS_DATE BETWEEN TRUNC(SYSDATE-1)  AND SYSDATE
             AND system_trace_audit_no = p_stan;
-
+					
 		END IF;
 
          IF v_stan_count > 0
@@ -1519,11 +1473,11 @@ BEGIN
       BEGIN
          IF p_msg = '1121'
          THEN
-
+		 
 		    v_Retdate := TO_DATE(SUBSTR(TRIM(p_tran_date), 1, 8), 'yyyymmdd');
-
+		
         IF (v_Retdate>v_Retperiod) THEN	                                                  --Added for VMS-5739/FSP-991
-
+		 
             SELECT COUNT (*)
               INTO v_saf_txn_count
               FROM transactionlog
@@ -1535,9 +1489,9 @@ BEGIN
                AND response_code = '00'
                AND msgtype = '1120'
                AND txn_code = p_txn_code;
-
+			   
 		ELSE
-
+		
 		      SELECT COUNT (*)
               INTO v_saf_txn_count
               FROM VMSCMS_HISTORY.TRANSACTIONLOG_HIST                                  --Added for VMS-5739/FSP-991
@@ -1549,7 +1503,7 @@ BEGIN
                AND response_code = '00'
                AND msgtype = '1120'
                AND txn_code = p_txn_code;
-
+				
 		END IF;
 
             IF v_saf_txn_count > 0
@@ -1576,18 +1530,18 @@ BEGIN
 
       --En SAF  txn Check
       BEGIN
-
+	  
 			 --Added for VMS-5739/FSP-991
 		   select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
-		   INTO   v_Retperiod
-		   FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL
-		   WHERE  OPERATION_TYPE='ARCHIVE'
+		   INTO   v_Retperiod 
+		   FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL  
+		   WHERE  OPERATION_TYPE='ARCHIVE' 
 		   AND OBJECT_NAME='TRANSACTIONLOG_EBR';
-
+		   
 		   v_Retdate := TO_DATE(SUBSTR(TRIM(p_orgnl_business_date), 1, 8), 'yyyymmdd');
 
        IF (v_Retdate>v_Retperiod) THEN                                                --Added for VMS-5739/FSP-991
-
+	   
          SELECT COUNT (1)
            INTO v_dup_txn_check
            FROM transactionlog
@@ -1599,9 +1553,9 @@ BEGIN
             AND delivery_channel = p_delivery_channel
             AND msgtype IN ('1120', '1121')
             AND txn_code = p_txn_code;
-
+			
 	    ELSE
-
+		 
 		   SELECT COUNT (1)
            INTO v_dup_txn_check
            FROM VMSCMS_HISTORY.TRANSACTIONLOG_HIST                                 --Added for VMS-5739/FSP-991
@@ -1613,11 +1567,11 @@ BEGIN
             AND delivery_channel = p_delivery_channel
             AND msgtype IN ('1120', '1121')
             AND txn_code = p_txn_code;
-
-
+		
+		
 		END IF;
 
-
+       
          IF v_dup_txn_check > 0
          THEN
             v_resp_cde := '155';
@@ -2059,18 +2013,18 @@ end if; --Added for 15606
                                  p_merchant_zip, p_pos_verfication, p_international_ind
                                  );
       ELSE
-
+	  
 				 --Added for VMS-5739/FSP-991
 	       select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
-		   INTO   v_Retperiod
-		   FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL
-		   WHERE  OPERATION_TYPE='ARCHIVE'
+		   INTO   v_Retperiod 
+		   FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL  
+		   WHERE  OPERATION_TYPE='ARCHIVE' 
 		   AND OBJECT_NAME='CMS_PREAUTH_TRANSACTION_EBR';
-
+		   
 		   v_Retdate := TO_DATE(SUBSTR(TRIM(p_orgnl_business_date), 1, 8), 'yyyymmdd');
-
+		   
 		IF (v_Retdate>v_Retperiod) THEN
-
+		   
          UPDATE cms_preauth_transaction
             SET cpt_totalhold_amt = v_tran_amt,
                 cpt_preauth_validflag = DECODE (v_tran_amt, 0, 'N', 'Y'),
@@ -2086,27 +2040,9 @@ end if; --Added for 15606
             AND cpt_txn_time = p_orgnl_business_time
             AND cpt_preauth_validflag <> 'N'
             AND CPT_EXPIRY_FLAG = 'N';
-            
-            IF SQL%ROWCOUNT     = 0 THEN            
-                UPDATE cms_preauth_transaction
-                SET cpt_totalhold_amt = v_tran_amt,
-                cpt_preauth_validflag = DECODE (v_tran_amt, 0, 'N', 'Y'),
-                cpt_transaction_flag = 'A',
-                CPT_TRANSACTION_RRN=p_rrn,
-                cpt_completion_fee=v_comp_fee_hold --Added for FSS 837
-                ,cpt_approve_amt=v_tran_amt
-            WHERE cpt_rrn = v_preauth_rrn
-            --AND cpt_txn_date = p_orgnl_business_date
-            AND cpt_inst_code = p_inst_code
-            AND cpt_mbr_no = p_mbr_numb
-            AND cpt_card_no = v_hash_pan
-            --AND cpt_txn_time = p_orgnl_business_time
-            AND cpt_preauth_validflag <> 'N'
-            AND CPT_EXPIRY_FLAG = 'N';            
-            END IF;
-
+			
 		ELSE
-
+		
 		    UPDATE VMSCMS_HISTORY.CMS_PREAUTH_TRANSACTION_HIST                               --Added for VMS-5739/FSP-991
             SET cpt_totalhold_amt = v_tran_amt,
                 cpt_preauth_validflag = DECODE (v_tran_amt, 0, 'N', 'Y'),
@@ -2122,25 +2058,7 @@ end if; --Added for 15606
             AND cpt_txn_time = p_orgnl_business_time
             AND cpt_preauth_validflag <> 'N'
             AND CPT_EXPIRY_FLAG = 'N';
-            
-            IF SQL%ROWCOUNT     = 0 THEN            
-                UPDATE VMSCMS_HISTORY.CMS_PREAUTH_TRANSACTION_HIST                               --Added for VMS-5739/FSP-991
-            SET cpt_totalhold_amt = v_tran_amt,
-                cpt_preauth_validflag = DECODE (v_tran_amt, 0, 'N', 'Y'),
-                cpt_transaction_flag = 'A',
-                CPT_TRANSACTION_RRN=p_rrn,
-                cpt_completion_fee=v_comp_fee_hold --Added for FSS 837
-                ,cpt_approve_amt=v_tran_amt
-          WHERE cpt_rrn = v_preauth_rrn
-            --AND cpt_txn_date = p_orgnl_business_date
-            AND cpt_inst_code = p_inst_code
-            AND cpt_mbr_no = p_mbr_numb
-            AND cpt_card_no = v_hash_pan
-            --AND cpt_txn_time = p_orgnl_business_time
-            AND cpt_preauth_validflag <> 'N'
-            AND CPT_EXPIRY_FLAG = 'N';          
-            END IF;
-
+		
 		END IF;
       END IF;
          IF SQL%ROWCOUNT = 0
@@ -2428,7 +2346,7 @@ end if; --Added for 15606
                   RAISE exp_reject_record;
                   END;
                   --En Entry for Fixed Fee
-
+				  
 				   IF v_per_fees <> 0 THEN --Added for VMS-5856
                   v_fee_opening_bal := v_fee_opening_bal - v_flat_fees;
 
@@ -2482,7 +2400,7 @@ end if; --Added for 15606
                       RAISE exp_reject_record;
                 END;
                --En Entry for Percentage Fee
-			 END IF;
+			 END IF;   
                ELSE
                        BEGIN
                           INSERT INTO cms_statements_log
@@ -2589,7 +2507,6 @@ end if; --Added for 15606
 
       --En create detail for response message
       v_resp_cde := '1';
-      p_resp_id  := v_resp_cde; --Added for VMS-8018
 
       BEGIN
          SELECT cms_b24_respcde, cms_iso_respcde
@@ -2624,7 +2541,6 @@ end if; --Added for 15606
          --Sn select response code and insert record into txn log dtl
          BEGIN
             p_resp_msg := v_err_msg;
-            p_resp_id  := v_resp_cde; --Added for VMS-8018
 
             SELECT cms_b24_respcde, cms_iso_respcde
               INTO p_resp_code, p_iso_respcde
@@ -2640,7 +2556,6 @@ end if; --Added for 15606
                   || v_resp_cde
                   || SUBSTR (SQLERRM, 1, 300);
                p_resp_code := '69';
-               p_resp_id   := '69'; --Added for VMS-8018
          --  ROLLBACK; Commented based on the code review commencts on Sep-17 by Deepa
          END;
 
@@ -2690,7 +2605,6 @@ end if; --Added for 15606
                      'Problem while inserting data into transaction log  dtl'
                   || SUBSTR (SQLERRM, 1, 300);
                p_resp_code := '69';                         -- Server Declined
-               p_resp_id   := '69'; --Added for VMS-8018
                --   ROLLBACK; Commented based on the code review commencts on Sep-17 by Deepa
                RETURN;
          END;
@@ -2708,7 +2622,6 @@ end if; --Added for 15606
                AND cms_response_id = v_resp_cde;
 
             p_resp_msg := v_err_msg;
-            p_resp_id  := v_resp_cde; --Added for VMS-8018
          EXCEPTION
             WHEN OTHERS
             THEN
@@ -2717,7 +2630,6 @@ end if; --Added for 15606
                   || v_resp_cde
                   || SUBSTR (SQLERRM, 1, 300);
                p_resp_code := '69';
-               p_resp_id   := '69'; --Added for VMS-8018
          --ROLLBACK; Commented based on the code review commencts on Sep-17 by Deepa
          END;
 
@@ -2767,7 +2679,6 @@ end if; --Added for 15606
                      'Problem while inserting data into transaction log  dtl'
                   || SUBSTR (SQLERRM, 1, 300);
                p_resp_code := '69';
-               p_resp_id   := '69'; --Added for VMS-8018
          --  ROLLBACK; Commented based on the code review commencts on Sep-17 by Deepa
          END;
    --En select response code and insert record into txn log dtl
@@ -2930,7 +2841,6 @@ end if; --Added for 15606
       THEN
          ROLLBACK;
          p_resp_code := '69';
-         p_resp_id   := '69'; --Added for VMS-8018
          p_resp_msg :=
                'Problem while inserting data into transaction log  '
             || SUBSTR (SQLERRM, 1, 300);
@@ -2941,8 +2851,9 @@ EXCEPTION
    THEN
       ROLLBACK;
       p_resp_code := '69';
-      p_resp_id   := '69'; --Added for VMS-8018
       p_resp_msg :=
             'Main exception from  authorization ' || SUBSTR (SQLERRM, 1, 300);
 END;
+
 /
+show error;

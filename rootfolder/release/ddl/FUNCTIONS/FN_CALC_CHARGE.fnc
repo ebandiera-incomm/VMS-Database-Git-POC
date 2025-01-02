@@ -5,12 +5,7 @@ v_RPM_PLAN_CODE VARCHAR2(5);
 
 BEGIN
 
-  -- release release 3
-  -- code changes done for VMS1234
-  BEGIN
-  null;
-  end;
-  
+
   BEGIN
    SELECT RPM_PLAN_CODE INTO v_RPM_PLAN_CODE
    FROM REC_PARTNERCRDPLANCODE_MAST

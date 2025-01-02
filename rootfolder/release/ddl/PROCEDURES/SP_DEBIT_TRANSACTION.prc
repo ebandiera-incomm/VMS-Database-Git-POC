@@ -172,9 +172,6 @@ v_encrypt_enable cms_prod_cattype.cpc_encrypt_enable%type;
  EXP_MAIN_REJECT_RECORD       EXCEPTION;
  EXP_REJECT_RECORD            EXCEPTION; --Added by srinivasu on 07-Mar-2012 for testing defect fix
  
- v_Retperiod  date;  --Added for VMS-5739/FSP-991
-v_Retdate  date; --Added for VMS-5739/FSP-991
- 
 PROCEDURE lp_purge_q
 AS
    PRAGMA AUTONOMOUS_TRANSACTION;
@@ -474,32 +471,12 @@ BEGIN
   --Sn Duplicate RRN Check.IF duplicate RRN log the txn and return
   BEGIN
     IF P_PROCESSTYPE <> 'N' THEN
-	--Added for VMS-5739/FSP-991
- select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
-       INTO   v_Retperiod 
-       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
-       WHERE  OPERATION_TYPE='ARCHIVE' 
-       AND OBJECT_NAME='TRANSACTIONLOG_EBR';
-       
-       v_Retdate := TO_DATE(SUBSTR(TRIM(p_trandate), 1, 8), 'yyyymmdd');
-
-
-IF (v_Retdate>v_Retperiod)
-    THEN
      SELECT COUNT(1)
        INTO V_RRN_COUNT
        FROM TRANSACTIONLOG
       WHERE RRN = P_RRN AND BUSINESS_DATE = P_TRANDATE AND
            DELIVERY_CHANNEL = P_DELIVERY_CHANNEL;
      --Added by ramkumar.Mk on 25 march 2012
-ELSE
-	SELECT COUNT(1)
-       INTO V_RRN_COUNT
-       FROM VMSCMS_HISTORY.TRANSACTIONLOG_HIST --Added for VMS-5733/FSP-991
-      WHERE RRN = P_RRN AND BUSINESS_DATE = P_TRANDATE AND
-           DELIVERY_CHANNEL = P_DELIVERY_CHANNEL;
-     --Added by ramkumar.Mk on 25 march 2012
-END IF;	 
     END IF;
 
     IF V_RRN_COUNT > 0 THEN
@@ -1390,4 +1367,4 @@ EXCEPTION
     END;
 END;
 /
-show error;
+show error

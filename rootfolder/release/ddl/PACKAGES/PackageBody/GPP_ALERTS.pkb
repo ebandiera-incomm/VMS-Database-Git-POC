@@ -1684,7 +1684,7 @@ create or replace PACKAGE BODY vmscms.GPP_ALERTS IS
     END IF;
 
     SELECT to_char(to_char(SYSDATE,
-                           'YYMMDDHH24MISS') ||   --Changes VMS-8279 ~ HH has been replaced as HH24
+                           'YYMMDDHHMISS') ||
                    lpad(vmscms.seq_deppending_rrn.nextval,
                         3,
                         '0'))

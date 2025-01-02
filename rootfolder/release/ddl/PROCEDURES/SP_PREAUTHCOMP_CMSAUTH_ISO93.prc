@@ -58,7 +58,6 @@ CREATE OR REPLACE PROCEDURE VMSCMS.SP_PREAUTHCOMP_CMSAUTH_ISO93 (P_INST_CODE    
                                                  ,P_RESP_TIME OUT VARCHAR2
                                                 ,P_RESPTIME_DETAIL OUT VARCHAR2
 												,p_surchrg_ind   IN VARCHAR2 DEFAULT '2' --Added for VMS-5856
-                                                ,P_RESP_ID       OUT VARCHAR2 --Added for sending to FSS (VMS-8018)
                                                  ) IS
 
   /*************************************************
@@ -516,18 +515,6 @@ CREATE OR REPLACE PROCEDURE VMSCMS.SP_PREAUTHCOMP_CMSAUTH_ISO93 (P_INST_CODE    
     * Purpose          : Concurrent Pre-Auth Reversals
     * Reviewer         : 
     * Release Number   : VMSGPRHOSTR85 for VMS-5551
-
-    * Modified By      : Areshka A.
-    * Modified Date    : 03-Nov-2023
-    * Purpose          : VMS-8018: Added new out parameter (response id) for sending to FSS
-    * Reviewer         : 
-    * Release Number   : 
-    
-    * Modified By      : Mohan E.
-    * Modified Date    : 09-09-2024
-    * Purpose          : VMS_9133 Remove the Threshold Limits on the same Authorization for Multiple Settlements
-    * Reviewer         : Pankaj/Venkat
-    * Release Number   : R103
 
   *************************************************/
 
@@ -3444,48 +3431,26 @@ END IF;
 
         IF V_TRAN_AMT >= V_HOLD_AMOUNT 
         THEN
-            BEGIN
-                 UPDATE VMSCMS.CMS_PREAUTH_TRANSACTION    --Added for VMS-5739/FSP-991
-                  SET  cpt_totalhold_amt = '0.00', 
-                       cpt_transaction_flag = 'C',
-                       cpt_txn_amnt = V_TRAN_AMT,
-                       cpt_transaction_rrn = cpt_transaction_rrn||decode(cpt_transaction_rrn,NULL,'',',')||p_rrn,
-                       cpt_match_rule = cpt_match_rule||decode(cpt_match_rule,NULL,'',',')||v_rule 
-                       ,cpt_completion_fee=V_preauth_compfee
-                  WHERE rowid = v_rowid
-                AND cpt_preauth_validflag <> DECODE(v_duplicate_comp_check,'N','N','Y');
-            EXCEPTION WHEN OTHERS THEN                                                          --Added for VMS_9133
-                  UPDATE VMSCMS.CMS_PREAUTH_TRANSACTION    --Added for VMS-5739/FSP-991
-                  SET  cpt_totalhold_amt = '0.00', 
-                       cpt_transaction_flag = 'C',
-                       cpt_txn_amnt = V_TRAN_AMT,                      
-                       cpt_match_rule = cpt_match_rule||decode(cpt_match_rule,NULL,'',',')||v_rule 
-                       ,cpt_completion_fee=V_preauth_compfee
-                  WHERE rowid = v_rowid
-                AND cpt_preauth_validflag <> DECODE(v_duplicate_comp_check,'N','N','Y'); 
-			END;
-            
+             UPDATE VMSCMS.CMS_PREAUTH_TRANSACTION    --Added for VMS-5739/FSP-991
+              SET  cpt_totalhold_amt = '0.00', 
+                   cpt_transaction_flag = 'C',
+                   cpt_txn_amnt = V_TRAN_AMT,
+                   cpt_transaction_rrn = cpt_transaction_rrn||decode(cpt_transaction_rrn,NULL,'',',')||p_rrn,
+                   cpt_match_rule = cpt_match_rule||decode(cpt_match_rule,NULL,'',',')||v_rule 
+                   ,cpt_completion_fee=V_preauth_compfee
+              WHERE rowid = v_rowid
+            AND cpt_preauth_validflag <> DECODE(v_duplicate_comp_check,'N','N','Y');
+			
 			IF SQL%ROWCOUNT = 0 THEN
-            BEGIN
-                UPDATE VMSCMS_HISTORY.CMS_PREAUTH_TRANSACTION_HIST    --Added for VMS-5739/FSP-991
-                  SET  cpt_totalhold_amt = '0.00', 
-                       cpt_transaction_flag = 'C',
-                       cpt_txn_amnt = V_TRAN_AMT,
-                       cpt_transaction_rrn = cpt_transaction_rrn||decode(cpt_transaction_rrn,NULL,'',',')||p_rrn,
-                       cpt_match_rule = cpt_match_rule||decode(cpt_match_rule,NULL,'',',')||v_rule 
-                       ,cpt_completion_fee=V_preauth_compfee
-                  WHERE rowid = v_rowid
-                AND cpt_preauth_validflag <> DECODE(v_duplicate_comp_check,'N','N','Y');
-            EXCEPTION WHEN OTHERS THEN                                                            --Added for VMS_9133
-                UPDATE VMSCMS_HISTORY.CMS_PREAUTH_TRANSACTION_HIST    --Added for VMS-5739/FSP-991
-                  SET  cpt_totalhold_amt = '0.00', 
-                       cpt_transaction_flag = 'C',
-                       cpt_txn_amnt = V_TRAN_AMT,
-                       cpt_match_rule = cpt_match_rule||decode(cpt_match_rule,NULL,'',',')||v_rule 
-                       ,cpt_completion_fee=V_preauth_compfee
-                  WHERE rowid = v_rowid
-                AND cpt_preauth_validflag <> DECODE(v_duplicate_comp_check,'N','N','Y');
-            END;
+			UPDATE VMSCMS_HISTORY.CMS_PREAUTH_TRANSACTION_HIST    --Added for VMS-5739/FSP-991
+              SET  cpt_totalhold_amt = '0.00', 
+                   cpt_transaction_flag = 'C',
+                   cpt_txn_amnt = V_TRAN_AMT,
+                   cpt_transaction_rrn = cpt_transaction_rrn||decode(cpt_transaction_rrn,NULL,'',',')||p_rrn,
+                   cpt_match_rule = cpt_match_rule||decode(cpt_match_rule,NULL,'',',')||v_rule 
+                   ,cpt_completion_fee=V_preauth_compfee
+              WHERE rowid = v_rowid
+            AND cpt_preauth_validflag <> DECODE(v_duplicate_comp_check,'N','N','Y');
 
                   IF SQL%ROWCOUNT = 0
                   THEN
@@ -3567,7 +3532,7 @@ END IF;
 
           IF V_TOTAL_AMT > 0
           THEN
-            BEGIN
+
                 UPDATE VMSCMS.CMS_PREAUTH_TRANSACTION             --Added for VMS-5739/FSP-991
                   SET CPT_TRANSACTION_FLAG = 'C',
                      CPT_TOTALHOLD_AMT    = trim(to_char(V_TOTAL_AMT,'999999999999999990.99')), 
@@ -3576,18 +3541,9 @@ END IF;
                      cpt_match_rule = cpt_match_rule||decode(cpt_match_rule,NULL,'',',')||v_rule 
                       ,cpt_completion_fee=V_preauth_compfee 
                   WHERE rowid = v_rowid;
-            EXCEPTION WHEN OTHERS THEN                            --Added for VMS_9133
-                UPDATE VMSCMS.CMS_PREAUTH_TRANSACTION             --Added for VMS-5739/FSP-991
-                  SET CPT_TRANSACTION_FLAG = 'C',
-                     CPT_TOTALHOLD_AMT    = trim(to_char(V_TOTAL_AMT,'999999999999999990.99')), 
-                     CPT_TXN_AMNT         = V_TRAN_AMT,
-                     cpt_match_rule = cpt_match_rule||decode(cpt_match_rule,NULL,'',',')||v_rule 
-                      ,cpt_completion_fee=V_preauth_compfee 
-                  WHERE rowid = v_rowid;
-            END;
+				  
 					 IF SQL%ROWCOUNT = 0 
-					  THEN
-                BEGIN
+					  THEN  
 					   UPDATE VMSCMS_HISTORY.CMS_PREAUTH_TRANSACTION_HIST            --Added for VMS-5739/FSP-991
 					  SET CPT_TRANSACTION_FLAG = 'C',
 						 CPT_TOTALHOLD_AMT    = trim(to_char(V_TOTAL_AMT,'999999999999999990.99')), 
@@ -3596,15 +3552,6 @@ END IF;
 						 cpt_match_rule = cpt_match_rule||decode(cpt_match_rule,NULL,'',',')||v_rule 
 						  ,cpt_completion_fee=V_preauth_compfee 
 					  WHERE rowid = v_rowid;
-                EXCEPTION WHEN OTHERS THEN
-                        UPDATE VMSCMS_HISTORY.CMS_PREAUTH_TRANSACTION_HIST            --Added for VMS-5739/FSP-991
-					  SET CPT_TRANSACTION_FLAG = 'C',
-						 CPT_TOTALHOLD_AMT    = trim(to_char(V_TOTAL_AMT,'999999999999999990.99')), 
-						 CPT_TXN_AMNT         = V_TRAN_AMT,
-						 cpt_match_rule = cpt_match_rule||decode(cpt_match_rule,NULL,'',',')||v_rule 
-						  ,cpt_completion_fee=V_preauth_compfee 
-					  WHERE rowid = v_rowid;
-                END;
 
 					  IF SQL%ROWCOUNT = 0 
 					  THEN
@@ -3619,8 +3566,7 @@ END IF;
 
 
           ELSE
-            
-            BEGIN
+
                 UPDATE VMSCMS.CMS_PREAUTH_TRANSACTION             --Added for VMS-5739/FSP-991
                   SET CPT_TOTALHOLD_AMT    = '0.00',
                      CPT_TRANSACTION_FLAG = 'C',
@@ -3629,20 +3575,9 @@ END IF;
                      cpt_match_rule = cpt_match_rule||decode(cpt_match_rule,NULL,'',',')||v_rule 
                       ,cpt_completion_fee=V_preauth_compfee 
                   WHERE rowid = v_rowid;
-            EXCEPTION WHEN OTHERS THEN
-                UPDATE VMSCMS.CMS_PREAUTH_TRANSACTION             --Added for VMS-5739/FSP-991
-                  SET CPT_TOTALHOLD_AMT    = '0.00',
-                     CPT_TRANSACTION_FLAG = 'C',
-                     CPT_TXN_AMNT         = V_TRAN_AMT,
-                     cpt_match_rule = cpt_match_rule||decode(cpt_match_rule,NULL,'',',')||v_rule 
-                      ,cpt_completion_fee=V_preauth_compfee 
-                  WHERE rowid = v_rowid;
-            END;
 				  
 				   IF SQL%ROWCOUNT = 0
                   THEN
-                  
-            BEGIN
 					  UPDATE VMSCMS_HISTORY.CMS_PREAUTH_TRANSACTION_HIST            --Added for VMS-5739/FSP-991
                   SET CPT_TOTALHOLD_AMT    = '0.00',
                      CPT_TRANSACTION_FLAG = 'C',
@@ -3651,15 +3586,6 @@ END IF;
                      cpt_match_rule = cpt_match_rule||decode(cpt_match_rule,NULL,'',',')||v_rule 
                       ,cpt_completion_fee=V_preauth_compfee 
                   WHERE rowid = v_rowid;
-            EXCEPTION WHEN OTHERS THEN
-                     UPDATE VMSCMS_HISTORY.CMS_PREAUTH_TRANSACTION_HIST            --Added for VMS-5739/FSP-991
-                  SET CPT_TOTALHOLD_AMT    = '0.00',
-                     CPT_TRANSACTION_FLAG = 'C',
-                     CPT_TXN_AMNT         = V_TRAN_AMT,
-                     cpt_match_rule = cpt_match_rule||decode(cpt_match_rule,NULL,'',',')||v_rule 
-                      ,cpt_completion_fee=V_preauth_compfee 
-                  WHERE rowid = v_rowid;
-            END;
 				  
                   IF SQL%ROWCOUNT = 0
                   THEN
@@ -3807,8 +3733,7 @@ END IF;
            CMS_DELIVERY_CHANNEL = P_DELIVERY_CHANNEL AND
            CMS_RESPONSE_ID = TO_NUMBER(V_RESP_CDE);
     p_resp_msg := TO_CHAR (v_acct_balance);            
-     P_LEDGER_BAL := TO_CHAR (v_ledger_bal);  
-     P_RESP_ID := V_RESP_CDE; --Added for VMS-8018
+     P_LEDGER_BAL := TO_CHAR (v_ledger_bal);          
 
     EXCEPTION
      WHEN OTHERS THEN
@@ -3872,7 +3797,6 @@ END IF;
      BEGIN
        P_RESP_MSG  := V_ERR_MSG;
        P_RESP_CODE := V_RESP_CDE;
-       P_RESP_ID   := V_RESP_CDE; --Added for VMS-8018
       SELECT CMS_B24_RESPCDE,
               cms_iso_respcde      
         INTO P_RESP_CODE,
@@ -3886,7 +3810,6 @@ END IF;
         P_RESP_MSG  := 'Problem while selecting data from response master ' ||
                     V_RESP_CDE || SUBSTR(SQLERRM, 1, 300);
         P_RESP_CODE := '69';
-        P_RESP_ID   := '69'; --Added for VMS-8018
          ROLLBACK;
      END;
 
@@ -3975,7 +3898,6 @@ END IF;
         P_RESP_MSG  := 'Problem while inserting data into transaction log  dtl' ||
                     SUBSTR(SQLERRM, 1, 300);
         P_RESP_CODE := '69';
-        P_RESP_ID   := '69'; --Added for VMS-8018
         ROLLBACK;
         RETURN;
      END;
@@ -4000,13 +3922,11 @@ END IF;
             CMS_RESPONSE_ID = V_RESP_CDE;
 
        P_RESP_MSG := V_ERR_MSG;
-       P_RESP_ID  := V_RESP_CDE; --Added for VMS-8018
      EXCEPTION
        WHEN OTHERS THEN
         P_RESP_MSG  := 'Problem while selecting data from response master ' ||
                     V_RESP_CDE || SUBSTR(SQLERRM, 1, 300);
         P_RESP_CODE := '69';
-        P_RESP_ID   := '69'; --Added for VMS-8018
         ROLLBACK;
      END;
 
@@ -4095,7 +4015,6 @@ END IF;
         P_RESP_MSG  := 'Problem while inserting data into transaction log  dtl' ||
                     SUBSTR(SQLERRM, 1, 300);
         P_RESP_CODE := '69'; 
-        P_RESP_ID   := '69'; --Added for VMS-8018
         ROLLBACK;
         RETURN;
      END;
@@ -4149,7 +4068,6 @@ END IF;
        P_RESP_MSG  := 'Error while generating authid ' ||
                    SUBSTR(SQLERRM, 1, 300);
        P_RESP_CODE := '89'; 
-       P_RESP_ID   := '89'; --Added for VMS-8018
        ROLLBACK;
     END;
 
@@ -4465,7 +4383,6 @@ END IF;
     WHEN OTHERS THEN
      ROLLBACK;
      P_RESP_CODE := '69';
-     P_RESP_ID   := '69'; --Added for VMS-8018
      P_Resp_Msg  := 'Problem while inserting data into transaction log  ' ||
                  SUBSTR(SQLERRM, 1, 300);
   END;
@@ -4495,7 +4412,6 @@ EXCEPTION
   WHEN OTHERS THEN
     ROLLBACK;
     P_RESP_CODE := '69'; 
-    P_RESP_ID   := '69'; --Added for VMS-8018
     P_RESP_MSG  := 'Main exception from  authorization ' ||
                 Substr(Sqlerrm, 1, 300);
 END;

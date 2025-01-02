@@ -77,7 +77,7 @@ CREATE OR REPLACE PACKAGE BODY "VMSCMS"."GPP_ACCOUNT_TRANSFER" IS
     l_rrn_inner vmscms.transactionlog.rrn%TYPE;
   BEGIN
     SELECT to_char(to_char(SYSDATE,
-                           'YYMMDDHH24MISS') ||   --Changes VMS-8279 ~ HH has been replaced as HH24
+                           'YYMMDDHHMISS') ||
                    lpad(vmscms.seq_deppending_rrn.nextval,
                         3,
                         '0'))
@@ -544,5 +544,3 @@ BEGIN
   init;
 END gpp_account_transfer;
 /
-
-show error

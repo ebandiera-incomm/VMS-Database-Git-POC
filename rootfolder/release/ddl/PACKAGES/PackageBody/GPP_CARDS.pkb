@@ -1,3 +1,4 @@
+set define off;
 CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
   -- PL/SQL Package using FS Framework
   -- Author  : Rojalin
@@ -168,12 +169,6 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
      * Reviewer         : Saravanakumar A
      * Release Number   : CCA_R60B1
 
-	 * Modified By      : John G
-     * Modified Date    : 28-May-2024
-     * Purpose          : VMS-8761 - Decline Activations with No Initial Funds
-     * Reviewer         :
-     * Release Number   : VMSGPRHOST_R98
-
 ********************************************************************************************/
     l_date                 VARCHAR2(50);
     l_time                 VARCHAR2(20);
@@ -216,16 +211,10 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
 	l_acct_bal		      vmscms.cms_acct_mast.cam_acct_bal%TYPE;
 	l_ledger_bal		  vmscms.cms_acct_mast.cam_ledger_bal%TYPE;
 	l_5589_toggle         vmscms.cms_inst_param.cip_param_value%TYPE;
-    l_adj_txn_code        vmscms.cms_transaction_mast.ctm_tran_code%TYPE;
+    l_adj_txn_code        vmscms.cms_transaction_mast.ctm_tran_code%TYPE; 
     l_resp_code           VARCHAR2(5);
         l_resp_msg            VARCHAR2(500);
     --CFIP-416 ends
-    L_REPL_FLAG           vmscms.cms_appl_pan.CAP_REPL_FLAG%TYPE;
-    L_PRODUCT_PORTFOLIO   vmscms.cms_prod_cattype.CPC_PRODUCT_PORTFOLIO%TYPE;
-    L_INITIALLOAD_AMT     vmscms.cms_acct_mast.CAM_INITIALLOAD_AMT%TYPE;
-    l_ordr_prod_fund      vms_order_lineitem.vol_product_funding%type;
-    l_litem_denom         vms_order_lineitem.vol_denomination%type;
-    l_ordr_fund_amt       vms_order_lineitem.vol_fund_amount%TYPE;
   BEGIN
     --CFIP-416 starts
     p_istoken_eligible_out   := 'FALSE';
@@ -296,8 +285,7 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
                nvl(cap_cvvplus_reg_flag,
                    'N'), --CFIP-416
                nvl(cap_status_update_event,
-                 'N'),
-                 CAP_REPL_FLAG --VMS-8761
+                 'N')			   
           INTO l_hash_pan,
                l_encr_pan,
                l_acct_no,
@@ -309,8 +297,7 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
                l_card_type, --CFIP-416
                l_exprydate, --CFIP-416
                l_cvvplus_eligibility, --CFIP-416
-               l_status_update_event,
-               L_REPL_FLAG --VMS-8761
+               l_status_update_event
           FROM (SELECT cap_pan_code,
                        cap_pan_code_encr,
                        cap_acct_no,
@@ -322,8 +309,7 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
                        cap_card_type, --CFIP-416
                        cap_expry_date, --CFIP-416
                        cap_cvvplus_reg_flag, --CFIP-416
-                       cap_status_update_event,
-                       CAP_REPL_FLAG --VMS-8761
+                       cap_status_update_event
                   FROM vmscms.cms_appl_pan
                  WHERE cap_cust_code =
                        (SELECT ccm_cust_code
@@ -362,8 +348,7 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
                  nvl(cap_cvvplus_reg_flag,
                      'N'), --CFIP-416
                 nvl(cap_status_update_event,
-                 'N'),
-                 CAP_REPL_FLAG --VMS-8761
+                 'N')
             INTO l_hash_pan,
                  l_encr_pan,
                  l_acct_no,
@@ -375,8 +360,7 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
                  l_card_type, --CFIP-416
                  l_exprydate, --CFIP-416
                  l_cvvplus_eligibility, --CFIP-416
-                 l_status_update_event,
-                 L_REPL_FLAG --VMS-8761
+                 l_status_update_event                 
             FROM (SELECT cap_pan_code,
                          cap_pan_code_encr,
                          cap_acct_no,
@@ -388,8 +372,7 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
                          cap_card_type, --CFIP-416
                          cap_expry_date, --CFIP-416
                          cap_cvvplus_reg_flag, --CFIP-416
-                         cap_status_update_event,
-                         CAP_REPL_FLAG --VMS-8761
+                         cap_status_update_event 
                     FROM vmscms.cms_appl_pan
                    WHERE cap_cust_code =
                          (SELECT ccm_cust_code
@@ -499,7 +482,7 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
     g_debug.display('l_value' || l_value);
     --getting the rrn
     SELECT to_char(to_char(SYSDATE,
-                           'YYMMDDHH24MISS') ||  --Changes VMS-8279 ~ HH has been replaced as HH24
+                           'YYMMDDHHMISS') ||
                    lpad(vmscms.seq_deppending_rrn.nextval,
                         3,
                         '0'))
@@ -521,8 +504,7 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
                  'N'), --CFIP-416
              nvl(cap_status_update_event,
                  'N'),
-			 cap_pan_code_encr,
-			 CAP_REPL_FLAG --VMS-8761
+			 cap_pan_code_encr
         INTO l_cap_startercard_flag,
              l_cap_card_stat,
              l_mbr_numb,
@@ -532,8 +514,7 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
              l_exprydate, --CFIP-416
              l_cvvplus_eligibility, --CFIP-416
              l_status_update_event,
-			 l_encr_pan,
-			 L_REPL_FLAG --VMS-8761
+			 l_encr_pan
         FROM vmscms.cms_appl_pan
        WHERE cap_pan_code = l_hash_pan;
     END IF;
@@ -543,7 +524,7 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
     --- Added for VMS-5244
 
     IF l_cap_card_stat = '6' and l_status_update_event = 'B2B_CARD_HOLD'
-    THEN
+    THEN 
 
     p_status_out  :='14';
     p_err_msg_out :='Status Update not Permitted for Hold Card made by B2B_CARD_HOLD API' ;
@@ -557,7 +538,7 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
                                                    '14',
                                                    NULL,
                                                    l_timetaken);
-     RETURN;
+     RETURN;                                                   
 
     END IF;
 
@@ -592,13 +573,11 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
 
     SELECT nvl(cpc_token_eligibility,
                'N'),
-           cpc_encrypt_enable,
+           cpc_encrypt_enable
     --nvl(cpc_cvvplus_eligibility,
     --  'N')
-           CPC_PRODUCT_PORTFOLIO
       INTO l_token_eligibility,
-           l_encrypt_enable, --, l_cvvplus_eligibility
-           L_PRODUCT_PORTFOLIO --VMS-8761
+           l_encrypt_enable --, l_cvvplus_eligibility
       FROM vmscms.cms_prod_cattype
      WHERE cpc_inst_code = 1
        AND cpc_prod_code = l_prod_code
@@ -617,8 +596,8 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
 
     --Updating Effective Date
 
-	IF l_value  = '83'    --- Request for Card Closure
-	THEN
+	IF l_value  = '83'    --- Request for Card Closure     
+	THEN 
 			BEGIN
 				SELECT UPPER(TRIM(NVL(cip_param_value,'Y')))
 					INTO l_5589_toggle
@@ -628,32 +607,32 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
 		   EXCEPTION
 				WHEN OTHERS THEN
 					l_5589_toggle :='N';
-			END;
+			END; 
 
 			IF l_5589_toggle='Y' THEN
 
-					SELECT cam_acct_bal,cam_ledger_bal
-					  INTO l_acct_bal,l_ledger_bal
+					SELECT cam_acct_bal,cam_ledger_bal  
+					  INTO l_acct_bal,l_ledger_bal  
 					FROM vmscms.CMS_ACCT_MAST
 					WHERE cam_inst_code = 1
 					AND cam_acct_no = l_acct_no;
 
 
-					IF l_acct_bal = l_ledger_bal
-					THEN
+					IF l_acct_bal = l_ledger_bal  
+					THEN 
 
-						 IF l_acct_bal < 0
-						THEN
+						 IF l_acct_bal < 0 
+						THEN 
 						l_acct_bal := ABS(l_acct_bal);
 						l_adj_txn_code := '14';
 						ELSIF l_acct_bal > 0
-                        THEN
+                        THEN 
 						l_adj_txn_code := '13';
 						END IF;
 
 
 
-					ELSE
+					ELSE   
 
 						p_status_out  :='14';
 						p_err_msg_out :='Cannot Close Card due to Pending Auths.' ;
@@ -667,16 +646,16 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
 																	'14',
 																	NULL,
 																	l_timetaken);
-					RETURN;
+					RETURN;                                                   	
 
 
-					END IF;
+					END IF;  
 
-			IF l_acct_bal <> 0
-			THEN
+			IF l_acct_bal <> 0 
+			THEN			
 
            SELECT to_char(to_char(SYSDATE,
-                           'YYMMDDHH24MISS') ||  --Changes VMS-8279 ~ HH has been replaced as HH24
+                           'YYMMDDHHMISS') ||
                    lpad(vmscms.seq_deppending_rrn.nextval,
                         3,
                         '0'))
@@ -690,7 +669,7 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
 											 '03',
 											 l_adj_txn_code,
 											 '0',
-											 l_date,
+											 l_date, 
 											 l_time,
 											 vmscms.fn_dmaps_main(l_encr_pan),
 											 l_adj_rrn,
@@ -701,7 +680,7 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
 											 0,
 											 l_curr_name,
 											 NULL,
-											 NULL,
+											 NULL, 
 											 (sys_context(fsfw.fsconst.c_fsapi_gpp_context,
 													'x-incfs-sessionid')),
 											 l_acct_no,
@@ -729,12 +708,12 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
                                                              p_status_out,
                                                              NULL,
                                                              l_timetaken);
-					RETURN;
+					RETURN;													
               END IF;
 
 			  EXCEPTION
 					WHEN OTHERS THEN
-					  g_debug.display('Exception in Adjust Balance');
+					  g_debug.display('Exception in Adjust Balance');					  
 					  p_status_out  := '16';
 					  p_err_msg_out := 'Exception in Adjust Balance while Card Closure '|| l_resp_msg;
 
@@ -747,7 +726,7 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
                                                              p_status_out,
                                                              NULL,
                                                              l_timetaken);
-					RETURN;
+					RETURN;													
 
 				  END;
 
@@ -755,79 +734,7 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
 	  END IF; --toggle condition closure
 	END IF;    ---- l_value '83' Condition Closure
 
-    --Added for VMS-8761
-    IF     l_value = '74'
-       AND L_REPL_FLAG = '0'
-       AND L_PRODUCT_PORTFOLIO IN ('B2B (SINGLE LOAD)',
-                                   'B2B (RELOADABLE)',
-                                   'SLG',
-                                   'SLG RAN',
-                                   'SLG RAN/PL')
-    THEN
-        SELECT CAM_INITIALLOAD_AMT
-          INTO L_INITIALLOAD_AMT
-          FROM vmscms.CMS_ACCT_MAST
-         WHERE cam_inst_code = 1 AND cam_acct_no = l_acct_no;
 
-        IF l_initialload_amt = 0 THEN
-            BEGIN
-                SELECT TO_NUMBER (NVL (l_item.vol_denomination, '0')),
-                       l_item.vol_product_funding,
-                       l_item.vol_fund_amount
-                  INTO l_litem_denom,
-                       l_ordr_prod_fund,
-                       l_ordr_fund_amt
-                  FROM vmscms.vms_line_item_dtl dtls, vmscms.vms_order_lineitem l_item
-                 WHERE     dtls.vli_order_id = l_item.vol_order_id
-                       AND dtls.vli_partner_id = l_item.vol_partner_id
-                       AND dtls.vli_lineitem_id = l_item.vol_line_item_id
-                       AND dtls.vli_pan_code = l_hash_pan;
-            EXCEPTION
-              WHEN OTHERS THEN
-                NULL;
-            END;
-
-            --Sn: Added for VMS-9058
-            IF l_ordr_prod_fund = 2 AND l_ordr_fund_amt =2
-            THEN
-                p_status_out := '222';
-                p_err_msg_out := 'Activation through CCA is not supported for this product';
-
-                vmscms.gpp_transaction.audit_transaction_log (l_api_name,
-                                                              p_customer_id_in,
-                                                              l_hash_pan,
-                                                              l_encr_pan,
-                                                              'F',
-                                                              p_err_msg_out,
-                                                              p_status_out,
-                                                              NULL,
-                                                              l_timetaken);
-                RETURN;
-            END IF;
-            --En: Added for VMS-9058
-
-            IF l_ordr_prod_fund = 2 AND l_ordr_fund_amt =1 AND l_litem_denom > 0 THEN
-               l_initialload_amt:= l_litem_denom;
-            END IF;
-        END IF;
-
-        IF L_INITIALLOAD_AMT = '0'
-        THEN
-            p_status_out := '222';
-            p_err_msg_out := 'Declined activation due to no initial funds';
-
-            vmscms.gpp_transaction.audit_transaction_log (l_api_name,
-                                                          p_customer_id_in,
-                                                          l_hash_pan,
-                                                          l_encr_pan,
-                                                          'F',
-                                                          p_err_msg_out,
-                                                          p_status_out,
-                                                          NULL,
-                                                          l_timetaken);
-            RETURN;
-        END IF;
-    END IF;
 
     IF p_eff_date_in IS NOT NULL
        AND upper(p_value_in) IN ('CARD ACTIVATION',
@@ -978,7 +885,7 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
                             'x-incfs-partnerid'))
          WHERE rrn = l_rrn;
    --Added for VMS-5733/FSP-991
-     IF SQL%ROWCOUNT = 0 THEN
+     IF SQL%ROWCOUNT = 0 THEN 
        UPDATE VMSCMS_HISTORY.TRANSACTIONLOG_HIST --Added for VMS-5733/FSP-991
            SET correlation_id =
                (sys_context(fsfw.fsconst.c_fsapi_gpp_context,
@@ -1258,18 +1165,18 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
      * Modified Reason  :  VMS-5253 / 5372 - Do not pass sytem generated value from VMS to CCA.
      * Reviewer         :  Saravanakumar
      * Build Number     :  VMSGPRHOST_R55_RELEASE
-
+     
      * Modified By      :  Mohan Kumar.E
      * Modified Date    :  03-Feb-2023
      * Modified Reason  :  VMS-6024  - Replacement Cards Persisting Original Encrypted Data.
      * Reviewer         :  Pankaj Salunkhe
      * Build Number     :  R75 - BUILD 2
-
+	 
 	 * Modified By      :  Mohan Kumar.E
      * Modified Date    :  09-Feb-2023
      * Modified Reason  :  VMS-6026  - Replacement Cards Persisting Original PackID Values.
      * Reviewer         :  Pankaj S.
-
+     
      * Modified By      :  John G
      * Modified Date    :  16-May-2023
      * Modified Reason  :  VMS-7303  - Virtual Card Replacements
@@ -1347,7 +1254,7 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
     l_profile_code          vmscms.cms_prod_cattype.cpc_profile_code%TYPE;
     l_shipping_method       VARCHAR2(20);
     l_cardpack_id           vmscms.cms_appl_pan.cap_cardpack_id%TYPE;
-    --l_card_id               vmscms.cms_prod_cattype.cpc_card_id%TYPE; --- Modified for VMS-6026
+    --l_card_id               vmscms.cms_prod_cattype.cpc_card_id%TYPE; --- Modified for VMS-6026 
     l_replace_shipmethod    vmscms.vms_packageid_mast.vpm_replace_shipmethod%TYPE;
     l_exp_replaceshipmethod vmscms.vms_packageid_mast.vpm_exp_replaceshipmethod%TYPE;
     l_shipment_key          vmscms.vms_shipment_tran_mast.vsm_shipment_key%TYPE;
@@ -1373,7 +1280,7 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
    l_partner_name            vmscms.cms_prod_cattype.cpc_partner_name%TYPE;
    l_event_msg_type          vmscms.vms_trans_configuration.vtc_event_msg_type%TYPE;
    l_errmsg                 VARCHAR2(1000);
-
+   
     l_dcrypt_check          number:=0; --Added for VMS 6024
     l_renew_replace_prodcode  vmscms.cms_prod_cattype.cpc_renew_replace_prodcode%TYPE;--Added for VMS 6024
     l_renew_replace_cardtype  vmscms.cms_prod_cattype.cpc_renew_replace_cardtype%TYPE;--Added for VMS 6024
@@ -1397,9 +1304,6 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
    l_copy_encr_embname      vmscms.vms_order_lineitem.vol_embossedline%TYPE;
    l_copy_cust_business_name vmscms.cms_cust_mast.ccm_business_name%TYPE;
    l_emboss_name_on_replacement  vmscms.vms_packageid_mast.VPM_emboss_name_on_replacement%TYPE;
-   l_activation_sticker_id vmscms.vms_order_lineitem.vol_activation_sticker_id%TYPE := NULL;--Modified by VMS-8938
-   l_ccf_format_version    vmscms.cms_prod_cattype.cpc_ccf_format_version%TYPE;--Modified by VMS-8938
-
    L_EXP                    EXCEPTION;
 
   BEGIN
@@ -1828,7 +1732,6 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
            cpc_renew_replace_option,--added for VMS 6024
            cpc_product_id,
            cpc_profile_code
-           ,cpc_ccf_format_version--Modified for VMS-8938
            --cpc_card_id --,  --- Modified for VMS-6026
     --nvl(cpc_cvvplus_eligibility,
     --  'N')
@@ -1840,7 +1743,6 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
            l_renew_replace_option,--added for VMS 6024
            l_product_id,
            l_profile_code
-           ,l_ccf_format_version--Modified for VMS-8938
            --l_card_id   --- Modified for VMS-6026
 		   --, l_cvvplus_eligibility
       FROM vmscms.cms_prod_cattype
@@ -1919,11 +1821,10 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
        AND cbp_profile_code = l_profile_code
        AND cbp_param_name = 'Currency';
 
-    SELECT /*to_char(substr(to_char(SYSDATE,
+    SELECT to_char(substr(to_char(SYSDATE,
                                   'YYMMDDHHMMSS'),
                           1,
-                          9) || --Modified for CFIP-416*/
-                   to_char(to_char(SYSDATE,'YYMMDDHH24MISS') ||      --Changes VMS-8279 ~ HHMM has been replaced as HH24MI, Length of RRN changed to 15
+                          9) || --Modified for CFIP-416
                    lpad(vmscms.seq_deppending_rrn.nextval,
                         3,
                         '0')),
@@ -2443,7 +2344,7 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
                               CAM_ADD_TWO_ENCR,
                               CAM_PIN_CODE_ENCR,
                               CAM_CITY_NAME_ENCR,                                     --En:Added for VMS-958
-							  CAM_INS_USER,
+							  CAM_INS_USER,  
 							  CAM_LUPD_USER
                             )
                       VALUES
@@ -2487,7 +2388,7 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
 
 		END IF;
         				 --- Added for VMS-5253 / VMS-5372
-        	UPDATE vmscms.CMS_CUST_MAST
+        	UPDATE vmscms.CMS_CUST_MAST 
                    SET CCM_SYSTEM_GENERATED_PROFILE = 'N'
                    WHERE CCM_INST_CODE = 1
                     AND CCM_CUST_CODE = l_cust_code;
@@ -2563,12 +2464,12 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
           END IF;
 
           --En:Added for VMS-810 (Replacement Processing: Emboss Line 3 and Emboss Line 4)
-
-
-			--SN:Added for VMS-6026
-
+ 
+ 
+			--SN:Added for VMS-6026             
+           
 		   if l_cardpack_id is null then
-
+            
                     select  cap_cardpack_id
                     into l_cardpack_id
                     from ( select  cap_cardpack_id
@@ -2578,11 +2479,11 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
                     and  cap_repl_flag = 0
                     ORDER BY cap_ins_date
                     )
-                where rownum =1;
-
-            end if;
-
-		   --EN:Added for VMS-6026
+                where rownum =1;  
+                    
+            end if;           
+           
+		   --EN:Added for VMS-6026			
 
 
           SELECT vpm_replace_shipmethod,
@@ -2611,7 +2512,7 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
 	  IF l_encr_embname IS NULL		--- Modified for VMS-5045: Embossing F/L Name during Phhysical Repl via CCA
 	  THEN
 
-          BEGIN
+          BEGIN 
 
           SELECT NVL(vpm_emboss_name_on_replacement,'N')
           INTO l_emboss_name_on_replacement
@@ -2622,23 +2523,23 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
                            WHERE cpc_prod_code = l_prod_code
                              AND cpc_card_id = l_cardpack_id); --nvl(l_cardpack_id, l_card_id));--- Modified for VMS-6026
 
-                IF l_emboss_name_on_replacement = 'Y'
-                THEN
+                IF l_emboss_name_on_replacement = 'Y' 
+                THEN 
 
                       l_encr_embname:= l_copy_encr_embname;
                       l_cust_business_name:= l_copy_cust_business_name;
 
                   END IF;
 
-          EXCEPTION
+          EXCEPTION 
           WHEN OTHERS THEN
-                  ROLLBACK;
+                  ROLLBACK;                  
                   p_status_out  := '49';
                   p_err_msg_out := 'Error While Selecting Embooss Configuration at Package'||SUBSTR(SQLERRM,1,250);
                   RETURN;
-        END;
+        END;             
 
-	END IF;
+	END IF;	
 
 
 
@@ -2669,8 +2570,8 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
        IF p_firstname_in IS  NULL AND p_lastname_in IS NULL
         THEN
 
-        BEGIN
-                SELECT ord.vod_firstname,
+        BEGIN 
+                SELECT ord.vod_firstname, 
                        ord.vod_lastname
                 INTO l_ord_first_name,
                      l_ord_last_name
@@ -2685,24 +2586,9 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
                 NULL;
             END;
 
-         END IF;
-        
-        --Modified for VMS-8938
-        -- If CCF 5.0 then get the activation sticker Id
-          IF TO_NUMBER(l_ccf_format_version) >= 5
-          THEN
-              -- get the sticker ID
-              BEGIN
-                  SELECT TRIM(vpd_field_value)
-                  INTO l_activation_sticker_id
-                  FROM vmscms.vms_packageid_detl
-                  WHERE vpd_field_key = 'activationStickerId'
-                    AND vpd_package_id IN (l_package_id);
-              EXCEPTION WHEN NO_DATA_FOUND
-                  THEN
-                      l_activation_sticker_id := NULL;
-              END;
-          END IF;
+         END IF;  
+
+
 
           INSERT INTO vmscms.vms_order_details
             (vod_order_id,
@@ -2772,9 +2658,7 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
              vol_return_file_msg,
              vol_embossedline,
              vol_embossed_line1,
-			 vol_logo_id
-			 ,vol_activation_sticker_id--Modified for VMS-8938
-			 )
+			 vol_logo_id)
           VALUES
             (l_order_id,
              l_line_item_id,
@@ -2790,9 +2674,7 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
              NULL,
              l_encr_embname,         --Modified for VMS-810 (Replacement Processing: Emboss Line 3 and Emboss Line 4)
              l_cust_business_name,   --Modified for VMS-810 (Replacement Processing: Emboss Line 3 and Emboss Line 4)
-			 l_logo_id   --- Added for VMS-2428.
-			 ,l_activation_sticker_id --Modified for VMS-8938
-			 ); 
+			 l_logo_id);   --- Added for VMS-2428.
 
             IF l_form_factor = 'V'   --- Added for VMS-4484
              THEN
@@ -2991,7 +2873,7 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
       --Jira Issue: CFIP:188 starts
       --updating the below fields manually
       --since the base procedure doesnot populate these fields in Transactionlog
-      UPDATE VMSCMS.TRANSACTIONLOG
+      UPDATE VMSCMS.TRANSACTIONLOG  
          SET correlation_id =
              (sys_context(fsfw.fsconst.c_fsapi_gpp_context,
                           'x-incfs-correlationid')),
@@ -3005,7 +2887,7 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
              terminal_id   =   p_terminalid_in
        WHERE rrn = l_rrn;
     --Added for VMS-5733/FSP-991
-     IF SQL%ROWCOUNT = 0 THEN
+     IF SQL%ROWCOUNT = 0 THEN 
        UPDATE VMSCMS_HISTORY.TRANSACTIONLOG_HIST
       SET correlation_id =
              (sys_context(fsfw.fsconst.c_fsapi_gpp_context,
@@ -3022,15 +2904,15 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
    end if;
       --Jira Issue: CFIP:188 ends
        IF p_locationid_in IS NOT NULL THEN
-           UPDATE VMSCMS.CMS_TRANSACTION_LOG_DTL
+           UPDATE VMSCMS.CMS_TRANSACTION_LOG_DTL  
               SET ctd_location_id = p_locationid_in
            WHERE ctd_rrn = l_rrn;
         --Added for VMS-5733/FSP-991
-     IF SQL%ROWCOUNT = 0 THEN
+     IF SQL%ROWCOUNT = 0 THEN 
        UPDATE VMSCMS_HISTORY.CMS_TRANSACTION_LOG_DTL_HIST
              SET ctd_location_id = p_locationid_in
            WHERE ctd_rrn = l_rrn;
-  end if;
+  end if;   
        END IF;
 
     EXCEPTION
@@ -3250,8 +3132,8 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
       END;
   */
   END IF;
-
-        --SN:Added for VMS-6024
+  
+        --SN:Added for VMS-6024                                                                              
             IF l_renew_replace_option = 'NPP' THEN
                 SELECT COUNT(*)
                   INTO l_dcrypt_check
@@ -3260,8 +3142,8 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
                    AND cpc_prod_code = l_renew_replace_prodcode
                    AND cpc_card_type = l_renew_replace_cardtype
                    AND cpc_encrypt_enable = 'N';
-
-
+            
+                
                 IF (l_dcrypt_check = 1 AND l_encrypt_enable = 'Y') OR (l_dcrypt_check = 0 AND l_encrypt_enable = 'N') THEN
                     UPDATE vmscms.cms_cust_mast
                        SET ccm_first_name = upper(vmscms.fn_dmaps_main(ccm_first_name)),
@@ -3272,8 +3154,8 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
                            ccm_mother_name = upper(vmscms.fn_dmaps_main(ccm_mother_name))
                      WHERE ccm_cust_code = l_cust_code
                        AND ccm_inst_code = 1;
-
-
+            
+                   
                     UPDATE vmscms.cms_addr_mast
                        SET cam_add_one = upper(vmscms.fn_dmaps_main(cam_add_one)),
                            cam_add_two = upper(vmscms.fn_dmaps_main(cam_add_two)),
@@ -3286,11 +3168,11 @@ CREATE OR REPLACE PACKAGE BODY VMSCMS.GPP_CARDS IS
                            cam_mobl_one = upper(vmscms.fn_dmaps_main(cam_mobl_one))
                      WHERE cam_cust_code = l_cust_code
                        AND cam_inst_code = 1;
-
-
+            
+                   
                 END IF;
-
-            END IF;
+            
+            END IF;                 
             --EN:Added for VMS-6024
     --time taken
     l_end_time := dbms_utility.get_time;
@@ -3556,11 +3438,11 @@ v_Retdate  date; --Added for VMS-5739/FSP-991
 
 --Added for VMS-5739/FSP-991
  select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
-       INTO   v_Retperiod
-       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL
-       WHERE  OPERATION_TYPE='ARCHIVE'
+       INTO   v_Retperiod 
+       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
+       WHERE  OPERATION_TYPE='ARCHIVE' 
        AND OBJECT_NAME='CMS_PREAUTH_TRANSACTION_EBR';
-
+       
        v_Retdate := TO_DATE(SUBSTR(TRIM(l_tran_date), 1, 8), 'yyyymmdd');
 
 
@@ -3617,7 +3499,7 @@ IF (v_Retdate>v_Retperiod)
        AND upper(cpt_expiry_flag) = 'N'
        AND cpt_delivery_channel = p_delv_chnl_in
        AND cpt_txn_code = p_tran_code_in;
-END IF;
+END IF;	
     --5.5.6 ends
     g_debug.display('l_card_no' || l_card_no);
     g_debug.display('l_org_rrn' || l_org_rrn);
@@ -3631,7 +3513,7 @@ END IF;
     -- g_debug.display('l_tranfee_amt' || l_tranfee_amt);
     --fetching the rrn
     SELECT to_char(to_char(SYSDATE,
-                           'YYMMDDHH24MISS') ||  --Changes VMS-8279 ~ HH has been replaced as HH24
+                           'YYMMDDHHMISS') ||
                    lpad(vmscms.seq_deppending_rrn.nextval,
                         3,
                         '0'))
@@ -3693,7 +3575,7 @@ END IF;
       --Jira Issue: CFIP:188 starts
       --updating the below fields manually
       --since the base procedure doesnot populate these fields in Transactionlog
-      UPDATE VMSCMS.TRANSACTIONLOG
+      UPDATE VMSCMS.TRANSACTIONLOG 
          SET correlation_id =
              (sys_context(fsfw.fsconst.c_fsapi_gpp_context,
                           'x-incfs-correlationid')),
@@ -3705,7 +3587,7 @@ END IF;
                           'x-incfs-partnerid'))
        WHERE rrn = l_rrn;
 --Added for VMS-5733/FSP-991
-     IF SQL%ROWCOUNT = 0 THEN
+     IF SQL%ROWCOUNT = 0 THEN 
        UPDATE VMSCMS_HISTORY.TRANSACTIONLOG_HIST
        SET correlation_id =
              (sys_context(fsfw.fsconst.c_fsapi_gpp_context,
@@ -3896,7 +3778,7 @@ END IF;
     g_debug.display('l_plain_pan' || l_plain_pan);
     --fetching the rrn
     SELECT to_char(to_char(SYSDATE,
-                           'YYMMDDHH24MISS') ||  --Changes VMS-8279 ~ HH has been replaced as HH24
+                           'YYMMDDHHMISS') ||
                    lpad(vmscms.seq_deppending_rrn.nextval,
                         3,
                         '0'))
@@ -4263,7 +4145,7 @@ END IF;
     g_debug.display('l_time' || l_time);
     --fetching the rrn
     SELECT to_char(to_char(SYSDATE,
-                           'YYMMDDHH24MISS') ||  --Changes VMS-8279 ~ HH has been replaced as HH24
+                           'YYMMDDHHMISS') ||
                    lpad(vmscms.seq_deppending_rrn.nextval,
                         3,
                         '0'))
@@ -4382,7 +4264,7 @@ END IF;
              add_ins_user   = NULL
        WHERE rrn = l_rrn;
    --Added for VMS-5733/FSP-991
-     IF SQL%ROWCOUNT = 0 THEN
+     IF SQL%ROWCOUNT = 0 THEN 
        UPDATE VMSCMS_HISTORY.TRANSACTIONLOG_HIST
            SET correlation_id =
              (sys_context(fsfw.fsconst.c_fsapi_gpp_context,
@@ -4725,7 +4607,7 @@ END IF;
     g_debug.display('l_time' || l_time);
     --fetching the rrn
     SELECT to_char(to_char(SYSDATE,
-                           'YYMMDDHH24MISS') ||  --Changes VMS-8279 ~ HH has been replaced as HH24
+                           'YYMMDDHHMISS') ||
                    lpad(vmscms.seq_deppending_rrn.nextval,
                         3,
                         '0'))
@@ -4844,7 +4726,7 @@ END IF;
            add_ins_user   = NULL
      WHERE rrn = l_rrn;
  --Added for VMS-5733/FSP-991
-     IF SQL%ROWCOUNT = 0 THEN
+     IF SQL%ROWCOUNT = 0 THEN 
        UPDATE VMSCMS_HISTORY.TRANSACTIONLOG_HIST
           SET correlation_id =
            (sys_context(fsfw.fsconst.c_fsapi_gpp_context,
@@ -5132,7 +5014,7 @@ END IF;
 
     ELSE
     SELECT to_char(to_char(SYSDATE,
-                           'YYMMDDHH24MISS') ||  --Changes VMS-8279 ~ HH has been replaced as HH24
+                           'YYMMDDHHMISS') ||
                    lpad(vmscms.seq_deppending_rrn.nextval,
                         3,
                         '0'))
@@ -5941,7 +5823,7 @@ PROCEDURE resend_email(
             RETURN;
         END IF;
 
-        IF l_flag = 1 THEN
+        IF l_flag = 1 THEN                  
             p_status_out := vmscms.gpp_const.c_mandatory_status;
 
             p_err_msg_out := l_field_name || ' is mandatory';

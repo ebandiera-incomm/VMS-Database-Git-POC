@@ -1,4 +1,5 @@
-create or replace PROCEDURE                                  vmscms.SP_PREAUTH_TXN_ISO93 (P_INST_CODE         IN NUMBER,
+create or replace
+PROCEDURE             VMSCMS.SP_PREAUTH_TXN_ISO93 (P_INST_CODE         IN NUMBER,
                                          P_MSG               IN VARCHAR2,
                                          P_RRN               VARCHAR2,
                                          P_DELIVERY_CHANNEL  VARCHAR2,
@@ -71,10 +72,7 @@ create or replace PROCEDURE                                  vmscms.SP_PREAUTH_T
                                          ,p_product_type IN VARCHAR2 default 'O'
                                          ,p_expiry_date_check IN VARCHAR2 default 'Y'
 										 ,p_surchrg_ind   IN VARCHAR2 DEFAULT '2' --Added for VMS-5856
-                                         ,p_expected_clearing_date           IN VARCHAR2 --Added for VMS_9194
-                                         ,p_marketspecific_dataidentifier    IN VARCHAR2 --Added for VMS_9194
-                                         ,p_resp_id   OUT VARCHAR2 --Added for sending to FSS (VMS-8018)
-                                         ,p_card_present_indicator in varchar2 default null --Added for VMS_9272
+    
                                          ) IS
   /************************************************************************************************************
 
@@ -569,63 +567,33 @@ create or replace PROCEDURE                                  vmscms.SP_PREAUTH_T
        * Modified For     : VMS-162
        * Reviewer         : Saravanankumar
        * Build Number     : VMSGPRHOSTCSD_17.12.1
-
+	   
 	* Modified by      : Vini
     * Modified Date    : 18-Jan-2018
     * Modified For     : VMS-162
     * Reviewer         : Saravanankumar
-    * Build Number     : VMSGPRHOSTCSD_18.01
+    * Build Number     : VMSGPRHOSTCSD_18.01 
 
      * Modified By      : DHINAKARAN B
      * Modified Date    : 15-NOV-2018
      * Purpose          : VMS-619 (RULE)
-     * Reviewer         : SARAVANAKUMAR A
-     * Release Number   : R08
-
-
+     * Reviewer         : SARAVANAKUMAR A 
+     * Release Number   : R08 
+     
+     
      * Modified By      : DHINAKARAN B
      * Modified Date    : 25-FEB-2020
      * Purpose          : VMS-1985
-     * Reviewer         : SARAVANAKUMAR A
-     * Release Number   : R27_build_1
-
+     * Reviewer         : SARAVANAKUMAR A 
+     * Release Number   : R27_build_1 
+	 
 	   * Modified By      : Karthick/Jey
 	   * Modified Date    : 05-19-2022
 	   * Purpose          : Archival changes.
 	   * Reviewer         : Venkat Singamaneni
 	   * Release Number   : VMSGPRHOST64 for VMS-5739/FSP-991
-
-	   * Modified By      : Areshka A.
-	   * Modified Date    : 03-Nov-2023
-	   * Purpose          : VMS-8018: Added new out parameter (response id) for sending to FSS
-	   * Reviewer         :
-	   * Release Number   :
-
-
-	* Modified By      : Mohan E.
-    * Modified Date    : 27-DEC-2023
-    * Purpose          : VMS-8140 - Ph1: Scale Concurrent Pre-Auth Reversals Logic for Redemptions
-    * Reviewer         : Pankaj S.
-    * Release Number   : R91
-    
-    * Modified By      : Mohan E.
-    * Modified Date    : 27-AUG-2024
-    * Purpose          : VMS_9194 Visa (1.4) Introduction of the Extended Authorization and Expected Clearing Date
-    * Reviewer         : Pankaj S./Venkat
-    * Release Number   : R104B3
 	
-	* Modified By      : Mohan E.
-    * Modified Date    : 29-OCT-2024
-    * Purpose          : VMS-9272 MCC Pre-Auths: Card Not Present (CNP) Rule Subset Creation
-    * Reviewer         : Venkat
-    * Release Number   : R105B3
-    
-    * Modified By      : Mohan E.
-    * Modified Date    : 13-NOV-2024
-    * Purpose          : VMS_9340 Visa (1.4) Introduction of the Extended Authorization and Expected Clearing Date
-    * Reviewer         : Venkat
-    * Release Number   : R106B1
-
+	
  *****************************************************************************************************************/
   V_ERR_MSG            VARCHAR2(900) := 'OK';
   V_ACCT_BALANCE       NUMBER;
@@ -853,15 +821,10 @@ V_REMOVESPACECHAR_CUST   VARCHAR2 (10);
   v_comlfree_flag varchar2(1);
   v_alpha_cntry_code gen_cntry_mast.gcm_alpha_cntry_code%TYPE;
   v_feature_value cms_inst_param.cip_param_value%TYPE;
-
+  
   v_Retperiod  date;  --Added for VMS-5739/FSP-991
   v_Retdate  date; --Added for VMS-5739/FSP-991
   
-  v_expected_clearing_date  date;           --Added for VMS_9194
-  v_extended_auth_date      date;           --Added for VMS_9194
-  v_param_value           varchar2(20);     --Added for VMS_9194
-  v_extended_auth_identifier varchar2(20) := p_marketspecific_dataidentifier;  --Added for VMS_9194
-
 BEGIN
 v_start_time := systimestamp;
   SAVEPOINT V_AUTH_SAVEPOINT;
@@ -1080,31 +1043,6 @@ v_start_time := systimestamp;
    end if;
 
    end if;
-
-
-     --SN added for VMS_8140
-
-        BEGIN
-          SP_AUTONOMOUS_PREAUTH_LOG(V_AUTH_ID, P_STAN, P_TRAN_DATE,
-                V_HASH_PAN,  P_INST_CODE, P_DELIVERY_CHANNEL , V_ERR_MSG);
-
-               IF V_ERR_MSG != 'OK' THEN
-               V_RESP_CDE     := '191';
-               RAISE EXP_REJECT_RECORD;
-               END IF;
-        EXCEPTION
-          When EXP_REJECT_RECORD Then
-          raise;
-          When others then
-              V_RESP_CDE       := '12';
-              V_ERR_MSG         := 'Concurrent check Failed' || SUBSTR(SQLERRM, 1, 200);
-
-              RAISE EXP_REJECT_RECORD;
-        END;
-   --EN added for VMS_8140
-
-
-
     /* ADDED FOR FSS-2065
       -----------------------------------------
       --SN: Added for Duplicate STAN check 0012198
@@ -1224,12 +1162,12 @@ v_start_time := systimestamp;
 
     BEGIN
 
-    SELECT  CPC_ADDR_VERIFICATION_CHECK,
-            CPC_INTERNATIONAL_CHECK,
+    SELECT  CPC_ADDR_VERIFICATION_CHECK, 
+            CPC_INTERNATIONAL_CHECK, 
             CPC_ENCRYPT_ENABLE,
             NVL(CPC_ADDR_VERIFICATION_RESPONSE, 'U')
-       INTO  V_ADDRVRIFY_FLAG,
-             V_INTERNATIONAL_IND,
+       INTO  V_ADDRVRIFY_FLAG, 
+             V_INTERNATIONAL_IND, 
              V_ENCRYPT_ENABLE,
              V_ADDRVERIFY_RESP
        FROM CMS_PROD_CATTYPE
@@ -1429,23 +1367,23 @@ v_start_time := systimestamp;
                     THEN
                        BEGIN
                           -- if not in the DB or null then assume it is enabled
-                          SELECT UPPER(TRIM(NVL(cip_param_value,'Y')))
+                          SELECT UPPER(TRIM(NVL(cip_param_value,'Y'))) 
                             INTO v_feature_value
-                            FROM vmscms.cms_inst_param
-                           WHERE cip_inst_code = 1
+                            FROM vmscms.cms_inst_param 
+                           WHERE cip_inst_code = 1 
                              AND cip_param_key = 'AMEX_5542_PREAUTH_FEATURE';
-                        EXCEPTION
+                        EXCEPTION 
                            WHEN NO_DATA_FOUND
                            THEN
                               v_feature_value := 'Y';
                         END;
-                        -- only do the partial auth if the feature is disabled
+                        -- only do the partial auth if the feature is disabled 
                         IF v_feature_value = 'N'
                         THEN
                            p_partialauth_amount := v_tran_amt;
                            v_partial_appr := 'Y';
                         END IF;
-                    ELSE
+                    ELSE 
                        p_partialauth_amount := v_tran_amt;
                        v_partial_appr := 'Y';
                     END IF;
@@ -1921,17 +1859,17 @@ end if;
 
     --Sn check for Preauth
     IF V_PREAUTH_FLAG = 1 THEN
-
-          BEGIN
-          select gcm_alpha_cntry_code
-          INTO  v_alpha_cntry_code
+    
+          BEGIN 
+          select gcm_alpha_cntry_code  
+          INTO  v_alpha_cntry_code  
           from gen_cntry_mast
           WHERE gcm_curr_code= P_COUNTRY_CODE  AND GCM_INST_CODE=1;
-          EXCEPTION
-          WHEN OTHERS THEN
+          EXCEPTION 
+          WHEN OTHERS THEN 
             v_alpha_cntry_code:=null;
           END;
-
+    
      BEGIN
        /* Start Added by Dhiraj G on 31052012 for Pre - Auth Parameter changes  */
        SP_ELAN_PREAUTHORIZE_TXN(P_CARD_NO,
@@ -1950,8 +1888,7 @@ end if;
                            V_HOLD_DAYS,
                            V_RESP_CDE,
                            V_ERR_MSG,
-                           v_alpha_cntry_code,
-                           p_card_present_indicator);  --Added for VMS_9272
+                           v_alpha_cntry_code);
 
        /* End Added by Dhiraj G on 31052012 for Pre - Auth Parameter changes  */
        IF (V_RESP_CDE <> '1' OR TRIM(V_ERR_MSG) <> 'OK') THEN
@@ -2116,18 +2053,18 @@ end if;
 
      IF v_incr_indicator <> '1' AND v_stan_checkflag = 'Y' THEN
       BEGIN
-
+        
 		 --Added for VMS-5739/FSP-991
        select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
-       INTO   v_Retperiod
-       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL
-       WHERE  OPERATION_TYPE='ARCHIVE'
+       INTO   v_Retperiod 
+       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL  
+       WHERE  OPERATION_TYPE='ARCHIVE' 
        AND OBJECT_NAME='TRANSACTIONLOG_EBR';
-
+       
        v_Retdate := TO_DATE(SUBSTR(TRIM(P_TRAN_DATE), 1, 8), 'yyyymmdd');
-
+	   
 	 IF (v_Retdate>v_Retperiod) THEN                                                        --Added for VMS-5739/FSP-991
-
+	 
         SELECT COUNT(1)
          INTO V_STAN_COUNT
          FROM TRANSACTIONLOG
@@ -2137,9 +2074,9 @@ end if;
         AND   DELIVERY_CHANNEL = P_DELIVERY_CHANNEL
         AND   ADD_INS_DATE BETWEEN TRUNC(SYSDATE-1)  AND SYSDATE
         AND   SYSTEM_TRACE_AUDIT_NO = P_STAN;
-
+		
 	 ELSE
-
+	    
 		SELECT COUNT(1)
          INTO V_STAN_COUNT
          FROM VMSCMS_HISTORY.TRANSACTIONLOG_HIST                                          --Added for VMS-5739/FSP-991
@@ -2149,7 +2086,7 @@ end if;
         AND   DELIVERY_CHANNEL = P_DELIVERY_CHANNEL
         AND   ADD_INS_DATE BETWEEN TRUNC(SYSDATE-1)  AND SYSDATE
         AND   SYSTEM_TRACE_AUDIT_NO = P_STAN;
-
+	 
 	 END IF;
 
         IF V_STAN_COUNT > 0 THEN
@@ -2415,8 +2352,8 @@ end if;
                                          AND CPT_RRN = P_RRN
                                          AND CPT_PREAUTH_VALIDFLAG = 'Y'
                                          AND CPT_EXPIRY_FLAG = 'N';
-						END IF;
-
+						END IF;	
+						
                 EXCEPTION
                 WHEN NO_DATA_FOUND THEN
                     V_ERR_MSG :='No Matching Preauth was found for Incremental preauth ';
@@ -3252,7 +3189,7 @@ END IF;
          --En added by Pankaj S. for 10871
          );
        --En Entry for Fixed Fee
-
+	   
 	   IF V_PER_FEES <> 0 THEN --Added for VMS-5856
        V_FEE_OPENING_BAL := V_FEE_OPENING_BAL - V_FLAT_FEES;
        --Sn Entry for Percentage Fee
@@ -3787,68 +3724,7 @@ v_comp_total_fee,v_complfee_increment_type,v_comp_fee_code,v_comp_feeattach_type
 
 
         /* End Added by Dhiraj G on 31052012 for Pre - Auth Parameter changes  */
-        
-        --SN Added for VMS_9194 
-        
-        BEGIN
-         SELECT CIP_PARAM_VALUE
-           INTO V_PARAM_VALUE
-           FROM CMS_INST_PARAM
-          WHERE CIP_PARAM_KEY = 'EXTENDED_AUTH_VMS9194_TOGGLE' AND CIP_INST_CODE = P_INST_CODE;
-        EXCEPTION
-         WHEN NO_DATA_FOUND THEN
-           V_PARAM_VALUE := 'Y'; 
-         WHEN OTHERS THEN
-           V_RESP_CDE := '21';
-           V_ERR_MSG  := 'Error while selecting param value ';
-          RETURN;
-        END;
 
-        IF  V_PARAM_VALUE = 'Y'  then
-                       
-                BEGIN
-                    IF p_expected_clearing_date is not null then
-                                        
-                        select to_date(p_expected_clearing_date,'YDDD')
-                        into v_expected_clearing_date 
-                        from dual;                         
-                    END IF; 
-                    
-                    IF p_marketspecific_dataidentifier = 'X' then
-                    
-                        select V_TRAN_DATE + 30
-                        into v_extended_auth_date
-                        from dual;
-                    END IF;
-                    
-					IF (v_expected_clearing_date < V_TRAN_DATE) and p_marketspecific_dataidentifier is null then                    
-                          V_PARAM_VALUE := 'N';
-                    END IF;
-       
-                EXCEPTION
-                    WHEN OTHERS THEN
-                        V_RESP_CDE := '21';
-                        V_ERR_MSG  := 'Error in calculating preauth expiry date';
-                        RAISE EXP_REJECT_RECORD;
-                END;
-        END IF;   
-
-       IF  (p_expected_clearing_date IS NOT NULL OR p_marketspecific_dataidentifier = 'X' ) AND V_PARAM_VALUE = 'Y'  THEN       
-        
-             BEGIN
-                SELECT GREATEST (nvl(v_expected_clearing_date,to_date('1900-01-01','YYYY-MM-DD')), nvl(v_extended_auth_date,to_date('1900-01-01','YYYY-MM-DD')))
-                INTO V_PREAUTH_DATE
-                FROM DUAL;   
-             EXCEPTION
-                WHEN OTHERS THEN
-                        V_RESP_CDE := '21';
-                        V_ERR_MSG  := 'Error in calculating greatest date';
-                        RAISE EXP_REJECT_RECORD;
-             END;
-            
-       ELSE
-    --EN Added for VMS_9194
-    
         IF V_PREAUTH_HOLD = '0' THEN
           V_PREAUTH_DATE := V_TRAN_DATE + (V_PREAUTH_PERIOD * (1 / 1440));
         END IF;
@@ -3859,8 +3735,6 @@ v_comp_total_fee,v_complfee_increment_type,v_comp_fee_code,v_comp_feeattach_type
 
         IF V_PREAUTH_HOLD = '2' THEN
           V_PREAUTH_DATE := V_TRAN_DATE + V_PREAUTH_PERIOD;
-        END IF;
-        
         END IF;
 
         BEGIN
@@ -3881,7 +3755,7 @@ v_comp_total_fee,v_complfee_increment_type,v_comp_fee_code,v_comp_feeattach_type
                   AND cpt_rrn = p_rrn
                   AND cpt_preauth_validflag = 'Y'
                   AND cpt_expiry_flag = 'N';
-				END IF;
+				END IF;				
 
                IF v_transactioncomp_flag = 'C'
                THEN
@@ -3895,43 +3769,36 @@ v_comp_total_fee,v_complfee_increment_type,v_comp_fee_code,v_comp_feeattach_type
                   v_trantype := 'I';
 
                   BEGIN
-                    -- Sn added for VMS_9340
-                    IF  (p_expected_clearing_date IS NOT NULL OR p_marketspecific_dataidentifier = 'X' ) AND V_PARAM_VALUE = 'Y'  THEN
-                    
-                     UPDATE VMSCMS.CMS_PREAUTH_TRANSACTION                               
+                     UPDATE VMSCMS.CMS_PREAUTH_TRANSACTION                               --Added for VMS-5739/FSP-991
                         SET cpt_totalhold_amt = ROUND (cpt_totalhold_amt + v_tran_amt, 2),
                             cpt_transaction_flag = 'I',
-                            cpt_txn_amnt = ROUND (v_tran_amt, 2),                            
+                            cpt_txn_amnt = ROUND (v_tran_amt, 2),
+                            cpt_expiry_date = v_preauth_date,
                             cpt_completion_fee =
                                DECODE (v_complfee_increment_type,
                                        'C', cpt_completion_fee - v_comp_total_fee,
                                        'D', cpt_completion_fee + v_comp_total_fee,
                                        cpt_completion_fee
-                                      ),
-                            cpt_extended_auth_date = v_extended_auth_date,              
-                            cpt_expected_clearing_date = v_expected_clearing_date,      
-                            cpt_extended_auth_identifier = v_extended_auth_identifier   
+                                      )
                       WHERE cpt_card_no = v_hash_pan
                         AND cpt_rrn = p_rrn
                         AND cpt_preauth_validflag = 'Y'
                         AND cpt_expiry_flag = 'N'
                         AND cpt_inst_code = p_inst_code;
-
+						
 						IF SQL%ROWCOUNT = 0
                      THEN
 					    UPDATE VMSCMS_HISTORY.CMS_PREAUTH_TRANSACTION_HIST                              --Added for VMS-5739/FSP-991
                         SET cpt_totalhold_amt = ROUND (cpt_totalhold_amt + v_tran_amt, 2),
                             cpt_transaction_flag = 'I',
                             cpt_txn_amnt = ROUND (v_tran_amt, 2),
+                            cpt_expiry_date = v_preauth_date,
                             cpt_completion_fee =
                                DECODE (v_complfee_increment_type,
                                        'C', cpt_completion_fee - v_comp_total_fee,
                                        'D', cpt_completion_fee + v_comp_total_fee,
                                        cpt_completion_fee
-                                      ),
-							cpt_extended_auth_date = v_extended_auth_date,              --Added for VMS_9194
-                            cpt_expected_clearing_date = v_expected_clearing_date,      --Added for VMS_9194
-                            cpt_extended_auth_identifier = v_extended_auth_identifier   --Added for VMS_9194
+                                      )
                       WHERE cpt_card_no = v_hash_pan
                         AND cpt_rrn = p_rrn
                         AND cpt_preauth_validflag = 'Y'
@@ -3945,61 +3812,7 @@ v_comp_total_fee,v_complfee_increment_type,v_comp_fee_code,v_comp_feeattach_type
                         v_resp_cde := '21';
                         RAISE exp_reject_record;
                      END IF;
-				END IF;
-                
-                ELSE
-                -- En added for VMS_9340
-                UPDATE VMSCMS.CMS_PREAUTH_TRANSACTION                               --Added for VMS-5739/FSP-991
-                        SET cpt_totalhold_amt = ROUND (cpt_totalhold_amt + v_tran_amt, 2),
-                            cpt_transaction_flag = 'I',
-                            cpt_txn_amnt = ROUND (v_tran_amt, 2),
-                            cpt_expiry_date = v_preauth_date,
-                            cpt_completion_fee =
-                               DECODE (v_complfee_increment_type,
-                                       'C', cpt_completion_fee - v_comp_total_fee,
-                                       'D', cpt_completion_fee + v_comp_total_fee,
-                                       cpt_completion_fee
-                                      ),
-                            cpt_extended_auth_date = v_extended_auth_date,              --Added for VMS_9194
-                            cpt_expected_clearing_date = v_expected_clearing_date,      --Added for VMS_9194
-                            cpt_extended_auth_identifier = v_extended_auth_identifier   --Added for VMS_9194
-                      WHERE cpt_card_no = v_hash_pan
-                        AND cpt_rrn = p_rrn
-                        AND cpt_preauth_validflag = 'Y'
-                        AND cpt_expiry_flag = 'N'
-                        AND cpt_inst_code = p_inst_code;
-
-						IF SQL%ROWCOUNT = 0
-                     THEN
-					    UPDATE VMSCMS_HISTORY.CMS_PREAUTH_TRANSACTION_HIST                              --Added for VMS-5739/FSP-991
-                        SET cpt_totalhold_amt = ROUND (cpt_totalhold_amt + v_tran_amt, 2),
-                            cpt_transaction_flag = 'I',
-                            cpt_txn_amnt = ROUND (v_tran_amt, 2),
-                            cpt_expiry_date = v_preauth_date,
-                            cpt_completion_fee =
-                               DECODE (v_complfee_increment_type,
-                                       'C', cpt_completion_fee - v_comp_total_fee,
-                                       'D', cpt_completion_fee + v_comp_total_fee,
-                                       cpt_completion_fee
-                                      ),
-							cpt_extended_auth_date = v_extended_auth_date,              --Added for VMS_9194
-                            cpt_expected_clearing_date = v_expected_clearing_date,      --Added for VMS_9194
-                            cpt_extended_auth_identifier = v_extended_auth_identifier   --Added for VMS_9194
-                      WHERE cpt_card_no = v_hash_pan
-                        AND cpt_rrn = p_rrn
-                        AND cpt_preauth_validflag = 'Y'
-                        AND cpt_expiry_flag = 'N'
-                        AND cpt_inst_code = p_inst_code;
-
-                     IF SQL%ROWCOUNT = 0
-                     THEN
-                        v_err_msg :=
-                                    'Problem while updating data in  PREAUTH TRANSACTION';
-                        v_resp_cde := '21';
-                        RAISE exp_reject_record;
-                     END IF;
-				END IF;
-                END IF;
+				END IF;	 
                   EXCEPTION
                   WHEN exp_reject_record THEN
                      RAISE;
@@ -4018,16 +3831,7 @@ v_comp_total_fee,v_complfee_increment_type,v_comp_fee_code,v_comp_feeattach_type
                END IF;
             EXCEPTION
                WHEN NO_DATA_FOUND THEN
-               IF(p_incr_indicator IS NOT NULL) THEN
-                    IF (UPPER(TRIM(p_networkid_switch)) = 'AMEX' AND p_incr_indicator = 'E') THEN
-                        v_trantype := 'E';
-                    ELSE
-                        v_trantype := 'N';
-                    END IF;
-                ELSE
-                    v_trantype := 'N';
-                END IF;
-
+                  v_trantype := 'N';
 
                   BEGIN
                      INSERT INTO cms_preauth_transaction
@@ -4046,10 +3850,7 @@ v_comp_total_fee,v_complfee_increment_type,v_comp_fee_code,v_comp_feeattach_type
                                   cpt_merchant_zip,  cpt_pos_verification, cpt_internation_ind_response,
                                   --En Added for Transactionlog Functional Removal Phase-II changes
                                   cpt_complfree_flag,
-                                  cpt_payment_type,
-                                  cpt_extended_auth_date,       --Added for VMS_9194
-                                  cpt_expected_clearing_date,   --Added for VMS_9194
-                                  cpt_extended_auth_identifier  --Added for VMS_9194
+                                  cpt_payment_type
                                  )
                           VALUES (v_hash_pan, v_tran_amt, v_preauth_date,
                                   '1', 'Y', p_inst_code,
@@ -4072,10 +3873,7 @@ v_comp_total_fee,v_complfee_increment_type,v_comp_fee_code,v_comp_feeattach_type
                                  p_merchant_zip, p_pos_verfication, p_international_ind,
                                  --En Added for Transactionlog Functional Removal Phase-II changes
                                  CASE WHEN v_comp_freetxn_exceed='N' THEN 'Y' END,
-                                 V_MS_PYMNT_TYPE,
-                                 v_extended_auth_date,      --Added for VMS_9194
-                                 v_expected_clearing_date,   --Added for VMS_9194
-                                 v_extended_auth_identifier --Added for VMS_9194
+                                 V_MS_PYMNT_TYPE
                                  );
                   EXCEPTION
                      WHEN OTHERS
@@ -4124,9 +3922,6 @@ v_comp_total_fee,v_complfee_increment_type,v_comp_fee_code,v_comp_feeattach_type
               ,CPH_TRAN_CODE,
               CPH_PANNO_LAST4DIGIT,  --Added by Abdul Hameed M.A on 12 Feb 2014 for Mantis ID 13645
                cph_completion_fee --Added for FSS 837
-              ,CPH_EXTENDED_AUTH_DATE       --Added for VMS_9194
-              ,CPH_EXPECTED_CLEARING_DATE   --Added for VMS_9194
-              ,CPH_EXTENDED_AUTH_IDENTIFIER --Added for VMS_9194
              )
             VALUES
              (V_HASH_PAN,
@@ -4158,9 +3953,6 @@ v_comp_total_fee,v_complfee_increment_type,v_comp_fee_code,v_comp_feeattach_type
               ,P_TXN_CODE, -- Added for Mantis ID -13467
                (SUBSTR(P_CARD_NO, LENGTH(P_CARD_NO) - 3, LENGTH(P_CARD_NO))), --Added by Abdul Hameed M.A on 12 Feb 2014 for Mantis ID 13645
                v_comp_total_fee --Added for FSS 837
-               ,v_extended_auth_date        --Added for VMS_9194
-               , v_expected_clearing_date   --Added for VMS_9194
-               ,v_extended_auth_identifier  --Added for VMS_9194
               );
           EXCEPTION
             WHEN OTHERS THEN
@@ -4410,7 +4202,7 @@ v_comp_total_fee,v_complfee_increment_type,v_comp_fee_code,v_comp_feeattach_type
     END;
 
     ---En Updation of Usage limit and amount
-
+    
     --Sn Added by Pankaj S. for enabling limit validation
     IF v_prfl_code IS NOT NULL AND v_prfl_flag = 'Y' THEN
     BEGIN
@@ -4435,14 +4227,14 @@ v_comp_total_fee,v_complfee_increment_type,v_comp_fee_code,v_comp_feeattach_type
     END;
     END IF;
     --En Added by Pankaj S. for enabling limit validation
-
-    BEGIN
+    
+    BEGIN  
         IF v_partial_appr = 'Y' AND v_resp_cde = '1' THEN
                v_resp_cde := '2';
          END IF;
     END;
-
-    P_RESP_ID := V_RESP_CDE; --Added for VMS-8018
+      
+      
     BEGIN
      SELECT CMS_B24_RESPCDE, --Changed  CMS_ISO_RESPCDE to  CMS_B24_RESPCDE for HISO SPECIFIC Response codes
             cms_iso_respcde  -- Added for OLS changes
@@ -4460,16 +4252,6 @@ v_comp_total_fee,v_complfee_increment_type,v_comp_fee_code,v_comp_feeattach_type
        V_RESP_CDE := '21';
        RAISE EXP_REJECT_RECORD;
     END;
-
---SN added for VMS_8140
-        BEGIN
-            sp_autonomous_preauth_logclear(v_auth_id);
-        EXCEPTION
-            When others then
-            null;
-        END;
---EN added for VMS_8140
-
        select (extract(day from systimestamp - v_start_time) *86400+
     extract(hour from systimestamp - v_start_time) *3600+
     extract(minute from systimestamp - v_start_time) *60+
@@ -4581,8 +4363,6 @@ v_comp_total_fee,v_complfee_increment_type,v_comp_fee_code,v_comp_feeattach_type
              v_resp_cde:='1000';
         END IF;
 
-       P_RESP_ID := V_RESP_CDE; --Added for VMS-8018
-
        -- Assign the response code to the out parameter
        SELECT CMS_B24_RESPCDE, --Changed  CMS_ISO_RESPCDE to  CMS_B24_RESPCDE for HISO SPECIFIC Response codes
               cms_iso_respcde  -- Added for OLS changes
@@ -4598,7 +4378,6 @@ v_comp_total_fee,v_complfee_increment_type,v_comp_fee_code,v_comp_feeattach_type
         P_RESP_MSG  := 'Problem while selecting data from response master ' ||
                     V_RESP_CDE || SUBSTR(SQLERRM, 1, 300);
         P_RESP_CODE := '69';
-        P_RESP_ID   := '69'; --Added for VMS-8018
         ---ISO MESSAGE FOR DATABASE ERROR Server Declined
         ROLLBACK;
      END;
@@ -4698,22 +4477,9 @@ v_comp_total_fee,v_complfee_increment_type,v_comp_fee_code,v_comp_feeattach_type
         P_RESP_MSG  := 'Problem while inserting data into transaction log  dtl' ||
                     SUBSTR(SQLERRM, 1, 300);
         P_RESP_CODE := '69'; -- Server Declined
-        P_RESP_ID   := '69'; --Added for VMS-8018
         ROLLBACK;
         RETURN;
      END;
-
-
---SN added for VMS_8140
-        BEGIN
-            sp_autonomous_preauth_logclear(v_auth_id);
-        EXCEPTION
-            When others then
-            null;
-        END;
---EN added for VMS_8140
-
-
     WHEN OTHERS THEN
      ROLLBACK TO V_AUTH_SAVEPOINT;
 
@@ -4805,13 +4571,11 @@ v_comp_total_fee,v_complfee_increment_type,v_comp_fee_code,v_comp_feeattach_type
             CMS_RESPONSE_ID = V_RESP_CDE;
 
        P_RESP_MSG := V_ERR_MSG;
-       P_RESP_ID  := V_RESP_CDE; --Added for VMS-8018
      EXCEPTION
        WHEN OTHERS THEN
         P_RESP_MSG  := 'Problem while selecting data from response master ' ||
                     V_RESP_CDE || SUBSTR(SQLERRM, 1, 300);
         P_RESP_CODE := '69'; -- Server Declined
-        P_RESP_ID   := '69'; --Added for VMS-8018
         ROLLBACK;
      END;
 
@@ -4904,22 +4668,10 @@ v_comp_total_fee,v_complfee_increment_type,v_comp_fee_code,v_comp_feeattach_type
         P_RESP_MSG  := 'Problem while inserting data into transaction log  dtl' ||
                     SUBSTR(SQLERRM, 1, 300);
         P_RESP_CODE := '69'; -- Server Decline Response 220509
-        P_RESP_ID   := '69'; --Added for VMS-8018
         ROLLBACK;
         RETURN;
      END;
      --En select response code and insert record into txn log dtl
-
-
-	--SN added for VMS_8140
-			BEGIN
-				sp_autonomous_preauth_logclear(v_auth_id);
-			EXCEPTION
-				When others then
-				null;
-			END;
-	--EN added for VMS_8140
-
   END;
 
   --- Sn create GL ENTRIES
@@ -5235,20 +4987,17 @@ v_comp_total_fee,v_complfee_increment_type,v_comp_fee_code,v_comp_feeattach_type
     WHEN OTHERS THEN
      ROLLBACK;
      P_RESP_CODE := '69'; -- Server Declione
-     P_RESP_ID   := '69'; --Added for VMS-8018
      P_RESP_MSG  := 'Problem while inserting data into transaction log  ' ||
                  SUBSTR(SQLERRM, 1, 300);
   END;
   --En create a entry in txn log
 
-
 EXCEPTION
   WHEN OTHERS THEN
     ROLLBACK;
     P_RESP_CODE := '69'; -- Server Declined
-    P_RESP_ID   := '69'; --Added for VMS-8018
     P_RESP_MSG  := 'Main exception from  authorization ' ||
                 SUBSTR(SQLERRM, 1, 300);
 END;
 /
-show error;
+show error

@@ -736,7 +736,7 @@ END IF;
          g_debug.display('DELIVERY CHANNEL:' || l_delivery_channel);
          g_debug.display('CURR CODE:' || l_curr_code);
          --fetching the rrn
-         SELECT to_char(to_char(SYSDATE, 'YYMMDDHH24MISS') ||  --Changes VMS-8279 ~ HH has been replaced as HH24
+         SELECT to_char(to_char(SYSDATE, 'YYMMDDHHMISS') ||
                         lpad(vmscms.seq_deppending_rrn.nextval, 3, '0'))
            INTO l_rrn
            FROM dual;
@@ -1009,7 +1009,7 @@ v_Retdate  date; --Added for VMS-5739/FSP-991
       g_debug.display('l_time' || l_time);
 
       --fetching the rrn
-      SELECT to_char(to_char(SYSDATE, 'YYMMDDHH24MISS') ||  --Changes VMS-8279 ~ HH has been replaced as HH24
+      SELECT to_char(to_char(SYSDATE, 'YYMMDDHHMISS') ||
                      lpad(vmscms.seq_deppending_rrn.nextval, 3, '0'))
         INTO l_rrn
         FROM dual;

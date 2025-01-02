@@ -1,4 +1,4 @@
-create or replace PACKAGE BODY                                                  VMSCMS.vmsachcanada
+create or replace PACKAGE BODY                                           vmscms.vmsachcanada
 IS
    /**********************************************************************************************
       * Created By       : Spankaj
@@ -58,7 +58,7 @@ IS
             prm_errmsg :='Error while getting the Oracle directory path-'|| SUBSTR (SQLERRM, 1, 200);
             RETURN;
       END;
-
+      
       BEGIN
          BEGIN
             get_file_list (v_file_path);
@@ -101,7 +101,7 @@ IS
                v_total_camt := 0;
                v_total_damt := 0;
                v_succ_row := 0;
-
+               
                IF SUBSTR (x.cad_file_name,1,4) NOT IN ('CPA-','AFT-') THEN  --VMS-5971
                --IF SUBSTR (x.cad_file_name,1,4) <>'CPA-' THEN
                   v_file_errmsg :='Invalid file(name mismatch) for Canada ACH processing';
@@ -114,7 +114,7 @@ IS
                     FROM cms_achfile_dtls
                    WHERE cad_upd_stat IN ('R', 'Y')
                      AND cad_file_name = x.cad_file_name;
-
+                    
                   IF v_dup_check > 0 THEN
                      v_file_errmsg := 'File already processed.';
                      RAISE exp_reject_file;
@@ -180,7 +180,7 @@ IS
                   END;
                END LOOP;
 
-               IF v_drcheck <> to_number(TRIM (SUBSTR (v_filebuffer, 39, 8)))
+               IF v_drcheck <> to_number(TRIM (SUBSTR (v_filebuffer, 39, 8))) 
                 OR v_crcheck <> to_number(TRIM (SUBSTR (v_filebuffer, 61, 8)))
                 OR v_echeck <> to_number(TRIM (SUBSTR (v_filebuffer, 83, 8)))  --VMS-5971
                 OR v_fcheck <> to_number(TRIM (SUBSTR (v_filebuffer, 105, 8))) --VMS-5971
@@ -199,7 +199,7 @@ IS
                END IF;
 
                --SN: VMS-5971
-               v_total_damt :=(TO_NUMBER (TRIM (SUBSTR (v_filebuffer, 25, 14))) + TO_NUMBER (TRIM (SUBSTR (v_filebuffer, 47, 14))) +
+               v_total_damt :=(TO_NUMBER (TRIM (SUBSTR (v_filebuffer, 25, 14))) + TO_NUMBER (TRIM (SUBSTR (v_filebuffer, 47, 14))) + 
                                TO_NUMBER (TRIM (SUBSTR (v_filebuffer, 69, 14))) + TO_NUMBER (TRIM (SUBSTR (v_filebuffer, 91, 14))))/ 100;
                --v_total_damt :=(TO_NUMBER (TRIM (SUBSTR (v_filebuffer, 25, 14)))/ 100;
                --v_total_camt :=TO_NUMBER (TRIM (SUBSTR (v_filebuffer, 47, 14)))/ 100;
@@ -487,7 +487,7 @@ IS
          WHEN OTHERS THEN
             v_errmsg :='Error while calling file extraction process-'|| SUBSTR (SQLERRM, 1, 100);
       END;
-
+     
       IF v_errmsg = 'OK' THEN
          FOR x IN 1 .. v_files.COUNT
          LOOP
@@ -614,7 +614,7 @@ IS
                   SET cat_proc_stat = v_proc_stat,
                       cat_process_date = SYSDATE
                 WHERE cat_file_name = v_files (x) AND ROWID = i.rd;
-
+                
                 IF v_proc_stat = 'S' AND i.cat_txn_type = 'E' THEN
                    UPDATE cms_achcanda_temp
                       SET cat_rvsl_flag = 1
@@ -622,7 +622,7 @@ IS
                       AND cat_txn_type = 'C'
                       AND cat_proc_stat = 'S';
                 END IF;
-
+                
                COMMIT;
             END LOOP;
 
@@ -650,7 +650,7 @@ IS
                      SET cad_rep_stat = v_errmsg
                    WHERE cad_file_name = v_files (x);*/
             END;
-
+            
             UPDATE cms_achfile_dtls
                SET cad_rep_stat = v_errmsg
              WHERE cad_file_name = v_files (x);
@@ -750,8 +750,6 @@ IS
       v_proxy_no               cms_appl_pan.cap_proxy_number%TYPE;
       v_rvsl_flag		       cms_achcanda_temp.cat_rvsl_flag%TYPE;
       v_post_dt                cms_achcanda_temp.cat_process_date%TYPE;
-	  v_Retperiod  date;  --Added for VMS-5739/FSP-991
-v_Retdate  date; --Added for VMS-5739/FSP-991
       --EN: VMS-5971 Changes
    BEGIN
       --p_errmsg := 'OK';
@@ -819,7 +817,7 @@ v_Retdate  date; --Added for VMS-5739/FSP-991
       IF p_txntype IN ('E', 'F') THEN
          IF v_dr_cr_flag ='CR' THEN
             v_dr_cr_flag := 'DR';
-         ELSE
+         ELSE 
             v_dr_cr_flag := 'CR';
          END IF;
          v_trans_desc := v_trans_desc||' - Reversal';
@@ -967,10 +965,10 @@ v_Retdate  date; --Added for VMS-5739/FSP-991
       ELSIF p_txntype='F' THEN --VMS-597
         v_errmsg :='Debit Reversal transaction not allowed';
         v_respcode := '14';
-        RAISE exp_main_reject_record;
+        RAISE exp_main_reject_record;  
       ELSIF p_txntype='E' THEN
         BEGIN
-          SELECT NVL(cat_rvsl_flag,0),
+          SELECT NVL(cat_rvsl_flag,0), 
                  TO_NUMBER (get_tabdata(cat_rec_no,cat_seg_no,cat_file_name,'S',5)) / 100,
                  get_tabdata(cat_rec_no,cat_seg_no,cat_file_name,'S',8),
                  cat_process_date
@@ -985,16 +983,16 @@ v_Retdate  date; --Added for VMS-5739/FSP-991
 
            IF v_rvsl_flag = 1 THEN
               v_errmsg :='The reversal already done for the orginal transaction';
-              RAISE exp_main_reject_record;
+              RAISE exp_main_reject_record;  
            ELSIF v_proxy_no != p_proxy_no THEN
               v_errmsg :='Original cannot be reversed - Invalid payee account';
-              RAISE exp_main_reject_record;
+              RAISE exp_main_reject_record;  
            ELSIF v_amount != p_amount THEN
               v_errmsg :='Original cannot be reversed - Invalid amount';
-              RAISE exp_main_reject_record;
+              RAISE exp_main_reject_record;  
            ELSIF v_post_dt + 3 < sysdate THEN
               v_errmsg :='The reversal exceeds 3 days following posting date of original txn';
-              RAISE exp_main_reject_record;
+              RAISE exp_main_reject_record;  
            END IF;
         EXCEPTION
          WHEN exp_main_reject_record THEN
@@ -1003,11 +1001,11 @@ v_Retdate  date; --Added for VMS-5739/FSP-991
          WHEN TOO_MANY_ROWS THEN
             v_errmsg :='More than one matching orginal txn found';
             v_respcode := '14';
-            RAISE exp_main_reject_record;
+            RAISE exp_main_reject_record;  
          WHEN NO_DATA_FOUND THEN
             v_errmsg :='Matching original transaction not found';
             v_respcode := '14';
-            RAISE exp_main_reject_record;
+            RAISE exp_main_reject_record;  
          WHEN OTHERS THEN
             v_respcode := '21';
             v_errmsg :='Error while selecting original txn-'|| SUBSTR (SQLERRM, 1, 200);
@@ -1288,7 +1286,7 @@ v_Retdate  date; --Added for VMS-5739/FSP-991
                                            NULL,
                                            NULL,
                                            NULL,
-                                           p_txntype, --NULL
+                                           p_txntype, --NULL  
                                            NULL,
                                            NULL,
                                            NULL,
@@ -1433,20 +1431,7 @@ v_Retdate  date; --Added for VMS-5739/FSP-991
          p_resp_code := v_respcode;
 
          BEGIN
-		 
-		 --Added for VMS-5739/FSP-991
- select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
-       INTO   v_Retperiod 
-       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
-       WHERE  OPERATION_TYPE='ARCHIVE' 
-       AND OBJECT_NAME='CMS_TRANSACTION_LOG_DTL_EBR';
-       
-       v_Retdate := TO_DATE(SUBSTR(TRIM(p_trandate), 1, 8), 'yyyymmdd');
-
-
-IF (v_Retdate>v_Retperiod)
-    THEN
-            UPDATE VMSCMS.cms_transaction_log_dtl
+            UPDATE cms_transaction_log_dtl
                SET ctd_source_name = p_source_sname
              WHERE ctd_rrn = v_rrn
                AND ctd_business_date = p_trandate
@@ -1456,18 +1441,6 @@ IF (v_Retdate>v_Retperiod)
                AND ctd_msg_type = v_msg
                AND ctd_inst_code = p_instcode
                AND ctd_customer_card_no = v_hash_pan;
-			   ELSE
-			   UPDATE VMSCMS_HISTORY.cms_transaction_log_dtl_HIST	--Added for VMS-5739/FSP-991
-               SET ctd_source_name = p_source_sname
-             WHERE ctd_rrn = v_rrn
-               AND ctd_business_date = p_trandate
-               AND ctd_business_time = p_trantime
-               AND ctd_delivery_channel = v_del_channel
-               AND ctd_txn_code = v_txn_code
-               AND ctd_msg_type = v_msg
-               AND ctd_inst_code = p_instcode
-               AND ctd_customer_card_no = v_hash_pan;
-			   END IF;
          EXCEPTION
             WHEN OTHERS THEN
                v_errmsg :='Problem on updated cms_Transaction_log_dtl-'|| SUBSTR (SQLERRM, 1, 200);
@@ -1979,7 +1952,7 @@ IF (v_Retdate>v_Retperiod)
         v_rec_tab   DBMS_SQL.desc_tab;
         v_seq       VARCHAR2 (5);
         v_partnr    VARCHAR2 (50);
-
+    
         CURSOR c_rep IS
             SELECT    cat_proxy_no
                    || ','
@@ -1995,7 +1968,7 @@ IF (v_Retdate>v_Retperiod)
     BEGIN
         prm_errmsg := 'OK';
         v_partnr := SUBSTR (prm_filename,(INSTR (prm_filename,'-',1,2)+ 1),((INSTR (prm_filename,'-',1,3)- 1)- INSTR (prm_filename,'-',1,2)));
-
+        
         BEGIN
             SELECT LPAD (COUNT (*)+1, 4, '0')seq
               INTO v_seq
@@ -2005,7 +1978,7 @@ IF (v_Retdate>v_Retperiod)
                AND cad_process_msg = 'OK'
                AND cad_rep_stat = 'OK'
                AND cad_ins_date > TRUNC (SYSDATE);
-
+    
             l_file := UTL_FILE.fopen (UPPER (prm_directory),
                                       v_partnr || '_' || TO_CHAR (SYSDATE, 'YYYYMMDD') || '_' || v_seq || '.csv',
                                       'w',
@@ -2016,19 +1989,19 @@ IF (v_Retdate>v_Retperiod)
                 prm_errmsg :='Error occured during opening file -'|| SUBSTR (SQLERRM, 1, 200);
                 RETURN;
         END;
-
+               
         UTL_FILE.put_line (l_file, 'ACCT_NO,REC_TYPE,AMOUNT,ITEM_TRACE_NO,RETURN_CODE');
-
+        
         FOR j IN c_rep
         LOOP
             v_str := j.data;
-
+    
             UTL_FILE.put_line (l_file, v_str);
         END LOOP;
-
+    
         --flush file to disk
         UTL_FILE.fflush (l_file);
-
+    
         --Close the file
         UTL_FILE.fclose (l_file);
     EXCEPTION
@@ -2036,7 +2009,7 @@ IF (v_Retdate>v_Retperiod)
             IF UTL_FILE.is_open (l_file)THEN
                 UTL_FILE.fclose (l_file);
             END IF;
-
+    
             prm_errmsg := 'Main Excp from Query2csc-' || SUBSTR (SQLERRM, 1, 200);
     END;
 
@@ -2072,4 +2045,4 @@ IF (v_Retdate>v_Retperiod)
       NAME 'FileList.getList( java.lang.String )';
 END;
 /
-SHOW ERROR;
+SHOW ERROR

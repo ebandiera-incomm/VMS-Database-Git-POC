@@ -1,5 +1,5 @@
 create or replace
-PACKAGE                             VMSCMS.VMSOLS
+PACKAGE                             VMSOLS
 AS
 procedure cr_adjust_cmsauth_iso93(
     p_i_inst_code               in number, 
@@ -46,9 +46,5 @@ procedure cr_adjust_cmsauth_iso93(
     p_o_resp_code               out varchar2,
     p_o_resp_msg                out clob,
     p_o_ledger_bal              out varchar2,
-    p_o_iso_respcde             out varchar2,
-    p_o_resp_id                 out varchar2);
+    p_o_iso_respcde             out varchar2);
 END VMSOLS;
-
-/
-show error

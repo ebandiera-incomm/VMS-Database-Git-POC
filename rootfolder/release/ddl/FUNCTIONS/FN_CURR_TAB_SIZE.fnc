@@ -3,8 +3,6 @@ RETURN NUMBER AS curr_size NUMBER(9) ;
 row_size NUMBER(9);
 rows NUMBER(9);
 BEGIN
-    -- just imagine some change done here by release 4
-	-- thanks
 	curr_size := 0;
 	row_size := 0;
 	rows := 0;

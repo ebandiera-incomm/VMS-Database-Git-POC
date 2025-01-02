@@ -1,8 +1,8 @@
-create or replace PROCEDURE        VMSCMS.SP_ISO93_PREAUTH_REVERSAL (
+CREATE OR REPLACE PROCEDURE VMSCMS.SP_ISO93_PREAUTH_REVERSAL (
     P_INST_CODE           IN NUMBER,
     P_MSG_TYP             IN VARCHAR2,
     P_RVSL_CODE           IN VARCHAR2,
-    P_RRN                 IN VARCHAR2,
+    P_RRN                 IN VARCHAR2, 
     P_DELV_CHNL           IN VARCHAR2,
     P_TERMINAL_ID         IN VARCHAR2,
     P_MERC_ID             IN VARCHAR2,
@@ -38,7 +38,7 @@ create or replace PROCEDURE        VMSCMS.SP_ISO93_PREAUTH_REVERSAL (
     P_NETWORKID_ACQUIRER    IN VARCHAR2,-- Added on 20130626 for the Mantis ID 11344
     P_CVV_VERIFICATIONTYPE IN  VARCHAR2 , --Added on 17.07.2013 for the Mantis ID 11611
     p_txn_amnt               IN       VARCHAR2, -- Added on 07-10-13 for the Mantis ID-12547
-    P_PULSE_TRANSACTIONID        IN       VARCHAR2,--Added for MVHOST 926
+    P_PULSE_TRANSACTIONID        IN       VARCHAR2,--Added for MVHOST 926 
     P_VISA_TRANSACTIONID          IN       VARCHAR2,--Added for MVHOST 926
     P_MC_TRACEID                 IN       VARCHAR2,--Added for MVHOST 926
     P_CARDVERIFICATION_RESULT      IN       VARCHAR2,--Added for MVHOST 926
@@ -52,10 +52,9 @@ create or replace PROCEDURE        VMSCMS.SP_ISO93_PREAUTH_REVERSAL (
     ,P_MERCHANT_ID IN       VARCHAR2       DEFAULT NULL
     ,P_MERCHANT_CNTRYCODE IN       VARCHAR2 DEFAULT NULL
     ,P_RESP_TIME OUT VARCHAR2
-    ,P_RESPTIME_DETAIL OUT varchar2
+    ,P_RESPTIME_DETAIL OUT varchar2  
     ,P_MS_PYMNT_TYPE      in     varchar2 default null
     ,P_MS_PYMNT_DESC      IN      VARCHAR2  DEFAULT NULL
-    ,P_RESP_ID            OUT     VARCHAR2 --Added for sending to FSS (VMS-8018)
     )
 IS
   /*************************************************
@@ -68,13 +67,13 @@ IS
   * Reviewer         :  Dhiraj
   * Reviewed Date    :  27-Dec-2012
   * Release Number   :  CMS3.5.1_RI0023_B0003
-
+  
   * Modified by      :  Sagar M.
   * Modified Date    :  09-Feb-13
   * Modified reason  :  Product Category spend limit not being adhered to by VMS
   * Modified for     :  NA
   * Release Number   :  CMS3.5.1_RI0023.2_B0001
-
+  
   * Modified By      : Sagar M.
   * Modified Date    : 15-Feb-2013
   * Modified For     : Defect 10296
@@ -82,14 +81,14 @@ IS
   * Reviewer         : Dhiraj
   * Reviewed Date    : 18-Feb-2013
   * Build Number     : CMS3.5.1_RI0023.2_B0013
-
+  
   * Modified By      : Pankaj S.
   * Modified Date    : 15-Mar-2013
   * Modified Reason  : Logging of system initiated card status change(FSS-390)
   * Reviewer         : Dhiraj
   * Reviewed Date    :
   * Build Number     : CMS3.5.1_RI0024_B0008
-
+  
   * Modified By      : Sagar M.
   * Modified Date    : 19-Apr-2013
   * Modified for     : Defect 10871
@@ -100,14 +99,14 @@ IS
   * Reviewer         : Dhiraj
   * Reviewed Date    : 19-Apr-2013
   * Build Number     : RI0024.1_B0013
-
+  
   * Modified By      : Sagar M.
   * Modified Date    : 06-May-2013
   * Modified Reason  : OLS changes
   * Reviewer         : Dhiraj
   * Reviewed Date    : 06-May-2013
   * Build Number     : RI0024.1.1_B0001
-
+  
   * Modified By      : Sai Prasad
   * Modified Date    : 20-May-2013
   * Modified Reason  : OLS changes
@@ -118,88 +117,88 @@ IS
   * Modified By      : MageshKumar.S
   * Modified Date    : 22-May-2013
   * Modified Reason  : SAF and SAF Repeat Reversal OLS Changes
-  * Modified For     : Defect 11140
+  * Modified For     : Defect 11140 
   * Reviewer         : Dhiraj
   * Reviewed Date    :
   * Build Number     : RI0024.1.2_B0002
-
+  
   * Modified By      : MageshKumar.S
   * Modified Date    : 14-June-2013
   * Modified Reason  : reversal amount not updated & duplicate entry in txnlog table
-  * Modified For     : Defect 11209
-  * Reviewer         :
+  * Modified For     : Defect 11209 
+  * Reviewer         : 
   * Reviewed Date    :
   * Build Number     : RI0024.1.4_B0001
-
+  
   * Modified by      : Deepa T
   * Modified for     : Mantis ID 11344
-  * Modified Reason  : Log the AcquirerNetworkID received in tag 005 and TermFIID received in tag 020
+  * Modified Reason  : Log the AcquirerNetworkID received in tag 005 and TermFIID received in tag 020                         
   * Modified Date    : 26-Jun-2013
   * Reviewer         : Dhiraj
   * Reviewed Date    : 27-06-2013
   * Build Number     : RI0024.2_B0009
-
+  
   * Modified by      : Arunprasath
   * Modified for     : 11500
-  * Modified Reason  : Exception Handling changes
+  * Modified Reason  : Exception Handling changes                        
   * Modified Date    : 01/07/2013
   * Reviewer         : Dhiraj
   * Reviewed Date    : 09-Jul-2013
   * Build Number     : RI0024.3_B0001
-
+  
   * Modified by      : Pankaj S.
   * Modified for     : Mantis ID 0011506
-  * Modified Reason  : Transactionlog insertion failure err_msg should be log properly into transaction details
+  * Modified Reason  : Transactionlog insertion failure err_msg should be log properly into transaction details                        
   * Modified Date    : 08_July_2013
   * Reviewer         : Dhiraj
-  * Reviewed Date    :
+  * Reviewed Date    : 
   * Build Number     : RI0024.3_B0003
-
-  * Modified by      : Sagar
+  
+  * Modified by      : Sagar  
   * Modified for     : FSS-1246
-  * Modified Reason  : To check and reject duplicate preauth reversal transaction for OLS
+  * Modified Reason  : To check and reject duplicate preauth reversal transaction for OLS               
   * Modified Date    : 08-Jul-2013
   * Reviewer         : Dhiraj
-  * Reviewed Date    :
+  * Reviewed Date    : 
   * Build Number     : RI0024.3_B0004
-
+    
   * Modified by      : Sachin P.
   * Modified for     : Mantis ID -11611,11612
-  * Modified Reason  : 11611-Input parameters needs to be included for the CVV verification
+  * Modified Reason  : 11611-Input parameters needs to be included for the CVV verification 
                         We are doing and it needs to be logged in transactionlog
-                        11612-Output parameter needs to be included to return the cms_iso_respcde of cms_response_mast
+                        11612-Output parameter needs to be included to return the cms_iso_respcde of cms_response_mast  
   * Modified Date    : 17-Jul-2013
   * Reviewer         : Sagar M.
   * Reviewed Date    : 22.07.2013
   * Build Number     :  RI0024.3_B0005
-
+  
   * Modified by      : Sagar M.
   * Modified for     : MVHOST-500
   * Modified Reason  : To check message type in case of Duplicate RRN check
                        and reject if same RRN repeats with 1420,1421
   * Modified Date    : 26-Jun-2013
   * Reviewer         : Dhiarj
-  * Reviewed Date    :
-  * Build Number     : RI0024.3.1_B0001
-
-  * Modified by      : Sagar
-  * Modified for     : FSS-1246 review observations
-  * Modified Reason  : Review observations
+  * Reviewed Date    : 
+  * Build Number     : RI0024.3.1_B0001  
+  
+  * Modified by      : Sagar  
+  * Modified for     : FSS-1246 review observations 
+  * Modified Reason  : Review observations               
   * Modified Date    : 23-Jul-2013
   * Reviewer         : Dhiraj
-  * Reviewed Date    :
-  * Build Number     : RI0024.4_B0002
-
+  * Reviewed Date    : 
+  * Build Number     : RI0024.4_B0002  
+  
   * Modified by      : Sachin P.
   * Modified for     : Mantis Id:11695
-  * Modified Reason  : Reversal Fee details(FeePlan id,FeeCode,Fee amount
-                       and FeeAttach Type) are not logged in transactionlog
-                       table.
+  * Modified Reason  : Reversal Fee details(FeePlan id,FeeCode,Fee amount 
+                       and FeeAttach Type) are not logged in transactionlog 
+                       table. 
   * Modified Date    : 30.07.2013
   * Reviewer         : Dhiraj
   * Reviewed Date    : 19-aug-2013
-  * Build Number     : RI0024.4_B0002
-
+  * Build Number     : RI0024.4_B0002  
+  
   * Modified by      : Sagar M.
   * Modified for     : 0012198
   * Modified Reason  : To reject duplicate STAN transaction
@@ -207,7 +206,7 @@ IS
   * Reviewer         : Dhiarj
   * Reviewed Date    : 29-Aug-2013
   * Build Number     : RI0024.3.5_B0001
-
+  
   * Modified by      : SIVA ARCOT.
   * Modified for     : 0010997  & FWR-11
   * Modified Reason  : Handle for Partial reversal transaction
@@ -215,47 +214,47 @@ IS
   * Reviewer         : Dhiarj
   * Reviewed Date    : 11-Sep-2013
   * Build Number     : RI0024.4_B0010
-
+  
   * Modified by      : Deepa T
   * Modified for     : Mantis ID-12547  & FSS-1334
-  * Modified Reason  : To log the recevied tran amount for the Full reversal transactions
+  * Modified Reason  : To log the recevied tran amount for the Full reversal transactions 
   * Modified Date    : 08-Oct-2013
   * Reviewer         : Dhiraj
   * Reviewed Date    : 08-Oct-2013
-  * Build Number     : RI0024.4.3_B0001
-
+  * Build Number     : RI0024.4.3_B0001 
+  
   * Modified by       :  Pankaj S.
   * Modified Reason   :  Enabling Limit configuration and validation for Preauth(1.7.3.9 changes integrate)
   * Modified Date     :  23-Oct-2013
   * Reviewer          :  Dhiraj
-  * Reviewed Date     :
+  * Reviewed Date     :  
   * Build Number      : RI0024.5.2_B0001
-
+  
   * Modified by      :  DHINAKARAN B
   * Modified for     :  FSS-1335
-  * Modified Reason  :  To logging the international indicator in transactionlog.
+  * Modified Reason  :  To logging the international indicator in transactionlog. 
   * Modified Date    :  07-JAN-2014
-  * Reviewer         :  Dhiraj
-  * Reviewed Date    :  07-JAN-2014
+  * Reviewer         :  Dhiraj 
+  * Reviewed Date    :  07-JAN-2014 
   * Build Number     :  RI0027_B0003
-
+  
   * Modified by      :  Abdul Hameed M.A
   * Modified for     :  Mantis ID-13406
   * Modified Reason  :  Reversal is appended with transaction description in CSR and we are also appending in this procedure.
-                        To remove the duplicate word in the transaction decription
+                        To remove the duplicate word in the transaction decription  
   * Modified Date    :  17-JAN-2014
   * Reviewer         :  Dhiraj
-  * Reviewed Date    :
+  * Reviewed Date    :   
   * Build Number     :  RI0027_B0004
-
+  
   * Modified by       : Sagar
-  * Modified for      :
-  * Modified Reason   : Concurrent Processsing Issue
+  * Modified for      : 
+  * Modified Reason   : Concurrent Processsing Issue 
                         (1.7.6.7 changes integarted)
   * Modified Date     : 04-Mar-2014
   * Reviewer          : Dhiarj
   * Reviewed Date     : 06-Mar-2014
-  * Build Number      : RI0027.1.1_B0001
+  * Build Number      : RI0027.1.1_B0001   
 
   * Modified by       : Abdul Hameed M.A
   * Modified for      : Mantis ID 13893
@@ -264,7 +263,7 @@ IS
   * Reviewer          : Dhiraj
   * Reviewed Date     : 06/Mar/2013
   * Build Number      : RI0027.2_B0002
-
+     
   * Modified by       : Abdul Hameed M.A
   * Modified for      : Mantis ID 13785
   * Modified Reason   : To return the reversal amount
@@ -278,88 +277,88 @@ IS
   * Modified for      :  FSS 837
   * Modified Date     :  27-JUNE-2014
   * Reviewer          :  Spankaj
-  * Build Number      :  RI0027.3_B0001
-
+  * Build Number      :  RI0027.3_B0001  
+      
   * Modified by       : Dhinakaran B
   * Modified for      : VISA Certtification Changes integration in 2.3
   * Modified Date     : 08-JUL-2014
   * Reviewer          : Spankaj
   * Build Number      : RI0027.3_B0002
-
+  
   * Modified by       : Dhinakaran B
   * Modified for      : MVHOST -976
   * Modified Date     : 21-JUL-2014
   * Build Number      : RI0027.3_B0005
-
+  
   * Modified by       :  Abdul Hameed M.A
-  * Modified Reason   :  Merchandise Return Partial Completion amount is not poperly debiting form acct bal.
+  * Modified Reason   :  Merchandise Return Partial Completion amount is not poperly debiting form acct bal. 
   * Modified for      :  Mantis ID 15616
   * Modified Date     :  23-JULY-2014
   * Reviewer          :  Spankaj
-  * Build Number      :  RI0027.3_B0006
-
+  * Build Number      :  RI0027.3_B0006 
+  
    * Modified by      : MageshKumar S.
-   * Modified Date    : 25-July-14
+   * Modified Date    : 25-July-14    
    * Modified For     : FWR-48
    * Modified reason  : GL Mapping removal changes
    * Reviewer         : Spankaj
    * Build Number     : RI0027.3.1_B0001
-
+  
    * Modified by      : Abdul Hameed M.A
    * Modified for     : FSS 1876
    * Modified Date    : 19-SEP-2014
    * Reviewer         : Spankaj
    * Build Number     : RI0027.3.3_B0001
-
+   
    * Modified by      : Dhinakaran B
-   * Modified for     : MANTIS ID-15889 (if we receive the reversal txn  for After completion we have to decline that one.)
+   * Modified for     : MANTIS ID-15889 (if we receive the reversal txn  for After completion we have to decline that one.) 
    * Modified Date    : 17-Nov-2014
    * Reviewer         :  Saravanakumar
    * Build Number     : RI0027.4.2.2_B0002
-
+   
    * Modified Date    : 30-DEC-2014
    * Modified By      : Dhinakaran B
    * Modified for     : MVHOST-1080/To Log the Merchant id & CountryCode
-   * Reviewer         :
-   * Reviewed Date    :
-   * Release Number   :
-
+   * Reviewer         : 
+   * Reviewed Date    : 
+   * Release Number   :  
+   
    * Modified by      : MAGESHKUMAR S.
    * Modified Date    : 03-FEB-2015
    * Modified For     : FSS-2065(2.4.2.4.1 & 2.4.3.1 integration)
    * Reviewer         : PANKAJ S.
    * Build Number     : RI0027.5_B0006
-
+   
    * Modified By      : MageshKumar S
    * Modified Date    : 11-FEB-2015
    * Modified for     : INSTCODE REMOVAL(2.4.2.4.2 & 2.4.3.1 integration)
    * Reviewer         : Spankaj
    * Release Number   : RI0027.5_B0007
-
+   
      * Modified By      : Pankaj S.
      * Modified Date    : 26-Feb-2015
      * Modified For     : 2.4.2.4.4 PERF Changes integration
      * Reviewer         : Sarvanankumar
-     * Build Number     : RI0027.5_B0009
-
+     * Build Number     : RI0027.5_B0009  
+     
      * Modified By      :  Abdul Hameed M.A
      * Modified For     :  Mantis ID-16035
      * Modified Date    :  26-Feb-2015
      * Reviewer         :  Spankaj
-     * Build Number     : RI0027.5_B0009
-
+     * Build Number     : RI0027.5_B0009  
+     
      * Modified By      :  Abdul Hameed M.A
      * Modified For     :  DFCTNM-4
      * Modified Date    :  1-Mar-2015
      * Reviewer         :  Spankaj
-     * Build Number     : RI0027.5_B0011
+     * Build Number     : RI0027.5_B0011  
 
-     * Modified By      : Abdul Hameed M.A
+     * Modified By      : Abdul Hameed M.A 
      * Modified Date    : 09-SEP-2015
      * Modified for     : FSS 3643
      * Reviewer         : Spankaj
      * Release Number   : VMSGPRHOSTCSD_3.1_B00010
-
+     
      * Modified by      : Narayanaswamy.T
      * Modified for     : FSS-4119 - ATM withdrawal transactions should contain terminal id and city in the statement
      * Modified Date    : 01-Mar-2016
@@ -371,25 +370,25 @@ IS
      * Modified For         :FSS-4762:VMS OTC Support for Instant Payroll Card
      * Reviewer             : Saravanakumar
      * Build Number         : VMSGPRHOSTCSD4.11
-
+     
     * Modified By      : Saravana Kumar A
     * Modified Date    : 07/07/2017
     * Purpose          : Prod code and card type logging in statements log
-    * Reviewer         : Pankaj S.
+    * Reviewer         : Pankaj S. 
     * Release Number   : VMSGPRHOST17.07
-
+	
 	 * Modified By      : PUVANESH.N
      * Modified Date    : 07-SEP-2021
      * Purpose          : VMS-4652 - AC 2: Settlement file for MoneySend credit transaction
-     * Reviewer         : SARAVANAKUMAR A
-     * Release Number   : R51 - BUILD 2
-
+     * Reviewer         : SARAVANAKUMAR A 
+     * Release Number   : R51 - BUILD 2 
+	 
 	* Modified By      : Karthick/Jey
     * Modified Date    : 05-17-2022
     * Purpose          : Archival changes.
     * Reviewer         : Venkat Singamaneni
     * Release Number   : VMSGPRHOST64 for VMS-5739/FSP-991
-
+    
     * Modified By      : Mageshkumar S
     * Modified Date    : 06-26-2023
     * Purpose          : Partial Reversal Issue(No Need to release the hold amount)
@@ -399,15 +398,9 @@ IS
     * Modified By      : John Gingrich
     * Modified Date    : 08-28-2023
     * Purpose          : Concurrent Pre-Auth Reversals
-    * Reviewer         :
+    * Reviewer         : 
     * Release Number   : VMSGPRHOSTR85 for VMS-5551
-
-    * Modified By      : Areshka A.
-    * Modified Date    : 03-Nov-2023
-    * Purpose          : VMS-8018: Added new out parameter (response id) for sending to FSS
-    * Reviewer         :
-    * Release Number   :
-
+  
   *************************************************/
   V_ORGNL_DELIVERY_CHANNEL TRANSACTIONLOG.DELIVERY_CHANNEL%TYPE;
   V_ORGNL_RESP_CODE TRANSACTIONLOG.RESPONSE_CODE%TYPE;
@@ -436,7 +429,7 @@ IS
   V_RVSL_TRANDATE DATE;
   V_ORGNL_TERMID TRANSACTIONLOG.TERMINAL_ID%TYPE;
   V_ORGNL_MCCCODE TRANSACTIONLOG.MCCODE%TYPE;
-  V_ERRMSG VARCHAR2(500);--(300) Modified on 10/07/2013 BY Arunprasath
+  V_ERRMSG VARCHAR2(500);--(300) Modified on 10/07/2013 BY Arunprasath  
   V_ACTUAL_FEECODE TRANSACTIONLOG.FEECODE%TYPE;
   V_ORGNL_TRANFEE_AMT TRANSACTIONLOG.TRANFEE_AMT%TYPE;
   V_ORGNL_SERVICETAX_AMT TRANSACTIONLOG.SERVICETAX_AMT%TYPE;
@@ -514,7 +507,7 @@ IS
   v_timestamp TIMESTAMP;                            -- Added on 19-Apr-2013 for defect 10871
   v_org_rrn transactionlog.rrn%TYPE;                -- Added for OLS changes
   v_cms_iso_respcde cms_response_mast.cms_iso_respcde%TYPE;
-
+  
   --SN Added by MageshKumar.S for SAF and SAF Repeat reversal OLs Changes
   V_ORGNL_TXN               VARCHAR2(20);
   V_SAF_TXN_COUNT           NUMBER;
@@ -523,26 +516,26 @@ IS
   --V_NARRATION      VARCHAR2(300);
   V_UPD_HOLD_AMOUNT         NUMBER;
    --EN Added by MageshKumar.S for SAF and SAF Repeat reversal OLs Changes
-
-  V_OLS_TRAN_COUNT NUMBER(5); -- Added for FSS-1246
+   
+  V_OLS_TRAN_COUNT NUMBER(5); -- Added for FSS-1246 
   V_FEE_CODE           CMS_FEE_MAST.CFM_FEE_CODE%TYPE; --Added on 30.07.2013 for 11695
   V_FEEATTACH_TYPE     VARCHAR2(2); --Added on 30.07.2013 for 11695
   V_STAN_COUNT                  NUMBER; -- Added for Duplicate Stan check 0012198
-
+  
   V_ORGNL_TXN_FEE_PLAN     TRANSACTIONLOG.FEE_PLAN%TYPE; --Added for FWR-11
   v_feecap_flag VARCHAR2(1); --Added for FWR-11
   v_orgnl_fee_amt  CMS_FEE_MAST.CFM_FEE_AMT%TYPE; --Added for FWR-11
   V_REVERSAL_AMT_FLAG VARCHAR2(1) := 'F';  ---Added for Mantis Id-0010997
-
+  
    --Sn Added by Pankaj S. for enabling limit validation
-  v_prfl_code                cms_appl_pan.cap_prfl_code%TYPE;
+  v_prfl_code                cms_appl_pan.cap_prfl_code%TYPE; 
   v_prfl_flag                cms_transaction_mast.ctm_prfl_flag%type;
   v_tran_type                cms_transaction_mast.ctm_tran_type%type;
-  v_pos_verification         transactionlog.pos_verification%type;
+  v_pos_verification         transactionlog.pos_verification%type; 
   v_internation_ind_response transactionlog.internation_ind_response %type;
   v_add_ins_date             transactionlog.add_ins_date %type;
-  --En Added by Pankaj S. for enabling limit validation
-
+  --En Added by Pankaj S. for enabling limit validation 
+  
  --Sn Added for FSS 897
    v_completion_txn_code VARCHAR2(2);
    v_comp_fee_code             cms_fee_mast.cfm_fee_code%TYPE;
@@ -593,15 +586,15 @@ V_concurrent_flag number;
 v_start_time timestamp;
 V_MILI varchar2(100);
  V_MS_PYMNT_TYPE CMS_PAYMENT_TYPE.CPT_PAYMENT_TYPE%type;
-    V_HASHKEY_ID   CMS_TRANSACTION_LOG_DTL.CTD_HASHKEY_ID%TYPE;
-
+    V_HASHKEY_ID   CMS_TRANSACTION_LOG_DTL.CTD_HASHKEY_ID%TYPE; 
+    
      v_complfree_flag   cms_preauth_transaction.cpt_complfree_flag%TYPE;
      V_PARAM_VALUE           	CMS_INST_PARAM.CIP_PARAM_VALUE%TYPE;
-
+	 
 v_Retperiod  date;  --Added for VMS-5739/FSP-991
 v_Retdate  date; --Added for VMS-5739/FSP-991
 
- --En Added for FSS 897
+ --En Added for FSS 897 
   CURSOR FEEREVERSE
   IS
     SELECT CSL_TRANS_NARRRATION,
@@ -618,17 +611,17 @@ v_Retdate  date; --Added for VMS-5739/FSP-991
     AND CSL_PAN_NO           = V_ORGNL_CUSTOMER_CARD_NO
     AND CSL_INST_CODE        = P_INST_CODE
     AND TXN_FEE_FLAG         = 'Y';
-
+    
 BEGIN
   v_start_time := systimestamp;
   P_RESP_CDE := '00';
   P_RESP_MSG := 'OK';
    V_MS_PYMNT_TYPE:=P_MS_PYMNT_TYPE;
-    V_TIMESTAMP:=systimestamp;
+    V_TIMESTAMP:=systimestamp; 
   savepoint V_SAVEPOINT;
-
+   
   --SN CREATE HASH PAN
-
+  
   BEGIN
     V_HASH_PAN := GETHASH(P_CARD_NO);
   EXCEPTION
@@ -636,25 +629,25 @@ BEGIN
     V_ERRMSG := 'Error while converting pan ' || SUBSTR(SQLERRM, 1, 200);
     RAISE EXP_RVSL_REJECT_RECORD;
   END;
-
+  
   --EN CREATE HASH PAN
-
+  
   --SN create encr pan
-
+  
   BEGIN
-
+  
     V_ENCR_PAN := FN_EMAPS_MAIN(P_CARD_NO);
-
+    
   EXCEPTION
   WHEN OTHERS THEN
     V_ERRMSG := 'Error while converting pan ' || SUBSTR(SQLERRM, 1, 200);
     RAISE EXP_RVSL_REJECT_RECORD;
-
+    
   END;
-
+  
   --EN create encr pan
-
-     --Start Generate HashKEY value
+  
+     --Start Generate HashKEY value 
        BEGIN
            V_HASHKEY_ID := GETHASH (P_DELV_CHNL||P_TXN_CODE||P_CARD_NO||P_RRN||to_char(V_TIMESTAMP,'YYYYMMDDHH24MISSFF5'));
        EXCEPTION
@@ -664,11 +657,11 @@ BEGIN
         V_ERRMSG :='Error while converting master data ' || SUBSTR (SQLERRM, 1, 200);
         RAISE EXP_RVSL_REJECT_RECORD;
      end;
-   --End Generate HashKEY value
+   --End Generate HashKEY value 
   --Sn find the type of orginal txn (credit or debit)
-
+  
   BEGIN
-
+  
     SELECT CTM_CREDIT_DEBIT_FLAG,
       ctm_tran_desc,
     -- || ' REVERSAL' CTM_TRAN_DESC, -- Added for OLS changes --commented for Mantis id 13406 on 17.1.2014
@@ -680,27 +673,27 @@ BEGIN
       V_TRAN_DESC,
       V_TRAN_PREAUTH_FLAG,
       V_TXN_TYPE,
-      v_prfl_flag,v_tran_type  --Added by Pankaj S. for enabling limit validation
+      v_prfl_flag,v_tran_type  --Added by Pankaj S. for enabling limit validation      
       , V_PREAUTH_TYPE   --Added for MVHOST 926
     FROM CMS_TRANSACTION_MAST
     WHERE CTM_TRAN_CODE      = P_TXN_CODE
     AND CTM_DELIVERY_CHANNEL = P_DELV_CHNL
     AND CTM_INST_CODE        = P_INST_CODE;
-
+    
   EXCEPTION
-
+  
   WHEN NO_DATA_FOUND THEN
     V_RESP_CDE := '21';
     V_ERRMSG   := 'Transaction detail is not found in master for orginal txn code' || P_TXN_CODE || 'delivery channel ' || P_DELV_CHNL;
     RAISE EXP_RVSL_REJECT_RECORD;
-
+    
   WHEN OTHERS THEN
     V_RESP_CDE := '21';
     V_ERRMSG   := 'Problem while selecting debit/credit flag ' || SUBSTR(SQLERRM, 1, 200);
     RAISE EXP_RVSL_REJECT_RECORD;
-
+    
   END;
-
+  
   --En find the type of orginal txn (credit or debit)
       if V_MS_PYMNT_TYPE is not null then
     if(  V_PREAUTH_TYPE='D') then
@@ -711,62 +704,62 @@ BEGIN
    V_MS_PYMNT_TYPE:=null;
    end if;
    end if;
-
+   
   --Sn generate auth id
-
+  
   BEGIN
     -- SELECT TO_CHAR(SYSDATE, 'YYYYMMDD') INTO V_AUTHID_DATE FROM DUAL;
     --  SELECT TO_CHAR(SYSDATE, 'YYYYMMDD')  || LPAD(SEQ_AUTH_ID.NEXTVAL, 6, '0')
     SELECT LPAD(SEQ_AUTH_ID.NEXTVAL, 6, '0')
     INTO V_AUTH_ID
     FROM DUAL;
-
+    
   EXCEPTION
-
+  
   WHEN OTHERS THEN
     V_ERRMSG   := 'Error while generating authid ' || SUBSTR(SQLERRM, 1, 300);
     V_RESP_CDE := '21'; -- Server Declined
     RAISE EXP_RVSL_REJECT_RECORD;
-
+    
   END;
-
+  
   --En generate auth id
-
+  
   -- Sn txn date conversion(to check the txn date)
   BEGIN
     V_ORGNL_TRANDATE := TO_DATE(SUBSTR(TRIM(P_ORGNL_BUSINESS_DATE), 1, 8), 'yyyymmdd');
     V_RVSL_TRANDATE  := TO_DATE(SUBSTR(TRIM(P_BUSINESS_DATE), 1, 8), 'yyyymmdd');
-
+    
   EXCEPTION
-
+  
   WHEN OTHERS THEN
-
+  
     V_RESP_CDE := '45';
     V_ERRMSG   := 'Problem while converting transaction date ' || SUBSTR(SQLERRM, 1, 200);
     RAISE EXP_RVSL_REJECT_RECORD;
-
+    
   END;
-
+  
   -- En  txn date conversion
-
+  
   --Sn Txn date conversion
   BEGIN
     V_ORGNL_TRANDATE := TO_DATE(SUBSTR(TRIM(P_ORGNL_BUSINESS_DATE), 1, 8) || ' ' || SUBSTR(TRIM(P_ORGNL_BUSINESS_TIME), 1, 8), 'yyyymmdd hh24:mi:ss');
     V_RVSL_TRANDATE  := TO_DATE(SUBSTR(TRIM(P_BUSINESS_DATE), 1, 8) || ' ' || SUBSTR(TRIM(P_BUSINESS_TIME), 1, 8), 'yyyymmdd hh24:mi:ss');
     V_TRAN_DATE      := V_RVSL_TRANDATE; --Added by Deepa on June 26 2012 for Reversal Txn fee
-
+  
 
   EXCEPTION
-
+  
   WHEN OTHERS THEN
     V_RESP_CDE := '32';
     V_ERRMSG   := 'Problem while converting transaction Time ' || SUBSTR(SQLERRM, 1, 200);
     RAISE EXP_RVSL_REJECT_RECORD;
-
+    
   END;
-
+  
   --En Txn date conversion
-
+  
   /*
       ---------------------------------------------
       --SN: Added for Duplicate STAN check 0012198
@@ -779,9 +772,9 @@ if (P_MSG_TYP <> '1421') then  --Added for FSS 1876
          FROM TRANSACTIONLOG
         WHERE INSTCODE = P_INST_CODE
         and   CUSTOMER_CARD_NO  = V_HASH_PAN
-        AND   BUSINESS_DATE = P_BUSINESS_DATE
+        AND   BUSINESS_DATE = P_BUSINESS_DATE 
         AND   DELIVERY_CHANNEL = P_DELV_CHNL
-        AND   SYSTEM_TRACE_AUDIT_NO = P_STAN;
+        AND   SYSTEM_TRACE_AUDIT_NO = P_STAN; 
 
         IF V_STAN_COUNT > 0 THEN
 
@@ -791,28 +784,28 @@ if (P_MSG_TYP <> '1421') then  --Added for FSS 1876
          RAISE EXP_RVSL_REJECT_RECORD;
 
         END IF;
-
-
-      EXCEPTION WHEN EXP_RVSL_REJECT_RECORD
+        
+        
+      EXCEPTION WHEN EXP_RVSL_REJECT_RECORD 
       THEN
             RAISE EXP_RVSL_REJECT_RECORD;
-
+                
       WHEN OTHERS THEN
-
+          
        V_RESP_CDE := '21';
        V_ERRMSG  := 'Error while checking duplicate STAN ' ||SUBSTR(SQLERRM,1,200);
        RAISE EXP_RVSL_REJECT_RECORD;
 
       END;
-
+          
       ---------------------------------------------
       --SN: Added for Duplicate STAN check 0012198
-      ---------------------------------------------
-
-
+      ---------------------------------------------  
+  
+  
   /*
   --Sn Duplicate RRN Check
-
+  
   BEGIN
     SELECT COUNT(1)
     INTO V_RRN_COUNT
@@ -825,103 +818,103 @@ if (P_MSG_TYP <> '1421') then  --Added for FSS 1876
    AND MSGTYPE=p_msg_typ -- MODIFIED BY ABDUL HAMEED M.A ON 06-03-2014
 AND CUSTOMER_CARD_NO = V_HASH_PAN  --ADDED BY ABDUL HAMEED M.A ON 06-03-2014
     AND txn_code =   P_TXN_CODE  ; --Added for MVHOST-500 on 02.08.2013
-
-
+    
+    
     IF V_RRN_COUNT       > 0 THEN
       V_RESP_CDE        := '22';
       V_ERRMSG          := 'Duplicate RRN from the Treminal' || P_TERMINAL_ID || ' on ' || P_BUSINESS_DATE;
       RAISE EXP_RVSL_REJECT_RECORD;
     END IF;
-
-    EXCEPTION -- Exception added on 01/07/2013 BY Arunprasath
+    
+    EXCEPTION -- Exception added on 01/07/2013 BY Arunprasath 
     WHEN EXP_RVSL_REJECT_RECORD  THEN
     RAISE EXP_RVSL_REJECT_RECORD;
-
+      
     WHEN OTHERS THEN
     v_resp_cde := '21';
     v_errmsg   := 'Error While checking Duplicate RRN'|| SUBSTR(SQLERRM, 1, 200);
     RAISE EXP_RVSL_REJECT_RECORD;
-
+    
   END;*/
-
+  
   --En Duplicate RRN Check
  --end if;  --Added for FSS 1876
-
+ 
   --Select the Delivery Channel code of MM-POS
-
-/*  BEGIN-- Sn Commented on 01/07/2013 BY Arunprasath
+  
+/*  BEGIN-- Sn Commented on 01/07/2013 BY Arunprasath 
     SELECT CDM_CHANNEL_CODE
     INTO V_DELCHANNEL_CODE
     FROM CMS_DELCHANNEL_MAST
     WHERE CDM_CHANNEL_DESC = 'MMPOS'
     AND CDM_INST_CODE      = P_INST_CODE;
-
+    
     --IF the DeliveryChannel is MMPOS then the base currency will be the txn curr
-
+    
     IF P_CURR_CODE IS NULL AND V_DELCHANNEL_CODE = P_DELV_CHNL THEN
-
+    
       BEGIN
-
+      
         SELECT CIP_PARAM_VALUE
         INTO V_BASE_CURR
         FROM CMS_INST_PARAM
         WHERE CIP_INST_CODE   = P_INST_CODE
         AND CIP_PARAM_KEY     = 'CURRENCY';
-
+        
         IF TRIM(V_BASE_CURR) IS NULL THEN
           V_ERRMSG           := 'Base currency cannot be null ';
           RAISE EXP_RVSL_REJECT_RECORD;
         END IF;
-
+        
       EXCEPTION
-
+      
       WHEN EXP_RVSL_REJECT_RECORD THEN-- Exception added on 01/07/2013 BY Arunprasath
       RAISE EXP_RVSL_REJECT_RECORD;
-
+      
       WHEN NO_DATA_FOUND THEN
         V_ERRMSG := 'Base currency is not defined for the institution ';
         RAISE EXP_RVSL_REJECT_RECORD;
-
+        
       WHEN OTHERS THEN
         V_ERRMSG := 'Error while selecting bese currecy  ' || SUBSTR(SQLERRM, 1, 200);
         RAISE EXP_RVSL_REJECT_RECORD;
-
+        
       END;
-
+      
       V_CURRCODE := V_BASE_CURR;
-
+      
     ELSE
-
+    
       V_CURRCODE := P_CURR_CODE;
-
+      
     END IF;
-
+    
   EXCEPTION
-
+  
   WHEN OTHERS THEN
     V_ERRMSG := 'Error while selecting bese currecy  ' || SUBSTR(SQLERRM, 1, 200);
     RAISE EXP_RVSL_REJECT_RECORD;
-
-  END;*/-- En Commented on 01/07/2013 BY Arunprasath
-
+    
+  END;*/-- En Commented on 01/07/2013 BY Arunprasath 
+  
   --Sn check msg type
-
-  --IF V_DELCHANNEL_CODE <> P_DELV_CHNL THEN--Sn -- Commented on 01/07/2013 BY Arunprasath
-
-    IF (P_MSG_TYP NOT  IN ('1420', '1421')) OR (P_RVSL_CODE = '00') THEN --SAF and SAF Repeat reversal OLs Changes
+  
+  --IF V_DELCHANNEL_CODE <> P_DELV_CHNL THEN--Sn -- Commented on 01/07/2013 BY Arunprasath 
+  
+    IF (P_MSG_TYP NOT  IN ('1420', '1421')) OR (P_RVSL_CODE = '00') THEN --SAF and SAF Repeat reversal OLs Changes 
       V_RESP_CDE       := '12';
       V_ERRMSG         := 'Not a valid reversal request';
-
+      
       RAISE EXP_RVSL_REJECT_RECORD;
-
+      
     END IF;
-
+    
   --END IF;-- Commented on 01/07/2013 BY Arunprasath
-
+  
   --En check msg type
-
+  
   --Sn check orginal transaction    (-- Amount is missing in reversal request)
-
+  
   Begin
   sp_autonomous_preauth_log(V_AUTH_ID,p_org_stan, P_ORGNL_BUSINESS_DATE,
         V_HASH_PAN,  P_INST_CODE, P_DELV_CHNL , V_ERRMSG);
@@ -931,28 +924,28 @@ AND CUSTOMER_CARD_NO = V_HASH_PAN  --ADDED BY ABDUL HAMEED M.A ON 06-03-2014
        RAISE EXP_RVSL_REJECT_RECORD;
        END IF;
   Exception
-  When EXP_RVSL_REJECT_RECORD Then
+  When EXP_RVSL_REJECT_RECORD Then 
   raise;
   When others then
       V_RESP_CDE       := '12';
       V_ERRMSG         := 'Concurrent check Failed' || SUBSTR(SQLERRM, 1, 200);
-
+      
       RAISE EXP_RVSL_REJECT_RECORD;
   End;
-
+  
   BEGIN
-
+  
        --Added for VMS-5739/FSP-991
        select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
-       INTO   v_Retperiod
-       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL
-       WHERE  OPERATION_TYPE='ARCHIVE'
+       INTO   v_Retperiod 
+       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
+       WHERE  OPERATION_TYPE='ARCHIVE' 
        AND OBJECT_NAME='TRANSACTIONLOG_EBR';
-
+       
        v_Retdate := TO_DATE(SUBSTR(TRIM(P_ORGNL_BUSINESS_DATE), 1, 8), 'yyyymmdd');
 
   IF (v_Retdate>v_Retperiod) THEN                                                       --Added for VMS-5739/FSP-991
-
+  
     SELECT DELIVERY_CHANNEL,
       TERMINAL_ID,
       RESPONSE_CODE,
@@ -991,7 +984,7 @@ AND CUSTOMER_CARD_NO = V_HASH_PAN  --ADDED BY ABDUL HAMEED M.A ON 06-03-2014
       --Sn Added by Pankaj S. for enabling limit validation
       pos_verification,
       internation_ind_response,
-      add_ins_date
+      add_ins_date 
       --En Added by Pankaj S. for enabling limit validation
     INTO V_ORGNL_DELIVERY_CHANNEL,
       V_ORGNL_TERMINAL_ID,
@@ -1040,7 +1033,7 @@ AND CUSTOMER_CARD_NO = V_HASH_PAN  --ADDED BY ABDUL HAMEED M.A ON 06-03-2014
     AND CUSTOMER_CARD_NO        = V_HASH_PAN --P_card_no
     --AND INSTCODE                = P_INST_CODE --For Instcode removal of 2.4.2.4.2 release
     AND DELIVERY_CHANNEL        = P_DELV_CHNL;
-
+	
   ELSE
 
       SELECT DELIVERY_CHANNEL,
@@ -1081,7 +1074,7 @@ AND CUSTOMER_CARD_NO = V_HASH_PAN  --ADDED BY ABDUL HAMEED M.A ON 06-03-2014
       --Sn Added by Pankaj S. for enabling limit validation
       pos_verification,
       internation_ind_response,
-      add_ins_date
+      add_ins_date 
       --En Added by Pankaj S. for enabling limit validation
     INTO V_ORGNL_DELIVERY_CHANNEL,
       V_ORGNL_TERMINAL_ID,
@@ -1132,48 +1125,48 @@ AND CUSTOMER_CARD_NO = V_HASH_PAN  --ADDED BY ABDUL HAMEED M.A ON 06-03-2014
     AND DELIVERY_CHANNEL        = P_DELV_CHNL;
 
 
-  END IF;
-
+  END IF;  
+    
     IF V_ORGNL_RESP_CODE       <> '00' THEN --Modified by Deepa on Nov-27-2012  as the Success response code of ISO is '000' -- 000 replaced by 00 for OLS changes
-
+    
       --IF P_MSG_TYP NOT         IN ('1420', '1421') THEN --SAF and SAF Repeat reversal OLs Changes
         V_RESP_CDE             := '23';
         V_ERRMSG               := ' The original transaction was not successful';
         RAISE EXP_RVSL_REJECT_RECORD;
       --END IF;
-
+      
     END IF;
-
+    
     IF V_TRAN_REVERSE_FLAG = 'Y' THEN
       V_RESP_CDE          := '52';
       V_ERRMSG            := 'The reversal already done for the orginal transaction';
       RAISE EXP_RVSL_REJECT_RECORD;
     END IF;
-
+    
   EXCEPTION
   WHEN EXP_RVSL_REJECT_RECORD THEN
     RAISE;
-
+    
   WHEN NO_DATA_FOUND THEN
     V_ORGNL_TXN      := 'NO ORGNL TXN';
-     --Commented For MVHOST -976
+     --Commented For MVHOST -976  
   --  IF P_MSG_TYP NOT IN ('1420', '1421') THEN
       V_RESP_CDE     := '53';
       V_ERRMSG       := 'Matching transaction not found';
       RAISE EXP_RVSL_REJECT_RECORD;
   --  END IF;
-
+    
   WHEN TOO_MANY_ROWS THEN
-
+  
     IF P_MSG_TYP IN ('1420', '1421') THEN --SAF and SAF Repeat reversal OLs Changes
-
+    
       BEGIN
-
+	  
 	 v_Retdate := TO_DATE(SUBSTR(TRIM(P_ORGNL_BUSINESS_DATE), 1, 8), 'yyyymmdd');                             --Added for VMS-5739/FSP-991
 
 
     IF (v_Retdate>v_Retperiod) THEN                                                                           --Added for VMS-5739/FSP-991
-
+      
         SELECT SUM(TRANFEE_AMT),
           SUM(AMOUNT)
         INTO V_TOT_FEE_AMOUNT,
@@ -1187,9 +1180,9 @@ AND CUSTOMER_CARD_NO = V_HASH_PAN  --ADDED BY ABDUL HAMEED M.A ON 06-03-2014
         --AND INSTCODE            = P_INST_CODE --For Instcode removal of 2.4.2.4.2 release
           --AND TERMINAL_ID = P_ORGNL_TERMINAL_ID                     -- Commented on 15-Feb-2013 for defect 10296
         AND RESPONSE_CODE = '00'; -- 000 replaced by 00 for OLS changes
-
+		
 	ELSE
-
+	
 	    SELECT SUM(TRANFEE_AMT),
         SUM(AMOUNT)
         INTO V_TOT_FEE_AMOUNT,
@@ -1203,33 +1196,33 @@ AND CUSTOMER_CARD_NO = V_HASH_PAN  --ADDED BY ABDUL HAMEED M.A ON 06-03-2014
         --AND INSTCODE            = P_INST_CODE --For Instcode removal of 2.4.2.4.2 release
           --AND TERMINAL_ID = P_ORGNL_TERMINAL_ID                     -- Commented on 15-Feb-2013 for defect 10296
         AND RESPONSE_CODE = '00'; -- 000 replaced by 00 for OLS changes
-
-
+	
+	
 	END IF;
-
+        
       EXCEPTION
-
+      
       WHEN OTHERS THEN
         V_RESP_CDE := '21';
         V_ERRMSG   := 'Error while selecting TRANSACTIONLOG ' || SUBSTR(SQLERRM, 1, 200);
         RAISE EXP_RVSL_REJECT_RECORD;
-
+        
       END;
-
+      
       IF (V_TOT_FEE_AMOUNT IS NULL) AND (V_TOT_AMOUNT IS NULL) THEN
-
+      
         V_ORGNL_TXN        := 'NO ORGNL TXN';
-
+        
         /*V_RESP_CDE := '21';
         V_ERRMSG   := 'More than one failure matching record found in the master';
         RAISE EXP_RVSL_REJECT_RECORD;*/
-
+        
       ELSIF V_TOT_FEE_AMOUNT > 0 THEN
-
+      
         BEGIN
-
+		
 		IF (v_Retdate>v_Retperiod) THEN                                                                           --Added for VMS-5739/FSP-991
-
+        
           SELECT DELIVERY_CHANNEL,
             TERMINAL_ID,
             RESPONSE_CODE,
@@ -1267,7 +1260,7 @@ AND CUSTOMER_CARD_NO = V_HASH_PAN  --ADDED BY ABDUL HAMEED M.A ON 06-03-2014
              --Sn Added by Pankaj S. for enabling limit validation
             pos_verification,
             internation_ind_response,
-            add_ins_date
+            add_ins_date 
             --En Added by Pankaj S. for enabling limit validation
           INTO V_ORGNL_DELIVERY_CHANNEL,
             V_ORGNL_TERMINAL_ID,
@@ -1319,9 +1312,9 @@ AND CUSTOMER_CARD_NO = V_HASH_PAN  --ADDED BY ABDUL HAMEED M.A ON 06-03-2014
           AND DELIVERY_CHANNEL      = P_DELV_CHNL --Added by ramkumar.Mk on 25 march 2012
           --AND TRANFEE_CR_ACCTNO    IS NOT NULL
           AND ROWNUM                = 1;
-
+		  
 		ELSE
-
+		
 		    SELECT DELIVERY_CHANNEL,
             TERMINAL_ID,
             RESPONSE_CODE,
@@ -1359,7 +1352,7 @@ AND CUSTOMER_CARD_NO = V_HASH_PAN  --ADDED BY ABDUL HAMEED M.A ON 06-03-2014
              --Sn Added by Pankaj S. for enabling limit validation
             pos_verification,
             internation_ind_response,
-            add_ins_date
+            add_ins_date 
             --En Added by Pankaj S. for enabling limit validation
           INTO V_ORGNL_DELIVERY_CHANNEL,
             V_ORGNL_TERMINAL_ID,
@@ -1411,36 +1404,36 @@ AND CUSTOMER_CARD_NO = V_HASH_PAN  --ADDED BY ABDUL HAMEED M.A ON 06-03-2014
           AND DELIVERY_CHANNEL      = P_DELV_CHNL --Added by ramkumar.Mk on 25 march 2012
           --AND TRANFEE_CR_ACCTNO    IS NOT NULL
           AND ROWNUM                = 1;
-
+		
 		END IF;
-
+          
           V_ORGNL_TOTAL_AMOUNT     := V_TOT_AMOUNT;
           V_ORGNL_TXN_TOTALFEE_AMT := V_TOT_FEE_AMOUNT;
           V_ORGNL_TRANFEE_AMT      := V_TOT_FEE_AMOUNT;
-
+          
         EXCEPTION
-
+        
         WHEN OTHERS THEN
           V_RESP_CDE := '21';
           V_ERRMSG   := 'Error while selecting TRANSACTIONLOG1 ' || SUBSTR(SQLERRM, 1, 200);
           RAISE EXP_RVSL_REJECT_RECORD;
-
+          
         END;
-
+        
         --Added to check the reversal already done or not for Incremental preauth by deepa
         IF V_TRAN_REVERSE_FLAG = 'Y' THEN
           V_RESP_CDE          := '52';
           V_ERRMSG            := 'The reversal already done for the orginal transaction';
           RAISE EXP_RVSL_REJECT_RECORD;
         END IF;
-
+        
       ELSE
-
+      
         BEGIN
-
+		
 		IF (v_Retdate>v_Retperiod)  THEN                                                                    --Added for VMS-5739/FSP-991
 
-
+        
           SELECT DELIVERY_CHANNEL,
             TERMINAL_ID,
             RESPONSE_CODE,
@@ -1478,7 +1471,7 @@ AND CUSTOMER_CARD_NO = V_HASH_PAN  --ADDED BY ABDUL HAMEED M.A ON 06-03-2014
             --Sn Added by Pankaj S. for enabling limit validation
             pos_verification,
             internation_ind_response,
-            add_ins_date
+            add_ins_date 
             --En Added by Pankaj S. for enabling limit validation
           INTO V_ORGNL_DELIVERY_CHANNEL,
             V_ORGNL_TERMINAL_ID,
@@ -1529,9 +1522,9 @@ AND CUSTOMER_CARD_NO = V_HASH_PAN  --ADDED BY ABDUL HAMEED M.A ON 06-03-2014
           AND RESPONSE_CODE         = '00'        -- 000 replaced by 00 for OLS changes
           AND DELIVERY_CHANNEL      = P_DELV_CHNL --Added by ramkumar.Mk on 25 march 2012
           AND ROWNUM                = 1;
-
+		  
 	    ELSE
-
+		
 		    SELECT DELIVERY_CHANNEL,
             TERMINAL_ID,
             RESPONSE_CODE,
@@ -1569,7 +1562,7 @@ AND CUSTOMER_CARD_NO = V_HASH_PAN  --ADDED BY ABDUL HAMEED M.A ON 06-03-2014
             --Sn Added by Pankaj S. for enabling limit validation
             pos_verification,
             internation_ind_response,
-            add_ins_date
+            add_ins_date 
             --En Added by Pankaj S. for enabling limit validation
           INTO V_ORGNL_DELIVERY_CHANNEL,
             V_ORGNL_TERMINAL_ID,
@@ -1620,48 +1613,48 @@ AND CUSTOMER_CARD_NO = V_HASH_PAN  --ADDED BY ABDUL HAMEED M.A ON 06-03-2014
           AND RESPONSE_CODE         = '00'        -- 000 replaced by 00 for OLS changes
           AND DELIVERY_CHANNEL      = P_DELV_CHNL --Added by ramkumar.Mk on 25 march 2012
           AND ROWNUM                = 1;
-
+				
 		END IF;
-
+          
           V_ORGNL_TOTAL_AMOUNT     := V_TOT_AMOUNT;
           V_ORGNL_TXN_TOTALFEE_AMT := V_TOT_FEE_AMOUNT;
           V_ORGNL_TRANFEE_AMT      := V_TOT_FEE_AMOUNT;
-
+          
         EXCEPTION
-
+        
         WHEN OTHERS THEN
           V_RESP_CDE := '21';
           V_ERRMSG   := 'Error while selecting TRANSACTIONLOG2 ' || SUBSTR(SQLERRM, 1, 200);
           RAISE EXP_RVSL_REJECT_RECORD;
-
+          
         END;
-
+        
         --Added to check the reversal already done or not for Incremental preauth by deepa
         IF V_TRAN_REVERSE_FLAG = 'Y' THEN
           V_RESP_CDE          := '52';
           V_ERRMSG            := 'The reversal already done for the orginal transaction';
           RAISE EXP_RVSL_REJECT_RECORD;
-
+          
         END IF;
-
+        
       END IF;
-
+      
     END IF;
-
+    
   WHEN OTHERS THEN
     V_ORGNL_TXN      := 'NO ORGNL TXN';
-
+    
     IF P_MSG_TYP NOT IN ('1420', '1421') THEN --SAF and SAF Repeat reversal OLs Changes
       V_RESP_CDE     := '21';
       V_ERRMSG       := 'Error while selecting master data' || SUBSTR(SQLERRM, 1, 200);
       RAISE EXP_RVSL_REJECT_RECORD;
     END IF;
-
+    
   END;
   --En check orginal transaction
-
+  
   /*IF P_MSG_TYP = '1421' THEN  --SAF and SAF Repeat reversal OLs Changes
-
+  
     SELECT COUNT(*)
     INTO V_SAF_TXN_COUNT
     FROM TRANSACTIONLOG
@@ -1672,13 +1665,13 @@ AND CUSTOMER_CARD_NO = V_HASH_PAN  --ADDED BY ABDUL HAMEED M.A ON 06-03-2014
       --AND TERMINAL_ID = P_ORGNL_TERMINAL_ID                -- Commented on 15-Feb-2013 for defect 10296
     AND RESPONSE_CODE  = '00'
     AND MSGTYPE        = '1420';
-
+    
     IF V_SAF_TXN_COUNT > 0 THEN
       V_RESP_CDE      := '38';
       V_ERRMSG        := 'Successful SAF Transaction has already done' || SUBSTR(SQLERRM, 1, 200);
-      RAISE EXP_RVSL_REJECT_RECORD;
+      RAISE EXP_RVSL_REJECT_RECORD; 
     END IF;
-
+    
   END IF;*/
   ---Sn check card number
   /*IF V_ORGNL_CUSTOMER_CARD_NO <> V_HASH_PAN THEN
@@ -1687,54 +1680,54 @@ AND CUSTOMER_CARD_NO = V_HASH_PAN  --ADDED BY ABDUL HAMEED M.A ON 06-03-2014
   RAISE EXP_RVSL_REJECT_RECORD;
   END IF;*/
   --En check card number
-
+  
   ------------------------
-/*  --SN Added for FSS-1246
-  ------------------------
-
+/*  --SN Added for FSS-1246 
+  ------------------------  
+  
   IF P_MSG_TYP in ('1420', '1421') THEN
 
     BEGIN
-
+    
         SELECT COUNT(*)
          INTO V_OLS_TRAN_COUNT
          FROM TRANSACTIONLOG
         WHERE ORIGINAL_STAN = p_org_stan AND
              ORGNL_BUSINESS_DATE = P_ORGNL_BUSINESS_DATE AND
-             CUSTOMER_CARD_NO = V_HASH_PAN
-             AND INSTCODE = P_INST_CODE
+             CUSTOMER_CARD_NO = V_HASH_PAN 
+             AND INSTCODE = P_INST_CODE 
              AND RESPONSE_CODE = '00' AND
              MSGTYPE IN ('1420', '1421')
-             AND ORGNL_BUSINESS_TIME = P_ORGNL_BUSINESS_TIME;
+             AND ORGNL_BUSINESS_TIME = P_ORGNL_BUSINESS_TIME; 
 
         IF V_OLS_TRAN_COUNT > 0 THEN
 
-         V_RESP_CDE := '155';  --New response id FSS-1246
-         V_ERRMSG   := 'Successful SAF transaction has already done' ;
+         V_RESP_CDE := '155';  --New response id FSS-1246 
+         V_ERRMSG   := 'Successful SAF transaction has already done' ;  
          RAISE EXP_RVSL_REJECT_RECORD;
 
         END IF;
-
-    EXCEPTION WHEN EXP_RVSL_REJECT_RECORD  --Exception block added as per review observation for FSS-1246
-    THEN
-        RAISE;
-
+        
+    EXCEPTION WHEN EXP_RVSL_REJECT_RECORD  --Exception block added as per review observation for FSS-1246                              
+    THEN 
+        RAISE; 
+    
     WHEN OTHERS
     THEN
-         V_RESP_CDE := '21';  --New response id FSS-1246
-         V_ERRMSG   := 'Error occured while fetching count from txnlog '||substr(sqlerrm,1,100) ;
+         V_RESP_CDE := '21';  --New response id FSS-1246 
+         V_ERRMSG   := 'Error occured while fetching count from txnlog '||substr(sqlerrm,1,100) ;  
          RAISE EXP_RVSL_REJECT_RECORD;
-
-    END;
-
+    
+    END;       
+        
 
   END IF;
-
+  
   ------------------------
-  --EN Added for FSS-1246
-  ------------------------
+  --EN Added for FSS-1246 
+  ------------------------      
   */
-
+  
    --Sn get the product code
   BEGIN
     SELECT CAP_PROD_CODE,
@@ -1764,40 +1757,40 @@ AND CUSTOMER_CARD_NO = V_HASH_PAN  --ADDED BY ABDUL HAMEED M.A ON 06-03-2014
   END;
   --Sn find the converted tran amt
   V_TRAN_AMT       := P_ACTUAL_AMT;
-
+  
   IF (P_ACTUAL_AMT >= 0) THEN
-
+  
     BEGIN
-
-      SP_CONVERT_CURR(P_INST_CODE,
-                      V_CURRCODE,
-                      P_CARD_NO,
-                      P_ACTUAL_AMT,
-                      V_RVSL_TRANDATE,
-                      V_TRAN_AMT,
-                      V_CARD_CURR,
+    
+      SP_CONVERT_CURR(P_INST_CODE, 
+                      V_CURRCODE, 
+                      P_CARD_NO, 
+                      P_ACTUAL_AMT, 
+                      V_RVSL_TRANDATE, 
+                      V_TRAN_AMT, 
+                      V_CARD_CURR, 
                       V_ERRMSG,
                       V_PROD_CODE,
                       V_CARD_TYPE
                       );
-
+                      
       IF V_ERRMSG  <> 'OK' THEN
         V_RESP_CDE := '44';
         RAISE EXP_RVSL_REJECT_RECORD;
       END IF;
-
+      
     EXCEPTION
-
+    
     WHEN EXP_RVSL_REJECT_RECORD THEN
       RAISE;
-
+      
     WHEN OTHERS THEN
       V_RESP_CDE := '44'; -- Server Declined -220509
       V_ERRMSG   := 'Error from currency conversion ' || SUBSTR(SQLERRM, 1, 200);
       RAISE EXP_RVSL_REJECT_RECORD;
-
+      
     END;
-
+    
   ELSE
     -- If transaction Amount is zero - Invalid Amount -220509
     V_RESP_CDE := '13';
@@ -1814,19 +1807,19 @@ AND CUSTOMER_CARD_NO = V_HASH_PAN  --ADDED BY ABDUL HAMEED M.A ON 06-03-2014
   --En check amount with orginal transaction
   --Sn Check PreAuth Completion txn
   BEGIN
-
-
+  
+  
     	 --Added for VMS-5739/FSP-991
        select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
-       INTO   v_Retperiod
-       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL
-       WHERE  OPERATION_TYPE='ARCHIVE'
+       INTO   v_Retperiod 
+       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
+       WHERE  OPERATION_TYPE='ARCHIVE' 
        AND OBJECT_NAME='CMS_PREAUTH_TRANSACTION_EBR';
-
+       
        v_Retdate := TO_DATE(SUBSTR(TRIM(P_ORGNL_BUSINESS_DATE), 1, 8), 'yyyymmdd');
-
+  
   IF (v_Retdate>v_Retperiod) THEN                                                              --Added for VMS-5739/FSP-991
-
+  
     SELECT CPT_TOTALHOLD_AMT,
       CPT_EXPIRY_FLAG,cpt_completion_fee --Added for FSS 897
       ,cpt_transaction_flag, nvl(cpt_complfree_flag,'N')
@@ -1839,9 +1832,9 @@ AND CUSTOMER_CARD_NO = V_HASH_PAN  --ADDED BY ABDUL HAMEED M.A ON 06-03-2014
     AND CPT_INST_CODE = P_INST_CODE
     AND CPT_MBR_NO    = P_MBR_NUMB
     AND CPT_CARD_NO   = V_HASH_PAN;
-
+	
   ELSE
-
+  
     SELECT CPT_TOTALHOLD_AMT,
       CPT_EXPIRY_FLAG,cpt_completion_fee --Added for FSS 897
       ,cpt_transaction_flag, nvl(cpt_complfree_flag,'N')
@@ -1854,60 +1847,20 @@ AND CUSTOMER_CARD_NO = V_HASH_PAN  --ADDED BY ABDUL HAMEED M.A ON 06-03-2014
     AND CPT_INST_CODE = P_INST_CODE
     AND CPT_MBR_NO    = P_MBR_NUMB
     AND CPT_CARD_NO   = V_HASH_PAN;
-
+  
   END IF;
-
+    
     IF v_cpt_transaction_flag = 'C' then
        v_resp_cde := '57'; -- server declined -220509
        v_errmsg   := 'completion already done for this preauth transaction ';
        raise exp_rvsl_reject_record;
-    END IF;
-
+    END IF; 
+    
   EXCEPTION
-
+  
   WHEN NO_DATA_FOUND THEN
-    BEGIN                                       --Added for VMS-8551
-        IF (v_Retdate>v_Retperiod) THEN                                                              
-            SELECT CPT_TOTALHOLD_AMT,
-              CPT_EXPIRY_FLAG,cpt_completion_fee 
-              ,cpt_transaction_flag, nvl(cpt_complfree_flag,'N')
-            INTO V_HOLD_AMOUNT,
-              V_PREAUTH_EXPIRY_FLAG,v_completion_fee 
-              ,v_cpt_transaction_flag,v_complfree_flag
-            FROM CMS_PREAUTH_TRANSACTION
-            WHERE CPT_RRN     = v_org_rrn 
-            --AND CPT_TXN_DATE  = P_ORGNL_BUSINESS_DATE
-            AND CPT_INST_CODE = P_INST_CODE
-            AND CPT_MBR_NO    = P_MBR_NUMB
-            AND CPT_CARD_NO   = V_HASH_PAN;
-    
-        ELSE
-    
-            SELECT CPT_TOTALHOLD_AMT,
-              CPT_EXPIRY_FLAG,cpt_completion_fee 
-              ,cpt_transaction_flag, nvl(cpt_complfree_flag,'N')
-            INTO V_HOLD_AMOUNT,
-              V_PREAUTH_EXPIRY_FLAG,v_completion_fee 
-              ,v_cpt_transaction_flag,v_complfree_flag
-            FROM VMSCMS_HISTORY.CMS_PREAUTH_TRANSACTION_HIST                                                   
-            WHERE CPT_RRN     = v_org_rrn 
-            --AND CPT_TXN_DATE  = P_ORGNL_BUSINESS_DATE
-            AND CPT_INST_CODE = P_INST_CODE
-            AND CPT_MBR_NO    = P_MBR_NUMB
-            AND CPT_CARD_NO   = V_HASH_PAN;
-    
-        END IF;
-         IF v_cpt_transaction_flag = 'C' then
-            v_resp_cde := '57'; -- server declined -220509
-            v_errmsg   := 'completion already done for this preauth transaction ';
-            raise exp_rvsl_reject_record;
-        END IF;
-    EXCEPTION
-        WHEN exp_rvsl_reject_record THEN RAISE;
-        WHEN OTHERS THEN
-            V_HOLD_AMOUNT := -1; --If the original Preauth txn is not found
-            V_ORGNL_TXN   := 'NO ORGNL TXN';
-    END;
+    V_HOLD_AMOUNT := -1; --If the original Preauth txn is not found
+    V_ORGNL_TXN   := 'NO ORGNL TXN';
     /*V_RESP_CDE := '53';
     V_ERRMSG   := 'Matching transaction not found';
     RAISE EXP_RVSL_REJECT_RECORD;
@@ -1916,7 +1869,7 @@ AND CUSTOMER_CARD_NO = V_HASH_PAN  --ADDED BY ABDUL HAMEED M.A ON 06-03-2014
     V_ERRMSG   := 'More than one record found ';
     RAISE EXP_RVSL_REJECT_RECORD;*/
   WHEN exp_rvsl_reject_record THEN
-      RAISE;
+      RAISE;    
   WHEN OTHERS THEN
     V_HOLD_AMOUNT := -1; --If the original Preauth txn is not found
     V_ORGNL_TXN   := 'NO ORGNL TXN';
@@ -1925,7 +1878,7 @@ AND CUSTOMER_CARD_NO = V_HASH_PAN  --ADDED BY ABDUL HAMEED M.A ON 06-03-2014
     RAISE EXP_RVSL_REJECT_RECORD;*/
   END;
   --En Check PreAuth Completion txn
-
+  
   BEGIN
     /* IF V_HOLD_AMOUNT <= 0 THEN
     V_RESP_CDE := '58';
@@ -1939,49 +1892,40 @@ AND CUSTOMER_CARD_NO = V_HASH_PAN  --ADDED BY ABDUL HAMEED M.A ON 06-03-2014
     END IF;
     END IF;
     V_REVERSAL_AMT := V_HOLD_AMOUNT - V_ACTUAL_DISPATCHED_AMT;*/
-    
-    IF ((V_TRAN_AMT            IS NULL OR V_TRAN_AMT = 0) and upper(trim(P_NETWORKID_SWITCH))='AMEX' ) THEN  --VMS-8395
-      V_ACTUAL_DISPATCHED_AMT := V_HOLD_AMOUNT;          
-    ELSIF (V_TRAN_AMT            IS NULL OR V_TRAN_AMT = 0)  THEN
+    IF (V_TRAN_AMT            IS NULL OR V_TRAN_AMT = 0) THEN
       V_ACTUAL_DISPATCHED_AMT := 0;
     ELSE
       V_ACTUAL_DISPATCHED_AMT := V_TRAN_AMT;
     END IF;
-
+    
     IF (V_HOLD_AMOUNT   IS NULL OR V_HOLD_AMOUNT = 0) THEN
       V_REVERSAL_AMT    := 0;
     ELSIF (V_HOLD_AMOUNT = -1) THEN
       V_REVERSAL_AMT    := V_ACTUAL_DISPATCHED_AMT;
-    ELSE   
-        IF(upper(trim(P_NETWORKID_SWITCH))='AMEX') THEN   --VMS-8395
-            V_REVERSAL_AMT := V_ACTUAL_DISPATCHED_AMT;
-        ELSE
-            V_REVERSAL_AMT   := V_HOLD_AMOUNT - V_ACTUAL_DISPATCHED_AMT;
-        END IF;
-        
-        
-    
-      IF (V_REVERSAL_AMT <= 0 or V_REVERSAL_AMT>V_HOLD_AMOUNT) THEN
+    ELSE
+      V_REVERSAL_AMT   := V_HOLD_AMOUNT - V_ACTUAL_DISPATCHED_AMT;
+      
+      IF V_REVERSAL_AMT <= 0 THEN
         --V_REVERSAL_AMT := V_HOLD_AMOUNT;
         V_REVERSAL_AMT := 0;
       END IF;
-
-      IF V_REVERSAL_AMT < V_HOLD_AMOUNT THEN   ---Modified For Mantis id-0010997
+      
+      IF V_REVERSAL_AMT < V_HOLD_AMOUNT THEN   ---Modified For Mantis id-0010997  
         V_REVERSAL_AMT_FLAG :='P';
       END IF;
-
+      
     END IF;
-
+    
   END;
   /* Block moved from bottom to top for Instcode removal of 2.4.2.4.2 release */
-
-
+ 
+  
 ------------------------------------------------------
         --Sn Added for Concurrent Processsing Issue
    ------------------------------------------------------
-
+     
   BEGIN
-
+  
     SELECT CAM_ACCT_NO,
       CAM_ACCT_BAL,
       CAM_LEDGER_BAL,
@@ -2004,26 +1948,26 @@ AND CUSTOMER_CARD_NO = V_HASH_PAN  --ADDED BY ABDUL HAMEED M.A ON 06-03-2014
       ) */  --For Instcode removal of 2.4.2.4.2 release
     AND CAM_INST_CODE = P_INST_CODE
     FOR UPDATE;                             -- Added for Concurrent Processsing Issue
-    --FOR UPDATE NOWAIT;                    -- Commented for Concurrent Processsing Issue
+    --FOR UPDATE NOWAIT;                    -- Commented for Concurrent Processsing Issue     
   EXCEPTION
-
+  
   WHEN NO_DATA_FOUND THEN
     V_RESP_CDE := '14'; --Ineligible Transaction
     V_ERRMSG   := 'Invalid Card ';
     RAISE EXP_RVSL_REJECT_RECORD;
-
+    
   WHEN OTHERS THEN
     V_RESP_CDE := '21';
     V_ERRMSG   := 'Error while selecting data from card Master for card number ' || V_HASH_PAN;
     RAISE EXP_RVSL_REJECT_RECORD;
-
+    
   END;
     select (extract(day from systimestamp - v_start_time) *86400+
     extract(hour from systimestamp - v_start_time) *3600+
     extract(minute from systimestamp - v_start_time) *60+
     extract(second from systimestamp - v_start_time) *1000) into v_mili from dual ;
     P_RESPTIME_DETAIL := '1: ' || v_mili ;
-  --SN Commented by Pankaj S. for PERF changes
+  --SN Commented by Pankaj S. for PERF changes   
   /*if (P_MSG_TYP <> '1421') then  --Added for FSS 1876
       BEGIN
 
@@ -2032,10 +1976,10 @@ AND CUSTOMER_CARD_NO = V_HASH_PAN  --ADDED BY ABDUL HAMEED M.A ON 06-03-2014
          FROM TRANSACTIONLOG
         WHERE --INSTCODE = P_INST_CODE and    --For Instcode removal of 2.4.2.4.2 release
         CUSTOMER_CARD_NO  = V_HASH_PAN
-        AND   BUSINESS_DATE = P_BUSINESS_DATE
+        AND   BUSINESS_DATE = P_BUSINESS_DATE 
         AND   DELIVERY_CHANNEL = P_DELV_CHNL
         AND   ADD_INS_DATE BETWEEN TRUNC(SYSDATE-1)  AND SYSDATE
-        AND   SYSTEM_TRACE_AUDIT_NO = P_STAN;
+        AND   SYSTEM_TRACE_AUDIT_NO = P_STAN; 
 
         IF V_STAN_COUNT > 0 THEN
 
@@ -2045,20 +1989,20 @@ AND CUSTOMER_CARD_NO = V_HASH_PAN  --ADDED BY ABDUL HAMEED M.A ON 06-03-2014
          RAISE EXP_RVSL_REJECT_RECORD;
 
         END IF;
-
-
-      EXCEPTION WHEN EXP_RVSL_REJECT_RECORD
+        
+        
+      EXCEPTION WHEN EXP_RVSL_REJECT_RECORD 
       THEN
             RAISE EXP_RVSL_REJECT_RECORD;
-
+                
       WHEN OTHERS THEN
-
+          
        V_RESP_CDE := '21';
        V_ERRMSG  := 'Error while checking duplicate STAN ' ||SUBSTR(SQLERRM,1,200);
        RAISE EXP_RVSL_REJECT_RECORD;
 
       END;*/
-      --EN Commented by Pankaj S. for PERF changes
+      --EN Commented by Pankaj S. for PERF changes   
 
 /*
       BEGIN
@@ -2073,79 +2017,79 @@ AND CUSTOMER_CARD_NO = V_HASH_PAN  --ADDED BY ABDUL HAMEED M.A ON 06-03-2014
         AND MSGTYPE=p_msg_typ -- MODIFIED BY ABDUL HAMEED M.A ON 06-03-2014
 AND CUSTOMER_CARD_NO = V_HASH_PAN  --ADDED BY ABDUL HAMEED M.A ON 06-03-2014
         AND txn_code =   P_TXN_CODE  ; --Added for MVHOST-500 on 02.08.2013
-
-
+        
+        
         IF V_RRN_COUNT       > 0 THEN
           V_RESP_CDE        := '22';
           V_ERRMSG          := 'Duplicate RRN from the Treminal' || P_TERMINAL_ID || ' on ' || P_BUSINESS_DATE;
           RAISE EXP_RVSL_REJECT_RECORD;
         END IF;
-
-        EXCEPTION -- Exception added on 01/07/2013 BY Arunprasath
+        
+        EXCEPTION -- Exception added on 01/07/2013 BY Arunprasath 
         WHEN EXP_RVSL_REJECT_RECORD  THEN
         RAISE EXP_RVSL_REJECT_RECORD;
-
+          
         WHEN OTHERS THEN
         v_resp_cde := '21';
         v_errmsg   := 'Error While checking Duplicate RRN'|| SUBSTR(SQLERRM, 1, 200);
         RAISE EXP_RVSL_REJECT_RECORD;
-
+        
       end;*/
---end if; --Added for FSS 1876   --Commented by Pankaj S. for PERF changes
+--end if; --Added for FSS 1876   --Commented by Pankaj S. for PERF changes   
      /* IF P_MSG_TYP in ('1420', '1421') THEN
 
         BEGIN
-
+        
             SELECT COUNT(*)
              INTO V_OLS_TRAN_COUNT
              FROM TRANSACTIONLOG
             WHERE ORIGINAL_STAN = p_org_stan AND
                  ORGNL_BUSINESS_DATE = P_ORGNL_BUSINESS_DATE AND
-                 CUSTOMER_CARD_NO = V_HASH_PAN
-                 AND INSTCODE = P_INST_CODE
+                 CUSTOMER_CARD_NO = V_HASH_PAN 
+                 AND INSTCODE = P_INST_CODE 
                  AND RESPONSE_CODE = '00' AND
                  MSGTYPE IN ('1420', '1421')
-                 AND ORGNL_BUSINESS_TIME = P_ORGNL_BUSINESS_TIME;
+                 AND ORGNL_BUSINESS_TIME = P_ORGNL_BUSINESS_TIME; 
 
             IF V_OLS_TRAN_COUNT > 0 THEN
 
-             V_RESP_CDE := '155';  --New response id FSS-1246
-             V_ERRMSG   := 'Successful SAF transaction has already done' ;
+             V_RESP_CDE := '155';  --New response id FSS-1246 
+             V_ERRMSG   := 'Successful SAF transaction has already done' ;  
              RAISE EXP_RVSL_REJECT_RECORD;
 
             END IF;
-
-        EXCEPTION WHEN EXP_RVSL_REJECT_RECORD  --Exception block added as per review observation for FSS-1246
-        THEN
-            RAISE;
-
+            
+        EXCEPTION WHEN EXP_RVSL_REJECT_RECORD  --Exception block added as per review observation for FSS-1246                              
+        THEN 
+            RAISE; 
+        
         WHEN OTHERS
         THEN
-             V_RESP_CDE := '21';  --New response id FSS-1246
-             V_ERRMSG   := 'Error occured while fetching count from txnlog '||substr(sqlerrm,1,100) ;
+             V_RESP_CDE := '21';  --New response id FSS-1246 
+             V_ERRMSG   := 'Error occured while fetching count from txnlog '||substr(sqlerrm,1,100) ;  
              RAISE EXP_RVSL_REJECT_RECORD;
-
-        END;
-
-      END IF;   */
+        
+        END;      
+        
+      END IF;   */  
 
    ------------------------------------------------------
         --En Added for Concurrent Processsing Issue
-    ------------------------------------------------------
-
-
-
-
+    ------------------------------------------------------        
+           
+  
+  
+  
   IF (v_dr_cr_flag   = 'CR' AND p_rvsl_code = '00') -- If condition added for OLS changes
     OR (v_dr_cr_flag = 'DR' AND p_rvsl_code <> '00')
-
+    
     -- If condition added by Ganesh S. on 26-MAR-2013 for handling Max card balance chec
-
+    
     THEN
     --Sn Check for maximum card balance configured for the product profile.
-
+    
     BEGIN
-
+    
       SELECT TO_NUMBER(CBP_PARAM_VALUE) -- Added on 09-Feb-2013 for max card balance check based on product category
       INTO V_MAX_CARD_BAL
       FROM CMS_BIN_PARAM
@@ -2158,7 +2102,7 @@ AND CUSTOMER_CARD_NO = V_HASH_PAN  --ADDED BY ABDUL HAMEED M.A ON 06-03-2014
         AND cpc_prod_code   = v_prod_code
         AND CPC_CARD_TYPE   = v_card_type
         );
-
+        
       /*
       SELECT TO_NUMBER(CBP_PARAM_VALUE) -- Commented on 09-Feb-2013 for max card balance check based on product category
       INTO V_MAX_CARD_BAL
@@ -2170,75 +2114,75 @@ AND CUSTOMER_CARD_NO = V_HASH_PAN  --ADDED BY ABDUL HAMEED M.A ON 06-03-2014
       FROM CMS_PROD_MAST
       WHERE CPM_PROD_CODE = V_PROD_CODE);
       */
-
+      
     EXCEPTION
-
+    
     WHEN OTHERS THEN
       V_RESP_CDE := '21';
       V_ERRMSG   := 'ERROR IN FETCHING CARD BALANCE CONFIGURATION FOR THE PRODUCT PROFILE ' || SUBSTR(SQLERRM, 1, 200);
       RAISE EXP_RVSL_REJECT_RECORD;
-
+      
     END;
-
+    
      END IF; -- moved from below for Mantis id:11209
-
+    
     -- En Check for maximum card balance configured for the product profile.
-
+    
     IF NVL(V_ORGNL_TXN,'1') <> 'NO ORGNL TXN' THEN -- IF condition Added for FSS-1145
     IF (V_PREAUTH_TYPE!='C') THEN--Added for MVHOST 926
       IF ((V_ACCT_BALANCE + V_REVERSAL_AMT) > V_MAX_CARD_BAL) OR ((V_LEDGER_BAL + V_REVERSAL_AMT) > V_MAX_CARD_BAL) THEN
-
+      
         BEGIN
-
+        
           IF v_cap_card_stat<>'12' THEN --added for FSS-390
-
+          
             UPDATE CMS_APPL_PAN
             SET CAP_CARD_STAT  = '12'
             WHERE CAP_PAN_CODE = V_HASH_PAN
             AND CAP_INST_CODE  = P_INST_CODE;
-
+            
             IF SQL%ROWCOUNT    = 0 THEN
               V_ERRMSG        := 'Error while updating the card status';
               V_RESP_CDE      := '21';
               RAISE EXP_RVSL_REJECT_RECORD;
             END IF;
-
+            
             --Sn added for FSS-390
             v_chnge_crdstat:='Y';
-
+            
           END IF;
-
+          
           --En added for FSS-390
-
+          
         EXCEPTION
-
+        
       WHEN EXP_RVSL_REJECT_RECORD THEN-- Exception added on 01/07/2013 BY Arunprasath
       RAISE EXP_RVSL_REJECT_RECORD;
-
+        
         WHEN OTHERS THEN
           V_RESP_CDE := '21';
           V_ERRMSG   := 'Error while updating cms_appl_pan ' || SUBSTR(SQLERRM, 1, 200);
           RAISE EXP_RVSL_REJECT_RECORD;
-
+          
         END;
-
+        
       END IF;
-    END IF;--Added for MVHOST 926
+    END IF;--Added for MVHOST 926  
  --   END IF; --moved down for Defect id : 11209
-
+    
     --Sn Check the Flag for Reversal transaction
-
+    
     IF V_TRAN_PREAUTH_FLAG != 'Y' THEN
-
+    
       IF V_DR_CR_FLAG       = 'NA' THEN
         V_RESP_CDE         := '21';
         V_ERRMSG           := 'Not a valid orginal transaction for reversal';
         RAISE EXP_RVSL_REJECT_RECORD;
-
+        
       END IF;
-
+      
     END IF;
-
+    
     --En Check the Flag for Reversal transaction
     --Sn Check the transaction type with Original txn type
     /*
@@ -2248,9 +2192,9 @@ AND CUSTOMER_CARD_NO = V_HASH_PAN  --ADDED BY ABDUL HAMEED M.A ON 06-03-2014
     RAISE EXP_RVSL_REJECT_RECORD;
     END IF;*/
     --En Check the transaction type
-
+    
     --Sn commented for fwr-48
-
+    
     --Sn find the orginal func code
  /*   BEGIN
       SELECT CFM_FUNC_CODE
@@ -2263,59 +2207,59 @@ AND CUSTOMER_CARD_NO = V_HASH_PAN  --ADDED BY ABDUL HAMEED M.A ON 06-03-2014
       --TXN mode and delivery channel we need to attach
       --bkz txn code may be same for all type of channels
     EXCEPTION
-
+    
     WHEN NO_DATA_FOUND THEN
       V_RESP_CDE := '69'; --Ineligible Transaction
       V_ERRMSG   := 'Function code not defined for txn code ' || P_TXN_CODE;
       RAISE EXP_RVSL_REJECT_RECORD;
-
+      
     WHEN TOO_MANY_ROWS THEN
       V_RESP_CDE := '69';
       V_ERRMSG   := 'More than one function defined for txn code ' || P_TXN_CODE;
       RAISE EXP_RVSL_REJECT_RECORD;
-
+      
     WHEN OTHERS THEN
       V_RESP_CDE := '69';
       V_ERRMSG   := 'Problem while selecting function code from function mast  ' || SUBSTR(SQLERRM, 1, 200);
       RAISE EXP_RVSL_REJECT_RECORD;
-
+      
     END; */
-
+    
     --En commented for fwr-48
-
+    
     --En find the orginal func code
-   END IF; --moved down for Defect id : 11209
+   END IF; --moved down for Defect id : 11209 
     ---Sn find cutoff time
-
+    
     BEGIN
       SELECT CIP_PARAM_VALUE
       INTO V_CUTOFF_TIME
       FROM CMS_INST_PARAM
       WHERE CIP_PARAM_KEY = 'CUTOFF'
       AND CIP_INST_CODE   = P_INST_CODE;
-
+      
     EXCEPTION
-
+    
     WHEN NO_DATA_FOUND THEN
       V_CUTOFF_TIME := 0;
       V_RESP_CDE    := '21';
       V_ERRMSG      := 'Cutoff time is not defined in the system';
       RAISE EXP_RVSL_REJECT_RECORD;
-
+      
     WHEN OTHERS THEN
       V_RESP_CDE := '21';
-      V_ERRMSG   := 'Error while selecting cutoff  dtl  from system '|| SUBSTR(SQLERRM, 1, 200);-- Added SUBSTR OF SQLERRM on 01/07/2013 BY Arunprasath
+      V_ERRMSG   := 'Error while selecting cutoff  dtl  from system '|| SUBSTR(SQLERRM, 1, 200);-- Added SUBSTR OF SQLERRM on 01/07/2013 BY Arunprasath 
       RAISE EXP_RVSL_REJECT_RECORD;
-
+      
     END;
     ---En find cutoff time
-
+    
   --  v_timestamp:=systimestamp; --added by Pankaj S. for 10871
-
+    
    --Sn Added for FSS 897
-    --Sn calculate the completion fee to hold
+    --Sn calculate the completion fee to hold 
      IF NVL(V_ORGNL_TXN,'1') <> 'NO ORGNL TXN' -- IF condition Added for FSS-1145
-
+      
         THEN
         if(v_preauth_type!='C') then  --Added for 15616
     BEGIN
@@ -2323,7 +2267,7 @@ AND CUSTOMER_CARD_NO = V_HASH_PAN  --ADDED BY ABDUL HAMEED M.A ON 06-03-2014
       INTO v_completion_txn_code
       FROM cms_preauthcomp_txncode
        WHERE cpt_inst_code = p_inst_code AND cpt_preauth_txncode = p_txn_code;
-
+      
         EXCEPTION
      WHEN NO_DATA_FOUND THEN
       v_completion_txn_code:='00';
@@ -2337,9 +2281,9 @@ select (extract(day from systimestamp - v_start_time) *86400+
     extract(hour from systimestamp - v_start_time) *3600+
     extract(minute from systimestamp - v_start_time) *60+
     extract(second from systimestamp - v_start_time) *1000) into v_mili from dual ;
-
+    
      P_RESPTIME_DETAIL :=  P_RESPTIME_DETAIL || ' 2: ' || v_mili ;
-
+ 
  IF(V_HOLD_AMOUNT <> V_REVERSAL_AMT) THEN
  BEGIN
 
@@ -2385,7 +2329,7 @@ select (extract(day from systimestamp - v_start_time) *86400+
                                v_comp_freetxn_exceed,
                                v_comp_duration,
                                v_comp_feeattach_type,
-                               V_COMP_FEE_DESC
+                               V_COMP_FEE_DESC  
                               );
 
          IF v_comp_error <> 'OK'
@@ -2467,21 +2411,21 @@ select (extract(day from systimestamp - v_start_time) *86400+
       v_comp_total_fee :=
                     ROUND (v_comp_fee_amt + v_comp_servicetax_amount + v_comp_cess_amount, 2);
     END IF;
-
+    
 
  IF v_complfree_flag='Y' AND v_completion_fee=0 THEN
-
-
-
+ 
+ 
+ 
      --Added for VMS-5739/FSP-991
      select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
-       INTO   v_Retperiod
-       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL
-       WHERE  OPERATION_TYPE='ARCHIVE'
+       INTO   v_Retperiod 
+       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
+       WHERE  OPERATION_TYPE='ARCHIVE' 
        AND OBJECT_NAME='CMS_TRANSACTION_LOG_DTL_EBR';
-
+       
        v_Retdate := TO_DATE(SUBSTR(TRIM(p_orgnl_business_date), 1, 8), 'yyyymmdd');
-
+	   
   IF (v_Retdate>v_Retperiod) THEN                                                               --Added for VMS-5739/FSP-991
 
     SELECT ctd_compfee_code
@@ -2494,9 +2438,9 @@ select (extract(day from systimestamp - v_start_time) *86400+
            AND ctd_inst_code = p_inst_code
            and ctd_txn_code=v_orgnl_txn_code
            AND ctd_delivery_channel = p_delv_chnl;
-
+		   
    ELSE
-
+   
       SELECT ctd_compfee_code
       INTO v_comp_fee_code
       FROM VMSCMS_HISTORY.CMS_TRANSACTION_LOG_DTL_HIST                                        --Added for VMS-5739/FSP-991
@@ -2507,10 +2451,10 @@ select (extract(day from systimestamp - v_start_time) *86400+
            AND ctd_inst_code = p_inst_code
            and ctd_txn_code=v_orgnl_txn_code
            AND ctd_delivery_channel = p_delv_chnl;
-
-
+		   
+   
    END IF;
-
+   
    BEGIN
        vmsfee.fee_freecnt_reverse (V_CARD_ACCT_NO, v_comp_fee_code, v_errmsg);
        IF v_errmsg <> 'OK' THEN
@@ -2526,9 +2470,9 @@ select (extract(day from systimestamp - v_start_time) *86400+
           RAISE exp_rvsl_reject_record;
     END;
    END IF;
-
-    --En  calculate the completion fee to hold
-
+    
+    --En  calculate the completion fee to hold 
+    
     IF(v_comp_total_fee=v_completion_fee) THEN
 v_reverse_compl_fee:=0;
 v_comp_fee:=0;
@@ -2556,52 +2500,52 @@ v_reverse_compl_fee:=v_completion_fee;
 v_comp_fee:=v_completion_fee;
 v_complfee_increment_type:='C';*/
     END IF;
-  --En Added for FSS 897
+  --En Added for FSS 897 
     BEGIN
-
+    
       IF V_ORGNL_TXN = 'NO ORGNL TXN' THEN
         V_ORGNL_RRN := 'N:' || v_org_rrn;--P_ORGNL_RRN; -- corrected for Mantis id:11209
-
+        
       ELSE
-
+      
         V_ORGNL_RRN := 'Y:' || v_org_rrn;--P_ORGNL_RRN; -- corrected for Mantis id:11209
-
+        
       END IF;
-
+      
       IF NVL(V_ORGNL_TXN,'1') <> 'NO ORGNL TXN' -- IF condition Added for FSS-1145
-
+      
         THEN
       IF(V_PREAUTH_TYPE!='C') THEN --Added for Mantis ID 15120
-        SP_REVERSE_CARD_AMOUNT(P_INST_CODE,
-        V_FUNC_CODE,
-        P_RRN,
-        P_DELV_CHNL,
-        P_ORGNL_TERMINAL_ID,
-        P_MERC_ID,
-        P_TXN_CODE,
-        V_RVSL_TRANDATE,
-        P_TXN_MODE,
-        P_CARD_NO,
-       -- V_REVERSAL_AMT,
+        SP_REVERSE_CARD_AMOUNT(P_INST_CODE, 
+        V_FUNC_CODE, 
+        P_RRN, 
+        P_DELV_CHNL, 
+        P_ORGNL_TERMINAL_ID, 
+        P_MERC_ID, 
+        P_TXN_CODE, 
+        V_RVSL_TRANDATE, 
+        P_TXN_MODE, 
+        P_CARD_NO, 
+       -- V_REVERSAL_AMT, 
      --  V_REVERSAL_AMT+v_reverse_compl_fee, --Added for FSS 897
      V_REVERSAL_AMT+v_reverse_compl_fee-v_comp_feeamt,  --Modified for 15616
        V_ORGNL_RRN,-- v_org_rrn, -- P_ORGNL_RRN replaced by v_org_rrn for OLS changes,
-        V_CARD_ACCT_NO,
-        P_BUSINESS_DATE,
-        P_BUSINESS_TIME,
-        V_AUTH_ID,
-        V_TXN_NARRATION,
-        P_ORGNL_BUSINESS_DATE,
-        P_ORGNL_BUSINESS_TIME,
+        V_CARD_ACCT_NO, 
+        P_BUSINESS_DATE, 
+        P_BUSINESS_TIME, 
+        V_AUTH_ID, 
+        V_TXN_NARRATION, 
+        P_ORGNL_BUSINESS_DATE, 
+        P_ORGNL_BUSINESS_TIME, 
         V_TXN_MERCHNAME,                                        --Added by Deepa on 09-May-2012 to include Merchant name,city and state in statements log
-        V_TXN_MERCHCITY,
-        V_TXN_MERCHSTATE,
-        V_RESP_CDE,
+        V_TXN_MERCHCITY, 
+        V_TXN_MERCHSTATE, 
+        V_RESP_CDE, 
         V_ERRMSG);
-
+        
         IF V_RESP_CDE <> '00' OR V_ERRMSG <> 'OK' THEN
           RAISE EXP_RVSL_REJECT_RECORD;
-
+          
         END IF;
     ELSIF P_DELV_CHNL = '02' AND P_TXN_CODE = '36' THEN
         BEGIN
@@ -2621,15 +2565,15 @@ v_complfee_increment_type:='C';*/
 				V_ERRMSG := 'Error while selecting data from inst param '|| SUBSTR (SQLERRM, 1, 100);
 			 RAISE EXP_RVSL_REJECT_RECORD;
 	   END;
-
+       
        IF V_PARAM_VALUE = 'Y' THEN
-
+       
        IF V_REVERSAL_AMT_FLAG = 'P' THEN
             V_RESP_CDE := '21';
             V_ERRMSG  := 'Hold Amount and Transaction Amount are different.';
             RAISE EXP_RVSL_REJECT_RECORD;
 		END IF;
-
+       
         BEGIN
              UPDATE CMS_ACCT_MAST
              SET CAM_ACCT_BAL  = CAM_ACCT_BAL - V_REVERSAL_AMT
@@ -2649,9 +2593,9 @@ v_complfee_increment_type:='C';*/
                             SUBSTR(SQLERRM, 1, 250);
                 RAISE EXP_RVSL_REJECT_RECORD;
         END;
-
+      
       END IF;
-
+    
       END IF;
      END IF;
     EXCEPTION
@@ -2662,21 +2606,21 @@ v_complfee_increment_type:='C';*/
       V_RESP_CDE := '21';
       V_ERRMSG   := 'Error while reversing the amount ' || SUBSTR(SQLERRM, 1, 200);
       RAISE EXP_RVSL_REJECT_RECORD;
-
+      
     END;
     --En reverse the amount
-
+    
     --Sn reverse the fee
-    IF V_REVERSAL_AMT_FLAG <>'P' THEN   --Modified For Mantis Id-0010997
+    IF V_REVERSAL_AMT_FLAG <>'P' THEN   --Modified For Mantis Id-0010997 
     --Added by Deepa For Reversal Fees on June 27 2012
     IF NVL(V_ORGNL_TXN,'1') <> 'NO ORGNL TXN' -- IF condition Added for FSS-1145
       THEN
-
+     
       IF V_ORGNL_TXN_TOTALFEE_AMT > 0 or V_ORGNL_TXN_FEECODE is not null THEN --Modified for (Mantis Id-0010997)
-
+      
       -- SN Added for FWR-11
-       Begin
-         select CFM_FEECAP_FLAG,CFM_FEE_AMT into v_feecap_flag,v_orgnl_fee_amt from CMS_FEE_MAST
+       Begin 
+         select CFM_FEECAP_FLAG,CFM_FEE_AMT into v_feecap_flag,v_orgnl_fee_amt from CMS_FEE_MAST 
          where CFM_INST_CODE = P_INST_CODE and CFM_FEE_CODE = V_ORGNL_TXN_FEECODE;
         EXCEPTION
           WHEN NO_DATA_FOUND THEN
@@ -2687,14 +2631,14 @@ v_complfee_increment_type:='C';*/
         End;
         -- EN Added for FWR-11
         BEGIN
-
+        
           FOR C1 IN FEEREVERSE
-
+          
           LOOP
           -- SN Added for FWR-11
       V_ORGNL_TRANFEE_AMT := C1.CSL_TRANS_AMOUNT;
-
-        if v_feecap_flag = 'Y' then
+    
+        if v_feecap_flag = 'Y' then 
         BEGIN
             SP_TRAN_FEES_REVCAPCHECK(P_INST_CODE,
                     V_ACCT_NUMBER,
@@ -2703,7 +2647,7 @@ v_complfee_increment_type:='C';*/
                     v_orgnl_fee_amt,
                     V_ORGNL_TXN_FEE_PLAN,
                     V_ORGNL_TXN_FEECODE,
-                    V_ERRMSG
+                    V_ERRMSG                 
                   ); -- Added for FWR-11
           EXCEPTION
           WHEN OTHERS THEN
@@ -2715,79 +2659,79 @@ v_complfee_increment_type:='C';*/
       End if;
     -- EN Added for FWR-11
             BEGIN
-
-              SP_REVERSE_FEE_AMOUNT(P_INST_CODE,
-              P_RRN,
-              P_DELV_CHNL,
-              P_ORGNL_TERMINAL_ID,
-              P_MERC_ID,
-              P_TXN_CODE,
-              V_RVSL_TRANDATE,
-              P_TXN_MODE,
+            
+              SP_REVERSE_FEE_AMOUNT(P_INST_CODE, 
+              P_RRN, 
+              P_DELV_CHNL, 
+              P_ORGNL_TERMINAL_ID, 
+              P_MERC_ID, 
+              P_TXN_CODE, 
+              V_RVSL_TRANDATE, 
+              P_TXN_MODE, 
                -- C1.CSL_TRANS_AMOUNT,
               V_ORGNL_TRANFEE_AMT, -- Modified for FWR-11
-              P_CARD_NO,
-              V_ACTUAL_FEECODE,
+              P_CARD_NO, 
+              V_ACTUAL_FEECODE, 
                -- C1.CSL_TRANS_AMOUNT,
-              V_ORGNL_TRANFEE_AMT, -- Modified for FWR-11
-              V_ORGNL_TRANFEE_CR_ACCTNO,
-              V_ORGNL_TRANFEE_DR_ACCTNO,
-              V_ORGNL_ST_CALC_FLAG,
-              V_ORGNL_SERVICETAX_AMT,
-              V_ORGNL_ST_CR_ACCTNO,
-              V_ORGNL_ST_DR_ACCTNO,
-              V_ORGNL_CESS_CALC_FLAG,
-              V_ORGNL_CESS_AMT,
-              V_ORGNL_CESS_CR_ACCTNO,
-              V_ORGNL_CESS_DR_ACCTNO,
+              V_ORGNL_TRANFEE_AMT, -- Modified for FWR-11 
+              V_ORGNL_TRANFEE_CR_ACCTNO, 
+              V_ORGNL_TRANFEE_DR_ACCTNO, 
+              V_ORGNL_ST_CALC_FLAG, 
+              V_ORGNL_SERVICETAX_AMT, 
+              V_ORGNL_ST_CR_ACCTNO, 
+              V_ORGNL_ST_DR_ACCTNO, 
+              V_ORGNL_CESS_CALC_FLAG, 
+              V_ORGNL_CESS_AMT, 
+              V_ORGNL_CESS_CR_ACCTNO, 
+              V_ORGNL_CESS_DR_ACCTNO, 
               v_org_rrn, -- P_ORGNL_RRN replaced by v_org_rrn for OLS changes
-              V_CARD_ACCT_NO,
-              P_BUSINESS_DATE,
-              P_BUSINESS_TIME,
-              V_AUTH_ID,
-              C1.CSL_TRANS_NARRRATION,
-              C1.CSL_MERCHANT_NAME,
-              C1.CSL_MERCHANT_CITY,
-              C1.CSL_MERCHANT_STATE,
+              V_CARD_ACCT_NO, 
+              P_BUSINESS_DATE, 
+              P_BUSINESS_TIME, 
+              V_AUTH_ID, 
+              C1.CSL_TRANS_NARRRATION, 
+              C1.CSL_MERCHANT_NAME, 
+              C1.CSL_MERCHANT_CITY, 
+              C1.CSL_MERCHANT_STATE, 
               V_RESP_CDE, V_ERRMSG);
-
+              
               V_FEE_NARRATION := C1.CSL_TRANS_NARRRATION;
-
+              
               IF V_RESP_CDE   <> '00' OR V_ERRMSG <> 'OK' THEN
                 RAISE EXP_RVSL_REJECT_RECORD;
               END IF;
-
+              
             EXCEPTION
             WHEN EXP_RVSL_REJECT_RECORD THEN
               RAISE;
-
+              
             WHEN OTHERS THEN
               V_RESP_CDE := '21';
               V_ERRMSG   := 'Error while reversing the fee amount ' || SUBSTR(SQLERRM, 1, 200);
               RAISE EXP_RVSL_REJECT_RECORD;
-
+              
             END;
-
+            
           END LOOP;
-
+          
         EXCEPTION
         WHEN NO_DATA_FOUND THEN
           V_FEE_NARRATION := NULL;
-
+          
         WHEN OTHERS THEN
           V_FEE_NARRATION := NULL;
-
+          
         END;
-
+        
       END IF;
-
+      
     END IF;
-
+    
     --Added by Deepa For Reversal Fees on June 27 2012
-
+    
     IF V_FEE_NARRATION IS NULL THEN
      --SN Added for FWR-11
-           if v_feecap_flag = 'Y' then
+           if v_feecap_flag = 'Y' then 
         BEGIN
             SP_TRAN_FEES_REVCAPCHECK(P_INST_CODE,
                     V_ACCT_NUMBER,
@@ -2796,7 +2740,7 @@ v_complfee_increment_type:='C';*/
                     v_orgnl_fee_amt,
                     V_ORGNL_TXN_FEE_PLAN,
                     V_ORGNL_TXN_FEECODE,
-                    V_ERRMSG
+                    V_ERRMSG                 
                   ); -- Added for FWR-11
         EXCEPTION
           WHEN OTHERS THEN
@@ -2808,152 +2752,152 @@ v_complfee_increment_type:='C';*/
        End if;
        --EN Added for FWR-11
       BEGIN
-
-        SP_REVERSE_FEE_AMOUNT(P_INST_CODE,
-        P_RRN, P_DELV_CHNL,
-        P_ORGNL_TERMINAL_ID,
-        P_MERC_ID,
-        P_TXN_CODE,
-        V_RVSL_TRANDATE,
-        P_TXN_MODE,
-        V_ORGNL_TXN_TOTALFEE_AMT,
-        P_CARD_NO,
-        V_ACTUAL_FEECODE,
-        V_ORGNL_TRANFEE_AMT,
-        V_ORGNL_TRANFEE_CR_ACCTNO,
-        V_ORGNL_TRANFEE_DR_ACCTNO,
-        V_ORGNL_ST_CALC_FLAG,
-        V_ORGNL_SERVICETAX_AMT,
-        V_ORGNL_ST_CR_ACCTNO,
-        V_ORGNL_ST_DR_ACCTNO,
-        V_ORGNL_CESS_CALC_FLAG,
-        V_ORGNL_CESS_AMT,
-        V_ORGNL_CESS_CR_ACCTNO,
-        V_ORGNL_CESS_DR_ACCTNO,
+      
+        SP_REVERSE_FEE_AMOUNT(P_INST_CODE, 
+        P_RRN, P_DELV_CHNL, 
+        P_ORGNL_TERMINAL_ID, 
+        P_MERC_ID, 
+        P_TXN_CODE, 
+        V_RVSL_TRANDATE, 
+        P_TXN_MODE, 
+        V_ORGNL_TXN_TOTALFEE_AMT, 
+        P_CARD_NO, 
+        V_ACTUAL_FEECODE, 
+        V_ORGNL_TRANFEE_AMT, 
+        V_ORGNL_TRANFEE_CR_ACCTNO, 
+        V_ORGNL_TRANFEE_DR_ACCTNO, 
+        V_ORGNL_ST_CALC_FLAG, 
+        V_ORGNL_SERVICETAX_AMT, 
+        V_ORGNL_ST_CR_ACCTNO, 
+        V_ORGNL_ST_DR_ACCTNO, 
+        V_ORGNL_CESS_CALC_FLAG, 
+        V_ORGNL_CESS_AMT, 
+        V_ORGNL_CESS_CR_ACCTNO, 
+        V_ORGNL_CESS_DR_ACCTNO, 
         v_org_rrn, -- P_ORGNL_RRN replaced by v_org_rrn for OLS changes
-        V_CARD_ACCT_NO,
-        P_BUSINESS_DATE,
-        P_BUSINESS_TIME,
-        V_AUTH_ID,
-        V_FEE_NARRATION,
-        V_FEE_MERCHNAME,
-        V_FEE_MERCHCITY,
-        V_FEE_MERCHSTATE,
-        V_RESP_CDE,
+        V_CARD_ACCT_NO, 
+        P_BUSINESS_DATE, 
+        P_BUSINESS_TIME, 
+        V_AUTH_ID, 
+        V_FEE_NARRATION, 
+        V_FEE_MERCHNAME, 
+        V_FEE_MERCHCITY, 
+        V_FEE_MERCHSTATE, 
+        V_RESP_CDE, 
         V_ERRMSG);
-
+        
         IF V_RESP_CDE <> '00' OR V_ERRMSG <> 'OK' THEN
           RAISE EXP_RVSL_REJECT_RECORD;
         END IF;
-
+        
       EXCEPTION
       WHEN EXP_RVSL_REJECT_RECORD THEN
         RAISE;
-
+        
       WHEN OTHERS THEN
         V_RESP_CDE := '21';
         V_ERRMSG   := 'Error while reversing the fee amount '|| SUBSTR(SQLERRM, 1, 200);
         RAISE EXP_RVSL_REJECT_RECORD;
-
+        
       END;
     END IF;
-    END IF; ----Added For Mantis-Id-0010997
+    END IF; ----Added For Mantis-Id-0010997      
 
  --END IF; -- moved up for Mantis id:11209
-
+  
   --En reverse the fee
-
+  
   IF V_GL_UPD_FLAG = 'Y' AND NVL(V_ORGNL_TXN,'1') <> 'NO ORGNL TXN' -- AND V_ORGNL_TXN <> 'NO ORGNL TXN'condition Added for FSS-1145
     THEN
     --Sn find business date
     V_BUSINESS_TIME   := TO_CHAR(V_RVSL_TRANDATE, 'HH24:MI');
-
+    
     IF V_BUSINESS_TIME > V_CUTOFF_TIME THEN
       V_RVSL_TRANDATE := TRUNC(V_RVSL_TRANDATE) + 1;
-
+      
     ELSE
       V_RVSL_TRANDATE := TRUNC(V_RVSL_TRANDATE);
-
+      
     END IF;
     --En find businesses date
-
+    
     --Sn commented for fwr-48
-
+    
  /*   BEGIN
-      SP_REVERSE_GL_ENTRIES(P_INST_CODE,
-      V_RVSL_TRANDATE,
-      V_PROD_CODE,
-      V_CARD_TYPE,
-      V_REVERSAL_AMT,
-      V_FUNC_CODE,
-      P_TXN_CODE,
-      V_DR_CR_FLAG,
-      P_CARD_NO,
-      V_ACTUAL_FEECODE,
-      V_ORGNL_TXN_TOTALFEE_AMT,
-      V_ORGNL_TRANFEE_CR_ACCTNO,
-      V_ORGNL_TRANFEE_DR_ACCTNO,
-      V_CARD_ACCT_NO,
-      P_RVSL_CODE,
-      P_MSG_TYP,
-      P_DELV_CHNL,
-      V_RESP_CDE,
-      V_GL_UPD_FLAG,
+      SP_REVERSE_GL_ENTRIES(P_INST_CODE, 
+      V_RVSL_TRANDATE, 
+      V_PROD_CODE, 
+      V_CARD_TYPE, 
+      V_REVERSAL_AMT, 
+      V_FUNC_CODE, 
+      P_TXN_CODE, 
+      V_DR_CR_FLAG, 
+      P_CARD_NO, 
+      V_ACTUAL_FEECODE, 
+      V_ORGNL_TXN_TOTALFEE_AMT, 
+      V_ORGNL_TRANFEE_CR_ACCTNO, 
+      V_ORGNL_TRANFEE_DR_ACCTNO, 
+      V_CARD_ACCT_NO, 
+      P_RVSL_CODE, 
+      P_MSG_TYP, 
+      P_DELV_CHNL, 
+      V_RESP_CDE, 
+      V_GL_UPD_FLAG, 
       V_ERRMSG);
-
+      
       IF V_GL_UPD_FLAG <> 'Y' THEN
         V_RESP_CDE     := '21';
-        V_ERRMSG       := V_ERRMSG || 'Error while retriving gl detail ';-- || SUBSTR(SQLERRM, 1, 200);--Commented on 01/07/2013 BY Arunprasath
+        V_ERRMSG       := V_ERRMSG || 'Error while retriving gl detail ';-- || SUBSTR(SQLERRM, 1, 200);--Commented on 01/07/2013 BY Arunprasath 
         RAISE EXP_RVSL_REJECT_RECORD;
       END IF;
-
+      
     EXCEPTION
-
+    
     WHEN EXP_RVSL_REJECT_RECORD THEN-- Exception added on 01/07/2013 BY Arunprasath
       RAISE EXP_RVSL_REJECT_RECORD;
     WHEN OTHERS THEN
       V_RESP_CDE := '21';
       V_ERRMSG   := 'Error while calling SP_REVERSE_GL_ENTRIES ' || SUBSTR(SQLERRM, 1, 200);
       RAISE EXP_RVSL_REJECT_RECORD;
-
+      
     END; */
-
+    
     --En commented for fwr-48
-
+    
   END IF;
   --En reverse the GL entries
-
+    
   --Sn Logging of system initiated card status change(FSS-390)
   IF v_chnge_crdstat='Y' THEN
     BEGIN
-      sp_log_cardstat_chnge (p_inst_code,
-      v_hash_pan,
-      v_encr_pan,
-      v_auth_id,
-      '03',
-      p_rrn,
-      p_business_date,
-      p_business_time,
-      v_resp_cde,
+      sp_log_cardstat_chnge (p_inst_code, 
+      v_hash_pan, 
+      v_encr_pan, 
+      v_auth_id, 
+      '03', 
+      p_rrn, 
+      p_business_date, 
+      p_business_time, 
+      v_resp_cde, 
       v_errmsg );
-
+      
       IF v_resp_cde <> '00' AND v_errmsg <> 'OK' THEN
         RAISE exp_rvsl_reject_record;
       END IF;
-
+      
     EXCEPTION
     WHEN exp_rvsl_reject_record THEN
       RAISE;
-
+      
     WHEN OTHERS THEN
       v_resp_cde := '21';
       v_errmsg   := 'Error while logging system initiated card status change ' || SUBSTR (SQLERRM, 1, 200);
       RAISE exp_rvsl_reject_record;
-
+      
     END;
-
+    
   END IF;
-
+  
   --En Logging of system initiated card status change(FSS-390)
   --Sn create a entry for successful
   BEGIN
@@ -3030,9 +2974,9 @@ v_complfee_increment_type:='C';*/
            P_CARDVERIFICATION_RESULT--Added for MVHOST 926
            ,P_MERCHANT_ID,P_MERCHANT_CNTRYCODE,P_MS_PYMNT_DESC,V_HASHKEY_ID
         );
-
+        
     END IF;
-
+    
     --Added the 5 empty values for CMS_TRANSACTION_LOG_DTL in cms
   EXCEPTION
   WHEN OTHERS THEN
@@ -3040,7 +2984,7 @@ v_complfee_increment_type:='C';*/
     V_RESP_CDE := '21';
     RAISE EXP_RVSL_REJECT_RECORD;
   END;
-
+  
   --En create a entry for successful
   --Sn generate response code
   V_RESP_CDE := '1';
@@ -3061,98 +3005,98 @@ v_complfee_increment_type:='C';*/
     AND CPH_INST_CODE         = P_INST_CODE
     AND CPH_TRANSACTION_FLAG IN ('N', 'I')
     AND ROWNUM                = 1;
-
+    
   EXCEPTION
   WHEN NO_DATA_FOUND THEN
     NULL;
   WHEN OTHERS THEN
     NULL;
   END;
-
+  
   --En getting the Merchant details of Original txn
   /*IF TRIM(V_TRAN_DESC) IS NOT NULL THEN
     V_NARRATION        := V_TRAN_DESC || '/';
   END IF;
-
+  
   IF TRIM(V_TXN_MERCHNAME) IS NOT NULL THEN
     V_NARRATION            := V_NARRATION || V_TXN_MERCHNAME || '/';
   END IF;
-
+  
   -- Changed for FSS-4119
   IF TRIM(P_TERMINAL_ID) IS NOT NULL THEN
     V_NARRATION            := V_NARRATION || P_TERMINAL_ID || '/';
-  END IF;
-
+  END IF; 
+  
   IF TRIM(V_TXN_MERCHCITY) IS NOT NULL THEN
     V_NARRATION            := V_NARRATION || V_TXN_MERCHCITY || '/';
-  END IF;
-
+  END IF; 
+ 
   IF TRIM(P_BUSINESS_DATE) IS NOT NULL THEN
     V_NARRATION            := V_NARRATION || P_BUSINESS_DATE || '/';
   END IF;
-
+  
   IF TRIM(V_AUTH_ID) IS NOT NULL THEN
     V_NARRATION      := V_NARRATION || V_AUTH_ID;
   END IF;*/
-
+  
   --Added by Deepa on June 26 2012 for Reversal Fee Calculation
      --SN commented by Pankaj S. for PERF changes
 /*  IF NVL(V_ORGNL_TXN,'1') <> 'NO ORGNL TXN' -- AND V_ORGNL_TXN <> 'NO ORGNL TXN'condition Added for FSS-1145
     THEN
     --Sn reversal Fee Calculation
     BEGIN
-      SP_TRAN_REVERSAL_FEES(P_INST_CODE,
-      P_CARD_NO,
-      P_DELV_CHNL,
-      V_ORGNL_TXN_MODE,
-      P_TXN_CODE,
-      P_CURR_CODE,
-      NULL,
-      NULL,
-      V_REVERSAL_AMT,
-      P_BUSINESS_DATE,
-      P_BUSINESS_TIME,
-      NULL,
-      NULL,
-      V_RESP_CDE,
-      P_MSG_TYP,
-      P_MBR_NUMB,
-      P_RRN,
+      SP_TRAN_REVERSAL_FEES(P_INST_CODE, 
+      P_CARD_NO, 
+      P_DELV_CHNL, 
+      V_ORGNL_TXN_MODE, 
+      P_TXN_CODE, 
+      P_CURR_CODE, 
+      NULL, 
+      NULL, 
+      V_REVERSAL_AMT, 
+      P_BUSINESS_DATE, 
+      P_BUSINESS_TIME, 
+      NULL, 
+      NULL, 
+      V_RESP_CDE, 
+      P_MSG_TYP, 
+      P_MBR_NUMB, 
+      P_RRN, 
       P_TERMINAL_ID,
       /*V_TXN_MERCHNAME,
       V_TXN_MERCHCITY,*/
       --Commented and modified on 21.03.2013 for Merchant Logging Info for the Reversal Txn
-      /*P_MERCHANT_NAME,
-      P_MERCHANT_CITY,
+      /*P_MERCHANT_NAME, 
+      P_MERCHANT_CITY, 
       V_AUTH_ID,
       --V_FEE_MERCHSTATE,--Commented and modified on 21.03.2013 for Merchant Logging Info for the Reversal Txn
-      P_MERCHANT_STATE,
-      P_RVSL_CODE,
-      V_TXN_NARRATION,
-      V_ORGNL_TXN_TYPE,
-      V_TRAN_DATE,
-      V_ERRMSG,
-      V_RESP_CDE,
-      V_FEE_AMT,
+      P_MERCHANT_STATE, 
+      P_RVSL_CODE, 
+      V_TXN_NARRATION, 
+      V_ORGNL_TXN_TYPE, 
+      V_TRAN_DATE, 
+      V_ERRMSG, 
+      V_RESP_CDE, 
+      V_FEE_AMT, 
       V_FEE_PLAN,
       V_FEE_CODE,      --Added on 30.07.2013 for 11695
-      V_FEEATTACH_TYPE --Added on 30.07.2013 for 11695
+      V_FEEATTACH_TYPE --Added on 30.07.2013 for 11695  
       );
-
-      IF V_ERRMSG <> 'OK' THEN
+      
+      IF V_ERRMSG <> 'OK' THEN  
         RAISE EXP_RVSL_REJECT_RECORD;
       END IF;
-
-    EXCEPTION -- Exception added on 01/07/2013 BY Arunprasath
+      
+    EXCEPTION -- Exception added on 01/07/2013 BY Arunprasath 
     WHEN EXP_RVSL_REJECT_RECORD  THEN
     RAISE EXP_RVSL_REJECT_RECORD;
-
+      
     WHEN OTHERS THEN
     v_resp_cde := '21';
     v_errmsg   := 'Error FOR reversal Fee Calculation ' || SUBSTR (SQLERRM, 1, 200);
     RAISE EXP_RVSL_REJECT_RECORD;
     END;
-
+    
 END IF;*/
    --EN commented by Pankaj S. for PERF changes
     ---------------------------------------
@@ -3222,33 +3166,33 @@ END IF;*/
           v_comp_total_fee --Added for FSS 897
           , V_PREAUTH_TYPE--Added for MVHOST 926
         );--Added by Deepa on 26-Nov-2012 to log the Account number of preauth transactions
-
+        
     EXCEPTION
-
+    
     WHEN OTHERS THEN
       V_ERRMSG   := 'Error while inserting  CMS_PREAUTH_TRANS_HIST' || SUBSTR(SQLERRM, 1, 300);
       V_RESP_CDE := '21';
       RAISE EXP_RVSL_REJECT_RECORD;
-
+      
     END;
     -----------------------------------------------------
     --SN:updating latest timestamp value for defect 10871
     -----------------------------------------------------
     BEGIN
-
-
-
+	
+	
+	
        --Added for VMS-5739/FSP-991
        select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
-       INTO   v_Retperiod
-       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL
-       WHERE  OPERATION_TYPE='ARCHIVE'
+       INTO   v_Retperiod 
+       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
+       WHERE  OPERATION_TYPE='ARCHIVE' 
        AND OBJECT_NAME='CMS_STATEMENTS_LOG_EBR';
-
+       
        v_Retdate := TO_DATE(SUBSTR(TRIM(p_business_date), 1, 8), 'yyyymmdd');
-
+    
 	IF (v_Retdate>v_Retperiod) THEN                                                                      --Added for VMS-5739/FSP-991
-
+	
       UPDATE cms_statements_log
       SET csl_prod_code       = v_prod_code,
           csl_card_type=v_card_type,
@@ -3260,9 +3204,9 @@ END IF;*/
       AND csl_txn_code        = p_txn_code
       AND csl_business_date   = p_business_date
       AND csl_business_time   = p_business_time;
-
+	  
 	ELSE
-
+	
 	  UPDATE VMSCMS_HISTORY.CMS_STATEMENTS_LOG_HIST                                                   --Added for VMS-5739/FSP-991
       SET csl_prod_code       = v_prod_code,
           csl_card_type=v_card_type,
@@ -3274,24 +3218,24 @@ END IF;*/
       AND csl_txn_code        = p_txn_code
       AND csl_business_date   = p_business_date
       AND csl_business_time   = p_business_time;
-
-
+	  
+		
 	END IF;
-
-      /*IF sql%rowcount         = 0 THEN -- Commented on 01/07/2013 BY Arunprasath
+      
+      /*IF sql%rowcount         = 0 THEN -- Commented on 01/07/2013 BY Arunprasath 
         NULL;
       END IF;*/
-
+      
     EXCEPTION
-
-    --WHEN OTHERS THEN --Commented on 10/07/2013 BY Arunprasath
+    
+    --WHEN OTHERS THEN --Commented on 10/07/2013 BY Arunprasath 
       --NULL;
-
-    WHEN OTHERS THEN --Exception added on 10/07/2013 BY Arunprasath
+    
+    WHEN OTHERS THEN --Exception added on 10/07/2013 BY Arunprasath 
     v_resp_cde := '21';
     v_errmsg   := 'Error While updating Statement Log'|| SUBSTR (SQLERRM, 1, 200);
     RAISE EXP_RVSL_REJECT_RECORD;
-
+      
     END;
     -----------------------------------------------------
     --EN:updating latest timestamp value for defect 10871
@@ -3357,14 +3301,14 @@ END IF;*/
       AND CPT_INST_CODE     = P_INST_CODE
       AND CPT_CARD_NO       = V_HASH_PAN;
 	  END IF;
-
+      
       V_UPD_HOLD_AMOUNT    := V_HOLD_AMOUNT - V_REVERSAL_AMT;
-
+      
       IF V_UPD_HOLD_AMOUNT <= 0 THEN
-
+      
         V_UPD_HOLD_AMOUNT  := 0;
         V_REVERSAL_HOLD_FLAG :='Y';
-
+		
         UPDATE VMSCMS.CMS_PREAUTH_TRANSACTION                                                         --Added for VMS-5739/FSP-991
         SET CPT_TOTALHOLD_AMT   = TRIM(TO_CHAR(V_UPD_HOLD_AMOUNT, '999999999999999990.99')), --Mosdified for 10871
           CPT_PREAUTH_VALIDFLAG = 'N',
@@ -3374,7 +3318,7 @@ END IF;*/
         WHERE CPT_RRN           = v_org_rrn -- P_ORGNL_RRN -- corrected for Mantis id:11209
         AND CPT_INST_CODE       = P_INST_CODE
         AND CPT_CARD_NO         = V_HASH_PAN;
-
+		
 	IF SQL%ROWCOUNT = 0 THEN
 		 UPDATE VMSCMS_HISTORY.CMS_PREAUTH_TRANSACTION_HIST                                                       --Added for VMS-5739/FSP-991
         SET CPT_TOTALHOLD_AMT   = TRIM(TO_CHAR(V_UPD_HOLD_AMOUNT, '999999999999999990.99')), --Mosdified for 10871
@@ -3385,16 +3329,16 @@ END IF;*/
         WHERE CPT_RRN           = v_org_rrn -- P_ORGNL_RRN -- corrected for Mantis id:11209
         AND CPT_INST_CODE       = P_INST_CODE
         AND CPT_CARD_NO         = V_HASH_PAN;
-
+		
 		IF SQL%ROWCOUNT = 0 THEN
         V_ERRMSG     := 'Error while updating the CMS_PREAUTH_TRANSACTION table';
         V_RESP_CDE   := '21';
         RAISE EXP_RVSL_REJECT_RECORD;
       END IF;
-	END IF;
-
+	END IF;  
+        
       ELSE
-
+         
         UPDATE VMSCMS.CMS_PREAUTH_TRANSACTION                                                         --Added for VMS-5739/FSP-991
         SET CPT_TOTALHOLD_AMT  = TRIM(TO_CHAR(V_UPD_HOLD_AMOUNT, '999999999999999990.99')), --Mosdified for 10871
           CPT_TRANSACTION_FLAG = 'R',
@@ -3403,7 +3347,7 @@ END IF;*/
         WHERE CPT_RRN          = v_org_rrn --P_ORGNL_RRN -- corrected for Mantis id:11209
         AND CPT_INST_CODE      = P_INST_CODE
         AND CPT_CARD_NO        = V_HASH_PAN;
-
+		
 		IF SQL%ROWCOUNT = 0 THEN
 		UPDATE VMSCMS_HISTORY.CMS_PREAUTH_TRANSACTION_HIST                                                       --Added for VMS-5739/FSP-991
         SET CPT_TOTALHOLD_AMT  = TRIM(TO_CHAR(V_UPD_HOLD_AMOUNT, '999999999999999990.99')), --Mosdified for 10871
@@ -3413,21 +3357,21 @@ END IF;*/
         WHERE CPT_RRN          = v_org_rrn --P_ORGNL_RRN -- corrected for Mantis id:11209
         AND CPT_INST_CODE      = P_INST_CODE
         AND CPT_CARD_NO        = V_HASH_PAN;
-
+		
 		 IF SQL%ROWCOUNT = 0 THEN
         V_ERRMSG     := 'Error while updating the CMS_PREAUTH_TRANSACTION table';
         V_RESP_CDE   := '21';
         RAISE EXP_RVSL_REJECT_RECORD;
       END IF;
-
+        
       END IF;
-   END IF;
+   END IF;   
       IF SQL%ROWCOUNT = 0 THEN
         V_ERRMSG     := 'Error while updating the CMS_PREAUTH_TRANSACTION table';
         V_RESP_CDE   := '21';
         RAISE EXP_RVSL_REJECT_RECORD;
       END IF;
-
+      
     EXCEPTION
     WHEN EXP_RVSL_REJECT_RECORD THEN-- Exception added on 01/07/2013 BY Arunprasath
       RAISE EXP_RVSL_REJECT_RECORD;
@@ -3436,8 +3380,8 @@ END IF;*/
     WHEN OTHERS THEN
       V_UPD_HOLD_AMOUNT := 0;
     END;
-
-
+    
+    
     -- WHEN OTHERS THEN
     -- V_UPD_HOLD_AMOUNT := 0;
     --  END IF;
@@ -3480,10 +3424,8 @@ END IF;*/
     END IF;
     END;*/
     --En reversal Fee Calculation
-
-    P_RESP_ID := V_RESP_CDE; --Added for VMS-8018
     BEGIN
-
+    
       SELECT CMS_B24_RESPCDE, --Changed  CMS_ISO_RESPCDE to  CMS_B24_RESPCDE for HISO SPECIFIC Response codes
         cms_iso_respcde       -- Added for OLS changes
       INTO P_RESP_CDE,
@@ -3493,14 +3435,14 @@ END IF;*/
       WHERE CMS_INST_CODE      = P_INST_CODE
       AND CMS_DELIVERY_CHANNEL = P_DELV_CHNL
       AND CMS_RESPONSE_ID      = TO_NUMBER(V_RESP_CDE);
-
+      
     EXCEPTION
-
+    
     WHEN OTHERS THEN
       V_ERRMSG   := 'Problem while selecting data from response master for respose code' || V_RESP_CDE || SUBSTR(SQLERRM, 1, 300);
       V_RESP_CDE := '69';
       RAISE EXP_RVSL_REJECT_RECORD;
-
+      
     END;
     --En generate response code
     /* BEGIN
@@ -3518,7 +3460,7 @@ END IF;*/
     V_LEDGER_BAL   := 0;
     END;*/
     BEGIN --Added for FSS-1145/0010784
-
+    
       SELECT CAM_ACCT_BAL,
         CAM_LEDGER_BAL
       INTO V_ACCT_BALANCE,
@@ -3526,16 +3468,16 @@ END IF;*/
       FROM CMS_ACCT_MAST
       WHERE CAM_ACCT_ID = V_ACCT_ID
       AND CAM_INST_CODE = P_INST_CODE;
-
+      
     EXCEPTION
-
+    
     WHEN OTHERS THEN
       V_ACCT_BALANCE := 0;
       V_LEDGER_BAL   := 0;
-
+      
     END;                         --Added for FSS-1145 /0010784
   --  v_timestamp := systimestamp; -- Added on 19-Apr-2013 for defect 10871
-
+    
     -- Sn create a entry in GL
     BEGIN
       INSERT INTO TRANSACTIONLOG
@@ -3619,7 +3561,7 @@ END IF;*/
           NETWORKID_ACQUIRER, --Added on 20130626 for the Mantis ID 11344
           CVV_VERIFICATIONTYPE  --Added on 18.07.2013 for the Mantis ID 11611
           ,INTERNATION_IND_RESPONSE
-          ,merchant_id
+          ,merchant_id 
         )
         VALUES
         (
@@ -3701,7 +3643,7 @@ END IF;*/
           V_DR_CR_FLAG,    --Added for defect 10871
           p_org_stan,      -- Added for OLS changes
           1,                -- Added for OLS changes
-          P_MERCHANT_NAME,  -- Added on 20130522 for logging N/W settlement date in transactionlog
+          P_MERCHANT_NAME,  -- Added on 20130522 for logging N/W settlement date in transactionlog     
           P_MERCHANT_CITY,  -- Added on 20130522 for logging N/W settlement date in transactionlog
           P_MERCHANT_STATE, -- Added on 20130522 for logging N/W settlement date in transactionlog
           P_NETWORK_SETL_DATE,  -- Added on 20130522 for logging N/W settlement date in transactionlog
@@ -3709,24 +3651,24 @@ END IF;*/
           P_NETWORKID_SWITCH , --Added on 20130626 for the Mantis ID 11344
           P_NETWORKID_ACQUIRER,-- Added on 20130626 for the Mantis ID 11344
           NVL(P_CVV_VERIFICATIONTYPE,'N')  --Added on 18.07.2013 for the Mantis ID 11611
-          ,v_internation_ind_response
-          ,P_MERCHANT_ID
+          ,v_internation_ind_response 
+          ,P_MERCHANT_ID        
         );
-
+        
       --Sn update reverse flag
       IF NVL(V_ORGNL_TXN,'1') <> 'NO ORGNL TXN' AND V_REVERSAL_HOLD_FLAG= 'Y' -- AND V_ORGNL_TXN <> 'NO ORGNL TXN'condition Added for FSS-1145
         THEN
         BEGIN
-
+		
 		--Added for VMS-5739/FSP-991
        select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
-       INTO   v_Retperiod
-       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL
-       WHERE  OPERATION_TYPE='ARCHIVE'
+       INTO   v_Retperiod 
+       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
+       WHERE  OPERATION_TYPE='ARCHIVE' 
        AND OBJECT_NAME='TRANSACTIONLOG_EBR';
-
+       
        v_Retdate := TO_DATE(SUBSTR(TRIM(P_ORGNL_BUSINESS_DATE), 1, 8), 'yyyymmdd');
-
+	   
 	   IF (v_Retdate>v_Retperiod) THEN                                                                 --Added for VMS-5739/FSP-991
 
           UPDATE TRANSACTIONLOG
@@ -3738,9 +3680,9 @@ END IF;*/
           AND CUSTOMER_CARD_NO    = V_HASH_PAN; --For Instcode removal of 2.4.2.4.2 release
           --AND INSTCODE            = P_INST_CODE;
           --TERMINAL_ID = P_ORGNL_TERMINAL_ID;
-
+		  
 		ELSE
-
+		
 		  UPDATE VMSCMS_HISTORY.TRANSACTIONLOG_HIST                                             --Added for VMS-5739/FSP-991
           SET TRAN_REVERSE_FLAG = 'Y'
           WHERE                                --RRN = P_ORGNL_RRN          -- Commented for OLS changes
@@ -3750,9 +3692,9 @@ END IF;*/
           AND CUSTOMER_CARD_NO    = V_HASH_PAN; --For Instcode removal of 2.4.2.4.2 release
           --AND INSTCODE            = P_INST_CODE;
           --TERMINAL_ID = P_ORGNL_TERMINAL_ID;
-
+		
 		END IF;
-
+          
           IF SQL%ROWCOUNT     = 0 THEN
             IF P_MSG_TYP NOT IN ('1420', '1421') THEN
               V_RESP_CDE     := '21';
@@ -3760,7 +3702,7 @@ END IF;*/
               RAISE EXP_RVSL_REJECT_RECORD;
             END IF;
           END IF;
-
+          
         EXCEPTION
         WHEN EXP_RVSL_REJECT_RECORD THEN
           RAISE;
@@ -3768,13 +3710,13 @@ END IF;*/
           V_RESP_CDE := '21';
           V_ERRMSG   := 'Error while updating gl flag ' || SUBSTR(SQLERRM, 1, 200);
           RAISE EXP_RVSL_REJECT_RECORD;
-
+          
         END;
       END IF;
       --En update reverse flag
-
+      
       BEGIN
-
+      
         SELECT CTC_ATMUSAGE_AMT,
           CTC_POSUSAGE_AMT,
           CTC_BUSINESS_DATE,
@@ -3787,28 +3729,28 @@ END IF;*/
         WHERE CTC_INST_CODE = P_INST_CODE
         AND CTC_PAN_CODE    = V_HASH_PAN
         AND CTC_MBR_NUMB    = P_MBR_NUMB;
-
+        
       EXCEPTION
-
+      
       WHEN NO_DATA_FOUND THEN
         V_ERRMSG   := 'Cannot get the Transaction Limit Details of the Card' || V_RESP_CDE || SUBSTR(SQLERRM, 1, 300);
         V_RESP_CDE := '21';
         RAISE EXP_RVSL_REJECT_RECORD;
-
+        
       WHEN OTHERS THEN
         V_ERRMSG   := 'Error while selecting CMS_TRANSLIMIT_CHECK 1 ' || V_RESP_CDE || SUBSTR(SQLERRM, 1, 300);
         V_RESP_CDE := '21';
         RAISE EXP_RVSL_REJECT_RECORD;
-
+        
       END;
-
+      
       BEGIN
         --Sn Limit and amount check for POS
-
+        
         IF P_DELV_CHNL       = '02' THEN
-
+        
           IF V_RVSL_TRANDATE > V_BUSINESS_DATE_TRAN THEN
-
+          
             UPDATE CMS_TRANSLIMIT_CHECK
             SET CTC_POSUSAGE_AMT = 0,
               CTC_POSUSAGE_LIMIT = 0,
@@ -3823,42 +3765,42 @@ END IF;*/
             WHERE CTC_INST_CODE      = P_INST_CODE
             AND CTC_PAN_CODE         = V_HASH_PAN
             AND CTC_MBR_NUMB         = P_MBR_NUMB;
-
+            
           ELSE
-
+          
             IF P_ORGNL_BUSINESS_DATE = P_BUSINESS_DATE THEN
-
+            
               IF V_REVERSAL_AMT     IS NULL THEN
                 V_POS_USAGEAMNT     := V_POS_USAGEAMNT;
-
+                
               ELSE
-
+              
                 V_POS_USAGEAMNT := V_POS_USAGEAMNT -
                 TRIM(TO_CHAR(V_REVERSAL_AMT, '999999999999.99'));
-
+                
               END IF;
-
+              
               UPDATE CMS_TRANSLIMIT_CHECK
               SET CTC_POSUSAGE_AMT = V_POS_USAGEAMNT
               WHERE CTC_INST_CODE  = P_INST_CODE
               AND CTC_PAN_CODE     = V_HASH_PAN
               AND CTC_MBR_NUMB     = P_MBR_NUMB;
-
+              
             END IF;
-
+            
           END IF;
-
+          
         END IF;
-
+        
         IF SQL%ROWCOUNT = 0 THEN
           V_ERRMSG     := 'Error while updating the CMS_TRANSLIMIT_CHECK';
           V_RESP_CDE   := '21';
           RAISE EXP_RVSL_REJECT_RECORD;
-
+          
         END IF;
-
+        
         --En Limit and amount check for POS
-
+        
       EXCEPTION
       WHEN EXP_RVSL_REJECT_RECORD THEN-- Exception added on 01/07/2013 BY Arunprasath
       RAISE EXP_RVSL_REJECT_RECORD;
@@ -3867,13 +3809,13 @@ END IF;*/
         V_RESP_CDE := '21';
         RAISE EXP_RVSL_REJECT_RECORD;
       END;
-
+      
       IF V_ERRMSG = 'OK' THEN
-
+      
         --Sn find prod code and card type and available balance for the card number
-
+        
         BEGIN
-
+        
           SELECT CAM_ACCT_BAL,
             CAM_LEDGER_BAL
           INTO V_ACCT_BALANCE,
@@ -3886,7 +3828,7 @@ END IF;*/
             AND CAP_MBR_NUMB   = P_MBR_NUMB
             AND CAP_INST_CODE  = P_INST_CODE
             )
-          AND CAM_INST_CODE = P_INST_CODE;
+          AND CAM_INST_CODE = P_INST_CODE; 
           -- FOR UPDATE NOWAIT;  -- Commented for Concurrent Processsing Issue
         EXCEPTION
         WHEN NO_DATA_FOUND THEN
@@ -3897,42 +3839,42 @@ END IF;*/
           V_RESP_CDE := '21';
           V_ERRMSG   := 'Error while selecting data from card Master for card number ' || SQLERRM;
           RAISE EXP_RVSL_REJECT_RECORD;
-
+          
         END;
-
+        
         --En find prod code and card type for the card number
         P_RESP_MSG   := TO_CHAR(V_ACCT_BALANCE);
         P_ledger_bal := TO_CHAR(V_LEDGER_BAL); -- OLS changes
         p_auth_id    := v_auth_id;             -- OLS changes
-
+        
       ELSE
         P_RESP_MSG := V_ERRMSG;
-
+        
       END IF;
-
+      
     EXCEPTION
-
+    
     WHEN EXP_RVSL_REJECT_RECORD THEN
       RAISE;
-
+      
     WHEN OTHERS THEN
       V_RESP_CDE := '21';
       V_ERRMSG   := 'Error while inserting records in transaction log ' || SUBSTR(SQLERRM, 1, 200);
       RAISE EXP_RVSL_REJECT_RECORD;
-
+      
     END;
     --En  create a entry in GL
      select (extract(day from systimestamp - v_start_time) *86400+
     extract(hour from systimestamp - v_start_time) *3600+
     extract(minute from systimestamp - v_start_time) *60+
     extract(second from systimestamp - v_start_time) *1000) into v_mili from dual ;
-
+    
      p_resptime_detail :=  p_resptime_detail || ' 3: ' || v_mili ;
 
    IF v_orgnl_txn_totalfee_amt=0 AND v_orgnl_txn_feecode IS NOT NULL AND v_reversal_amt_flag='F' THEN
     BEGIN
        vmsfee.fee_freecnt_reverse (v_card_acct_no, v_orgnl_txn_feecode, v_errmsg);
-
+    
        IF v_errmsg <> 'OK' THEN
           v_resp_cde := '21';
           RAISE exp_rvsl_reject_record;
@@ -3945,7 +3887,7 @@ END IF;*/
           v_errmsg :='Error while reversing freefee count-'|| SUBSTR (SQLERRM, 1, 200);
           RAISE exp_rvsl_reject_record;
     end;
-   END IF;
+   END IF;     
         --Sn Added by Pankaj S. for enabling limit validation
   IF v_add_ins_date IS NOT NULL AND v_prfl_code IS NOT NULL AND v_prfl_flag = 'Y' THEN
   BEGIN
@@ -3983,31 +3925,31 @@ END IF;*/
   --SN Added  for  Mantis ID 13785 for To return the reversal amount on 21/03/201
    IF NVL(V_ORGNL_TXN,'1') <> 'NO ORGNL TXN'
    THEN
-     P_REVERSAL_AMOUNT := V_REVERSAL_AMT ;
-     ELSE
+     P_REVERSAL_AMOUNT := V_REVERSAL_AMT ;    
+     ELSE 
        P_REVERSAL_AMOUNT :=0;
        END IF;
         --EN Added  for  Mantis ID 13785 for To return the reversal amount on 21/03/201
     Begin
     sp_autonomous_preauth_logclear(v_auth_id);
     exception
-    When others then
+    When others then 
     null;
     End;
          select (extract(day from systimestamp - v_start_time) *86400+
     extract(hour from systimestamp - v_start_time) *3600+
     extract(minute from systimestamp - v_start_time) *60+
     extract(second from systimestamp - v_start_time) *1000) into v_mili from dual ;
-
+    
      P_RESPTIME_DETAIL :=  P_RESPTIME_DETAIL || ' 4: ' || v_mili ;
      P_RESP_TIME := v_mili;
     EXCEPTION
    --  << MAIN EXCEPTION>>
     WHEN EXP_RVSL_REJECT_RECORD THEN
      ROLLBACK TO V_SAVEPOINT;
-
+     
     BEGIN
-
+    
       SELECT CAM_ACCT_BAL,
         CAM_LEDGER_BAL,
         CAM_TYPE_CODE --Added for defect 19-Apr-2013
@@ -4022,17 +3964,17 @@ END IF;*/
         AND CAP_INST_CODE  = P_INST_CODE
         )
       AND CAM_INST_CODE = P_INST_CODE;
-
+      
     EXCEPTION
-
+    
     WHEN OTHERS THEN
       V_ACCT_BALANCE := 0;
       V_LEDGER_BAL   := 0;
-
+      
     END;
-
+    
     BEGIN
-
+    
       SELECT CMS_B24_RESPCDE, --Changed  CMS_ISO_RESPCDE to  CMS_B24_RESPCDE for HISO SPECIFIC Response codes
         cms_iso_respcde       -- Added for OLS changes
       INTO P_RESP_CDE,
@@ -4043,19 +3985,17 @@ END IF;*/
       AND CMS_DELIVERY_CHANNEL = P_DELV_CHNL
       AND CMS_RESPONSE_ID      = TO_NUMBER(V_RESP_CDE);
       P_RESP_MSG              := V_ERRMSG;
-      P_RESP_ID               := V_RESP_CDE; --Added for VMS-8018
-
+      
     EXCEPTION
-
+    
     WHEN OTHERS THEN
       P_RESP_MSG := 'Problem while selecting data from response master ' || V_RESP_CDE || SUBSTR(SQLERRM, 1, 300);
       P_RESP_CDE := '69';
-      P_RESP_ID  := '69'; --Added for VMS-8018
-
+      
     END;
-
+    
     BEGIN
-
+    
       SELECT CTC_ATMUSAGE_AMT,
         CTC_POSUSAGE_AMT,
         CTC_BUSINESS_DATE,
@@ -4068,23 +4008,21 @@ END IF;*/
       WHERE CTC_INST_CODE = P_INST_CODE
       AND CTC_PAN_CODE    = V_HASH_PAN
       AND CTC_MBR_NUMB    = P_MBR_NUMB;
-
+      
     EXCEPTION
-
+    
     WHEN NO_DATA_FOUND THEN
       V_ERRMSG   := 'Cannot get the Transaction Limit Details of the Card' || V_RESP_CDE || SUBSTR(SQLERRM, 1, 300);
       V_RESP_CDE := '21';
-      P_RESP_ID  := '21'; --Added for VMS-8018
-      --RAISE EXP_RVSL_REJECT_RECORD;--Commented on 01/07/2013 BY Arunprasath
-
+      --RAISE EXP_RVSL_REJECT_RECORD;--Commented on 01/07/2013 BY Arunprasath 
+      
     WHEN OTHERS THEN
       V_ERRMSG   := 'Error while selecting CMS_TRANSLIMIT_CHECK2 ' || V_RESP_CDE || SUBSTR(SQLERRM, 1, 300);
       V_RESP_CDE := '21';
-      P_RESP_ID  := '21'; --Added for VMS-8018
       --RAISE EXP_RVSL_REJECT_RECORD;--Commented on 01/07/2013 BY Arunprasath
-
+      
     END;
-
+    
     BEGIN
       --Sn limit update for POS
       IF P_DELV_CHNL       = '02' THEN
@@ -4103,23 +4041,22 @@ END IF;*/
           WHERE CTC_INST_CODE      = P_INST_CODE
           AND CTC_PAN_CODE         = V_HASH_PAN
           AND CTC_MBR_NUMB         = P_MBR_NUMB;
-
+          
         END IF;
-
+        
       END IF;
-
+      
     EXCEPTION
-
+    
     WHEN OTHERS THEN
       V_ERRMSG   := 'Error while updating CMS_TRANSLIMIT_CHECK2 ' || V_RESP_CDE || SUBSTR(SQLERRM, 1, 300);
       V_RESP_CDE := '21';
-      P_RESP_ID  := '21'; --Added for VMS-8018
-      --RAISE EXP_RVSL_REJECT_RECORD;--Commented on 01/07/2013 BY Arunprasath
-
+      --RAISE EXP_RVSL_REJECT_RECORD;--Commented on 01/07/2013 BY Arunprasath 
+      
     END;
     --Sn create a entry in txn log
     BEGIN
-
+    
       SELECT CAM_ACCT_BAL,
         CAM_LEDGER_BAL
       INTO V_ACCT_BALANCE,
@@ -4132,13 +4069,13 @@ END IF;*/
         AND CAP_INST_CODE  = P_INST_CODE
         )
       AND CAM_INST_CODE = P_INST_CODE;
-
+      
     EXCEPTION
-
+    
     WHEN OTHERS THEN
       V_ACCT_BALANCE := 0;
       V_LEDGER_BAL   := 0;
-
+      
     END;
     -----------------------------------------------
     --SN: Added on 19-Apr-2013 for defect 10871
@@ -4169,8 +4106,8 @@ END IF;*/
           end if;
       END IF;
     --  END IF; -- moved below for Mantis id:11209
-
-
+         
+   
       IF V_PROD_CODE IS NULL THEN
         BEGIN
           SELECT CAP_PROD_CODE,
@@ -4189,7 +4126,7 @@ END IF;*/
           NULL;
         END;
       END IF;
-
+      
       /*   if V_DR_CR_FLAG is null
       then
       BEGIN
@@ -4210,9 +4147,9 @@ END IF;*/
      -- IF V_RESP_CDE NOT IN ('45', '32') THEN -- commented for defect id:11209
         --Added by Deepa on Apr-23-2012 not to log the Invalid transaction Date and Time
  --       v_timestamp := systimestamp; -- Added on 19-Apr-2013 for defect 10871
-
+        
         BEGIN
-
+        
           INSERT INTO TRANSACTIONLOG
             (
               MSGTYPE,
@@ -4284,7 +4221,7 @@ END IF;*/
               --EN Added on 30.07.2013 for 11695
               ,INTERNATION_IND_RESPONSE,
               SYSTEM_TRACE_AUDIT_NO             -- Added during concurrent processing issue changes
-              ,merchant_id
+              ,merchant_id 
             )
             VALUES
             (
@@ -4347,7 +4284,7 @@ END IF;*/
               v_cap_card_stat, --Added for defect 10871
               p_org_stan,      --Added for OLS changes
               1,                -- Added for OLS change
-              P_MERCHANT_NAME,  -- Added on 20130527 for logging N/W settlement date in transactionlog
+              P_MERCHANT_NAME,  -- Added on 20130527 for logging N/W settlement date in transactionlog     
               P_MERCHANT_CITY,  -- Added on 20130527 for logging N/W settlement date in transactionlog
               P_MERCHANT_STATE, -- Added on 20130527 for logging N/W settlement date in transactionlog
               P_NETWORK_SETL_DATE,  -- Added on 20130527 for logging N/W settlement date in transactionlog
@@ -4363,25 +4300,24 @@ END IF;*/
               --EN Added on 30.07.2013 for 11695
               ,v_internation_ind_response,
               P_STAN    -- Added during concurrent processing issue changes
-              ,P_MERCHANT_ID
+              ,P_MERCHANT_ID       
             );
-
-        EXCEPTION
+            
+        EXCEPTION        
         WHEN OTHERS THEN
                  --Sn modified by Pankaj S. for Mantis ID 11506
           P_RESP_CDE := '69';--'89';
-          P_RESP_ID  := '69'; --Added for VMS-8018
-          V_ERRMSG --P_RESP_MSG
+          V_ERRMSG --P_RESP_MSG   
                       := 'Problem while inserting data into transaction log-'||substr(SQLERRM,1,instr(SQLERRM,'ORA',2)-1);
-          --En modified by Pankaj S. for Mantis ID 11506
+          --En modified by Pankaj S. for Mantis ID 11506                              
         END;
-
+        
       END IF;
-
+      
       --En create a entry in txn log
-
+      
       BEGIN
-
+      
         INSERT INTO CMS_TRANSACTION_LOG_DTL
           (
             CTD_DELIVERY_CHANNEL,
@@ -4440,7 +4376,7 @@ END IF;*/
             P_ACTUAL_AMT,
             V_CARD_CURR,
             'E',
-            SUBSTR(V_ERRMSG,1,300),--V_ERRMSG Modified on 01/07/2013 BY Arunprasath
+            SUBSTR(V_ERRMSG,1,300),--V_ERRMSG Modified on 01/07/2013 BY Arunprasath 
             P_RRN,
             P_STAN,
             P_INST_CODE,
@@ -4461,38 +4397,37 @@ END IF;*/
             P_CARDVERIFICATION_RESULT--Added for MVHOST 926
             ,P_MERCHANT_ID,P_MERCHANT_CNTRYCODE,P_MS_PYMNT_DESC,V_HASHKEY_ID
           );
-
+          
       EXCEPTION
-
+      
       WHEN OTHERS THEN
-
+      
         P_RESP_MSG := 'Problem while inserting data into transaction log  dtl' || SUBSTR(SQLERRM, 1, 300);
         P_RESP_CDE := '69'; -- Server Decline Response 220509
-        P_RESP_ID  := '69'; --Added for VMS-8018
         ROLLBACK;
         RETURN;
-
+        
       END;
-
+      
       P_RESP_MSG := V_ERRMSG;
       Begin
     sp_autonomous_preauth_logclear(v_auth_id);
     exception
-    When others then
+    When others then 
     null;
     End;
     select (extract(day from systimestamp - v_start_time) *86400+
     extract(hour from systimestamp - v_start_time) *3600+
     extract(minute from systimestamp - v_start_time) *60+
     extract(second from systimestamp - v_start_time) *1000) into v_mili from dual ;
-
+    
      P_RESPTIME_DETAIL :=  P_RESPTIME_DETAIL || ' 4: ' || v_mili ;
      P_RESP_TIME := v_mili;
       WHEN OTHERS THEN -- removed comment for dublicate txn entry in txnlog table for mantis id:11209
        ROLLBACK TO V_SAVEPOINT; -- removed comment for dublicate txn entry in txnlog table for mantis id:11209
-
+       
       BEGIN
-
+      
         SELECT CMS_B24_RESPCDE, --Changed  CMS_ISO_RESPCDE to  CMS_B24_RESPCDE for HISO SPECIFIC Response codes
           cms_iso_respcde
         INTO P_RESP_CDE,
@@ -4503,17 +4438,15 @@ END IF;*/
         AND CMS_DELIVERY_CHANNEL = P_DELV_CHNL
         AND CMS_RESPONSE_ID      = TO_NUMBER(V_RESP_CDE);
         P_RESP_MSG              := V_ERRMSG;
-        P_RESP_ID               := V_RESP_CDE; --Added for VMS-8018
-
+        
       EXCEPTION
-
+      
       WHEN OTHERS THEN
         P_RESP_MSG := 'Problem while selecting data from response master ' || V_RESP_CDE || SUBSTR(SQLERRM, 1, 300);
         P_RESP_CDE := '69';
-        P_RESP_ID  := '69'; --Added for VMS-8018
-
+        
       END;
-
+      
       BEGIN
         SELECT CTC_ATMUSAGE_AMT,
           CTC_POSUSAGE_AMT,
@@ -4527,29 +4460,27 @@ END IF;*/
         WHERE CTC_INST_CODE = P_INST_CODE
         AND CTC_PAN_CODE    = V_HASH_PAN
         AND CTC_MBR_NUMB    = P_MBR_NUMB;
-
+        
       EXCEPTION
-
+      
       WHEN NO_DATA_FOUND THEN
         V_ERRMSG   := 'Cannot get the Transaction Limit Details of the Card' || V_RESP_CDE || SUBSTR(SQLERRM, 1, 300);
         V_RESP_CDE := '21';
-        P_RESP_ID  := '21'; --Added for VMS-8018
-        --RAISE EXP_RVSL_REJECT_RECORD;--Commented on 01/07/2013 BY Arunprasath
-
+        --RAISE EXP_RVSL_REJECT_RECORD;--Commented on 01/07/2013 BY Arunprasath 
+        
       WHEN OTHERS THEN
         V_ERRMSG   := 'Error while selecting CMS_TRANSLIMIT_CHECK3 ' || V_RESP_CDE || SUBSTR(SQLERRM, 1, 300);
         V_RESP_CDE := '21';
-        P_RESP_ID  := '21'; --Added for VMS-8018
-        --RAISE EXP_RVSL_REJECT_RECORD;--Commented on 01/07/2013 BY Arunprasath
-
+        --RAISE EXP_RVSL_REJECT_RECORD;--Commented on 01/07/2013 BY Arunprasath 
+        
       END;
-
+      
       BEGIN
         --Sn limit update for POS
         IF P_DELV_CHNL       = '02' THEN
-
+        
           IF V_RVSL_TRANDATE > V_BUSINESS_DATE_TRAN THEN
-
+          
             UPDATE CMS_TRANSLIMIT_CHECK
             SET CTC_POSUSAGE_AMT = 0,
               CTC_POSUSAGE_LIMIT = 0,
@@ -4564,25 +4495,24 @@ END IF;*/
             WHERE CTC_INST_CODE      = P_INST_CODE
             AND CTC_PAN_CODE         = V_HASH_PAN
             AND CTC_MBR_NUMB         = P_MBR_NUMB;
-
+            
           END IF;
-
+          
         END IF;
-
+        
       EXCEPTION
-
+      
       WHEN OTHERS THEN
         V_ERRMSG   := 'Error while updating CMS_TRANSLIMIT_CHECK3 ' || V_RESP_CDE || SUBSTR(SQLERRM, 1, 300);
         V_RESP_CDE := '21';
-        P_RESP_ID  := '21'; --Added for VMS-8018
-        --RAISE EXP_RVSL_REJECT_RECORD;--Commented on 01/07/2013 BY Arunprasath
-
+        --RAISE EXP_RVSL_REJECT_RECORD;--Commented on 01/07/2013 BY Arunprasath 
+        
       END;
-
+      
       --Sn create a entry in txn log
-
+      
       BEGIN
-
+      
         SELECT CAM_ACCT_BAL,
           CAM_LEDGER_BAL,
           CAM_TYPE_CODE -- Added for defect 10871
@@ -4597,23 +4527,23 @@ END IF;*/
           AND CAP_INST_CODE  = P_INST_CODE
           )
         AND CAM_INST_CODE = P_INST_CODE;
-
+        
       EXCEPTION
-
+      
       WHEN OTHERS THEN
         V_ACCT_BALANCE := 0;
         V_LEDGER_BAL   := 0;
-
+        
       END;
-
+      
       -----------------------------------------------
       --SN: Added on 19-Apr-2013 for defect 10871
       -----------------------------------------------
-
+      
       IF V_PROD_CODE IS NULL THEN
-
+      
         BEGIN
-
+        
           SELECT CAP_PROD_CODE,
             CAP_CARD_TYPE,
             CAP_CARD_STAT,
@@ -4625,18 +4555,18 @@ END IF;*/
           FROM CMS_APPL_PAN
           WHERE CAP_INST_CODE = P_INST_CODE
           AND CAP_PAN_CODE    = V_HASH_PAN; --P_card_no;
-
+          
         EXCEPTION
-
+        
         WHEN OTHERS THEN
           NULL;
-
+          
         END;
-
+        
       END IF;
-
+      
       IF V_DR_CR_FLAG IS NULL THEN
-
+      
         BEGIN
           SELECT CTM_CREDIT_DEBIT_FLAG
           INTO V_DR_CR_FLAG
@@ -4644,14 +4574,14 @@ END IF;*/
           WHERE CTM_TRAN_CODE      = P_TXN_CODE
           AND CTM_DELIVERY_CHANNEL = P_DELV_CHNL
           AND CTM_INST_CODE        = P_INST_CODE;
-
+          
         EXCEPTION
-
+        
         WHEN OTHERS THEN
           NULL;
-
+          
         END;
-
+        
       END IF;
       -----------------------------------------------
       --EN: Added on 19-Apr-2013 for defect 10871
@@ -4731,7 +4661,7 @@ END IF;*/
               --EN Added on 30.07.2013 for 11695
               ,INTERNATION_IND_RESPONSE,
               SYSTEM_TRACE_AUDIT_NO             -- Added during concurrent processing issue changes
-              ,merchant_id
+              ,merchant_id  
             )
             VALUES
             (
@@ -4794,7 +4724,7 @@ END IF;*/
               v_cap_card_stat, --Added for defect 10871
               p_org_stan,      -- Added for OLS changes
               1,               -- Added for OLS changes
-              P_MERCHANT_NAME,  -- Added on 20130527 for logging N/W settlement date in transactionlog
+              P_MERCHANT_NAME,  -- Added on 20130527 for logging N/W settlement date in transactionlog     
               P_MERCHANT_CITY,  -- Added on 20130527 for logging N/W settlement date in transactionlog
               P_MERCHANT_STATE, -- Added on 20130527 for logging N/W settlement date in transactionlog
               P_NETWORK_SETL_DATE,  -- Added on 20130527 for logging N/W settlement date in transactionlog
@@ -4810,23 +4740,22 @@ END IF;*/
               --EN Added on 30.07.2013 for 11695
               ,v_internation_ind_response,
               P_STAN    -- Added during concurrent processing issue changes
-              ,P_MERCHANT_ID
+              ,P_MERCHANT_ID                
             );
-
+            
         EXCEPTION
         WHEN OTHERS THEN
                  --Sn modified by Pankaj S. for Mantis ID 11506
           P_RESP_CDE := '69';--'89';
-          P_RESP_ID  := '69'; --Added for VMS-8018
-          V_ERRMSG --P_RESP_MSG
+          V_ERRMSG --P_RESP_MSG  
              := 'Problem while inserting data into transaction log-' || substr(SQLERRM,1,instr(SQLERRM,'ORA',2)-1);
-          --En modified by Pankaj S. for Mantis ID 11506
+          --En modified by Pankaj S. for Mantis ID 11506          
         END;
-
+        
       END IF;
-
+      
       --En create a entry in txn log
-
+      
       BEGIN
         INSERT INTO CMS_TRANSACTION_LOG_DTL
           (
@@ -4886,7 +4815,7 @@ END IF;*/
             P_ACTUAL_AMT,
             V_CARD_CURR,
             'E',
-            SUBSTR(V_ERRMSG,1,300),--V_ERRMSG Modified on 01/07/2013 BY Arunprasath
+            SUBSTR(V_ERRMSG,1,300),--V_ERRMSG Modified on 01/07/2013 BY Arunprasath 
             P_RRN,
             P_STAN,
             P_INST_CODE,
@@ -4907,16 +4836,15 @@ END IF;*/
        P_CARDVERIFICATION_RESULT--Added for MVHOST 926
        ,P_MERCHANT_ID,P_MERCHANT_CNTRYCODE,P_MS_PYMNT_DESC,V_HASHKEY_ID
           );
-
+          
       EXCEPTION
-
+      
       WHEN OTHERS THEN
         P_RESP_MSG := 'Problem while inserting data into transaction log  dtl' || SUBSTR(SQLERRM, 1, 300);
         P_RESP_CDE := '69'; -- Server Decline Response 220509
-        P_RESP_ID  := '69'; --Added for VMS-8018
         ROLLBACK;
         RETURN;
-
+        
       END;
 
       P_RESP_MSG:=V_ERRMSG; --Added by Pankaj S. for Mantis ID 11506
@@ -4924,15 +4852,18 @@ END IF;*/
     Begin
     sp_autonomous_preauth_logclear(v_auth_id);
     exception
-    When others then
+    When others then 
     null;
     End;
          select (extract(day from systimestamp - v_start_time) *86400+
     extract(hour from systimestamp - v_start_time) *3600+
     extract(minute from systimestamp - v_start_time) *60+
     extract(second from systimestamp - v_start_time) *1000) into v_mili from dual ;
-
+    
      P_RESPTIME_DETAIL :=  P_RESPTIME_DETAIL || ' 4: ' || v_mili ;
      P_RESP_TIME := v_mili;
 END;
+
 /
+
+show error

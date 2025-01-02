@@ -86,17 +86,17 @@ end;
     ELSIF V_VALIDITY_PERIOD = 'Week' THEN
         p_expiry_date_out := sysdate + (7 * V_EXPRYPARAM);
     ELSIF V_VALIDITY_PERIOD = 'Month' THEN
-     -- if v_monthend_expry_date='Y' then
-          p_expiry_date_out := LAST_DAY(ADD_MONTHS(SYSDATE, V_EXPRYPARAM));  --VMS-8532 changes to consider the month-end expiry by default.
-      --else
-        --  p_expiry_date_out := ADD_MONTHS(SYSDATE, V_EXPRYPARAM);
-      --end if;
+      if v_monthend_expry_date='Y' then
+          p_expiry_date_out := LAST_DAY(ADD_MONTHS(SYSDATE, V_EXPRYPARAM));
+      else
+          p_expiry_date_out := ADD_MONTHS(SYSDATE, V_EXPRYPARAM);
+      end if;
     ELSIF V_VALIDITY_PERIOD = 'Year' THEN
-     --if v_monthend_expry_date='Y' then
-          p_expiry_date_out := LAST_DAY(ADD_MONTHS(sysdate, (12 * V_EXPRYPARAM) - 1)); --VMS-8532 changes to consider the month-end expiry by default.
-     --else
-       --  p_expiry_date_out := ADD_MONTHS(sysdate, (12 * V_EXPRYPARAM) - 1);
-      --end if;
+     if v_monthend_expry_date='Y' then
+          p_expiry_date_out := LAST_DAY(ADD_MONTHS(sysdate, (12 * V_EXPRYPARAM) - 1));
+     else
+         p_expiry_date_out := ADD_MONTHS(sysdate, (12 * V_EXPRYPARAM) - 1);
+      end if;
     END IF;
     dbms_output.put_line(p_expiry_date_out);
       if v_exp_date_exemption='Y' then
@@ -181,57 +181,24 @@ BEGIN
         v_expry_dt := ADD_MONTHS (SYSDATE, (12 * v_expryparam) - 1);
     END IF;
 
-     BEGIN
-        SELECT NVL (VSCM.VSC_SALES_CHANNEL_MONTH,0)
-        INTO v_randm_val
-            FROM VMSCMS.VMS_SALES_CHANNEL_MASTER VSCM
-                JOIN VMSCMS.CMS_PROD_CATTYPE CPC
-           ON VSCM.VSC_SALES_CHANNEL_NAME = CPC.CPC_SALES_CHANNEL
-           AND CPC.CPC_INST_CODE = p_inst_code_in
-           AND CPC.CPC_PROD_CODE = P_PROD_CODE_IN
-           AND CPC.CPC_CARD_TYPE = P_CARD_TYPE_IN;
-    EXCEPTION
-        WHEN OTHERS THEN
-            v_randm_val := 0;
-    END;
-
-
-    IF v_randm_val = 0 THEN
     BEGIN
-        SELECT NVL (cim_exprydt_random, 0)
+        SELECT TO_NUMBER (cip_param_value)
           INTO v_randm_val
-          FROM cms_interchange_mast, cms_prod_mast
-         WHERE cpm_inst_code = p_inst_code_in
-           AND cpm_prod_code = p_prod_code_in
-           AND cim_inst_code = cpm_inst_code
-           AND cim_interchange_code = cpm_interchange_code;
+          FROM cms_inst_param
+         WHERE cip_inst_code = p_inst_code_in
+           AND cip_param_key = 'EXPIRY_DATE_RANDOM';
     EXCEPTION
-        WHEN OTHERS THEN
-            v_randm_val := 0;
+        WHEN OTHERS
+        THEN
+            v_randm_val := 60;
     END;
-    END IF;
-    
-    IF v_randm_val = 0 THEN
-        BEGIN
-            SELECT TO_NUMBER (cip_param_value)
-              INTO v_randm_val
-              FROM cms_inst_param
-             WHERE cip_inst_code = p_inst_code_in
-               AND cip_param_key = 'EXPIRY_DATE_RANDOM';
-        EXCEPTION
-            WHEN OTHERS
-            THEN
-                v_randm_val := 60;
-        END;
-    END IF;
 
     SELECT CEIL ((v_randm_val / 12) * 365) AS days INTO v_randm_val FROM DUAL;
 
-    SELECT /*CASE
+    SELECT CASE
                WHEN v_monthend_expry_date = 'Y' THEN LAST_DAY (dt)
                ELSE dt
-           END*/
-           LAST_DAY (dt) --VMS-8532 changes to consider the month-end expiry by default.
+           END
       BULK COLLECT INTO p_expiry_date_out
       FROM (    SELECT v_expry_dt + TRUNC (DBMS_RANDOM.VALUE (1, v_randm_val))    dt
                   FROM DUAL

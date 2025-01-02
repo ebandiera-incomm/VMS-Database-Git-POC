@@ -360,8 +360,6 @@ create or replace PROCEDURE        VMSCMS.SP_AUTHORIZE_TXN_CMS_AUTH_ACH (
          v_initialload_amt         cms_acct_mast.cam_new_initialload_amt%type;
          v_enable_flag varchar2(20):='Y';
          V_BANK_SEC_COUNT NUMBER(5):=0;
-		 v_Retperiod  date;  --Added for VMS-5739/FSP-991
-		v_Retdate  date; --Added for VMS-5739/FSP-991
  BEGIN
   SAVEPOINT V_AUTH_SAVEPOINT;
   V_RESP_CDE   := '1';
@@ -2903,33 +2901,11 @@ if p_PROCESSTYPE <> 'N' THEN
   if p_PROCESSTYPE = 'N' THEN
 
       BEGIN
-	  
-	  --Added for VMS-5739/FSP-991
- select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
-       INTO   v_Retperiod 
-       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
-       WHERE  OPERATION_TYPE='ARCHIVE' 
-       AND OBJECT_NAME='TRANSACTIONLOG_EBR';
-       
-       v_Retdate := TO_DATE(SUBSTR(TRIM(p_TRAN_DATE), 1, 8), 'yyyymmdd');
-
-
-IF (v_Retdate>v_Retperiod)
-
-    THEN
              update transactionlog
              set PROCESSTYPE= p_PROCESSTYPE,response_code=p_RESP_CODE
              WHERE RRN = p_RRN
              AND BUSINESS_DATE = p_TRAN_DATE
              AND TXN_CODE = p_TXN_CODE AND INSTCODE = p_INST_CODE;
-ELSE
-			update VMSCMS_HISTORY.TRANSACTIONLOG_HIST --Added for VMS-5733/FSP-991
-             set PROCESSTYPE= p_PROCESSTYPE,response_code=p_RESP_CODE
-             WHERE RRN = p_RRN
-             AND BUSINESS_DATE = p_TRAN_DATE
-             AND TXN_CODE = p_TXN_CODE AND INSTCODE = p_INST_CODE;
-END IF;
-			 
 
             IF SQL%ROWCOUNT = 0                                                 -- added as per review observation for FSS-1315 -- 12498
             THEN
@@ -2958,4 +2934,4 @@ EXCEPTION
                  SUBSTR(SQLERRM, 1, 300);
 END;
 /
-show error;
+show error

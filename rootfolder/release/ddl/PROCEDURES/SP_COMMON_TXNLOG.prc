@@ -76,8 +76,6 @@ create or replace PROCEDURE              VMSCMS.SP_COMMON_TXNLOG(
                                          p_network_auth_id          IN VARCHAR2 DEFAULT NULL, -- Added for VMS-7480
                                          p_merchant_blocking_info   IN VARCHAR2 DEFAULT NULL, -- added for VMS-7695
                                          p_ols_rule_group           IN VARCHAR2 DEFAULT NULL, -- added for VMS-7695
-                                         p_merchant_country_of_origin IN VARCHAR2 DEFAULT NULL, -- added for VMS-8145
-										 p_src_of_decline   IN VARCHAR2  DEFAULT NULL,  -- added for VMS-8895
                                          p_error_msg                out varchar2
                                          )
 IS
@@ -186,12 +184,6 @@ IS
   * Purpose           : VMS-7480 - Log Auth Code
   * Reviewer          : Pankaj
   * Build Number      : VMSGPRHOST_R81_B0001
-  
-  * Modified By       : Navaneeth
-  * Modified Date     : 08-Dec-2023
-  * Purpose           : VMS-8145 : Country of Origin Identifier for Bancorp
-  * Reviewer          : Pankaj/Venkat/John
-  * Build Number      : VMSGPRHOST_R90_B0001
 *************************************************/
 
 BEGIN
@@ -263,10 +255,8 @@ BEGIN
     store_id = p_ran_matched_merchant_id,
     NETWORK_AUTH_ID = p_network_auth_id, -- Added for VMS-7480
     rules = p_ols_rule_group,
-    rulegroupid = p_merchant_blocking_info,
-    de61_tag136_merchantcountryoforigin = p_merchant_country_of_origin,
-	src_of_decline = p_src_of_decline  --Added for VMS-8895
-
+    rulegroupid = p_merchant_blocking_info
+    
     WHERE RRN            = P_RRN
     AND BUSINESS_DATE    = P_TRAN_DATE
     AND BUSINESS_TIME    = P_TRAN_TIME
@@ -325,10 +315,8 @@ BEGIN
     store_id = p_ran_matched_merchant_id,
     NETWORK_AUTH_ID = p_network_auth_id, -- Added for VMS-7480
     rules = p_ols_rule_group,
-    rulegroupid = p_merchant_blocking_info,
-    de61_tag136_merchantcountryoforigin = p_merchant_country_of_origin,
-	src_of_decline = p_src_of_decline  --Added for VMS-8895
-
+    rulegroupid = p_merchant_blocking_info
+    
     WHERE RRN            = P_RRN
     AND BUSINESS_DATE    = P_TRAN_DATE
     AND BUSINESS_TIME    = P_TRAN_TIME

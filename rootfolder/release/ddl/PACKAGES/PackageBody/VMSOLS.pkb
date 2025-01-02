@@ -46,8 +46,7 @@ PACKAGE BODY               VMSCMS.VMSOLS AS
         p_o_resp_code                 OUT VARCHAR2,
         p_o_resp_msg                  OUT CLOB,
         p_o_ledger_bal                OUT VARCHAR2,
-        p_o_iso_respcde               OUT VARCHAR2,
-        p_o_resp_id                   OUT VARCHAR2 --Added for sending to FSS (VMS-8018)
+        p_o_iso_respcde               OUT VARCHAR2
         
     ) IS
   /*************************************************
@@ -63,12 +62,6 @@ PACKAGE BODY               VMSCMS.VMSOLS AS
   * Purpose          : Archival changes.
   * Reviewer         : Venkat Singamaneni
   * Release Number   : VMSGPRHOST60 for VMS-5739/FSP-991
-  
-  * Modified By      : Areshka A.
-  * Modified Date    : 03-Nov-2023
-  * Purpose          : VMS-8018: Added new out parameter (response id) for sending to FSS
-  * Reviewer         : 
-  * Release Number   : 
   *************************************************/
 
         v_num_acct_bal             cms_acct_mast.cam_acct_bal%TYPE;
@@ -775,7 +768,6 @@ PACKAGE BODY               VMSCMS.VMSOLS AS
 
     -- get Response Code
             v_var_resp_code := '1';
-            p_o_resp_id := v_var_resp_code; --Added for VMS-8018
             BEGIN
                 SELECT
                     cms_b24_respcde,
@@ -828,7 +820,6 @@ PACKAGE BODY               VMSCMS.VMSOLS AS
                    
                     p_o_resp_code := v_var_resp_code;
                     p_o_resp_msg := v_var_err_msg;
-                    p_o_resp_id := v_var_resp_code; --Added for VMS-8018
                     
                     SELECT
                         cms_b24_respcde,
@@ -848,7 +839,6 @@ PACKAGE BODY               VMSCMS.VMSOLS AS
                          || v_var_resp_code
                          || substr(sqlerrm,1,300);
                         p_o_resp_code := '69';
-                        p_o_resp_id := '69'; --Added for VMS-8018
                         ROLLBACK;
                 END;
              WHEN OTHERS THEN
@@ -890,7 +880,6 @@ PACKAGE BODY               VMSCMS.VMSOLS AS
                     AND cms_response_id = v_var_resp_code;
 
                     p_o_resp_msg := v_var_err_msg;
-                    p_o_resp_id := v_var_resp_code; --Added for VMS-8018
                     
                 EXCEPTION
                     WHEN OTHERS THEN
@@ -898,7 +887,6 @@ PACKAGE BODY               VMSCMS.VMSOLS AS
                          || v_var_resp_code
                          || substr(sqlerrm,1,300);
                         p_o_resp_code := '69';
-                        p_o_resp_id := '69'; --Added for VMS-8018
                         ROLLBACK;
                 END;
 
@@ -1111,7 +1099,6 @@ PACKAGE BODY               VMSCMS.VMSOLS AS
                 p_o_resp_code := '69';
                 p_o_resp_msg := 'Problem while inserting data into transaction log  '
                  || substr(sqlerrm,1,300);
-                p_o_resp_id := '69'; --Added for VMS-8018
         END;
     -- logging in Transactionlogdtl table
 
@@ -1218,7 +1205,6 @@ PACKAGE BODY               VMSCMS.VMSOLS AS
             p_o_resp_code := '69';
             p_o_resp_msg := 'Main exception from  authorization '
              || substr(sqlerrm,1,300);
-            p_o_resp_id := '69'; --Added for VMS-8018
     END cr_adjust_cmsauth_iso93;
 
 END vmsols;

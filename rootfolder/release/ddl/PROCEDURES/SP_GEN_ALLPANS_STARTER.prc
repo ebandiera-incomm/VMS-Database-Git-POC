@@ -54,12 +54,6 @@ AS
       * Purpose          : VMS-161
       * Reviewer         : Saravanakumar
       * Release Number   : VMSGPRHOST18.02
-      
-     * Modified By      : Shanmugavel
-     * Modified Date    : 23/01/2024
-     * Purpose          : VMS-8219-Remove the Default Status in the Product Category Profile Screen on the Host UI
-     * Reviewer         : Venkat/John/Pankaj
-     * Release Number   : VMSGPRHOSTR92
 
    *************************************************/
    file_name               VARCHAR2 (30);
@@ -455,39 +449,37 @@ BEGIN
 --               END IF;
 --            END LOOP;
 --          END IF; --Added for 17.07 PAN Inventory Changes
+            BEGIN
+               SELECT cbp_param_value
+                 INTO v_card_stat
+                 FROM cms_bin_param
+                WHERE cbp_inst_code = prm_instcode
+                  AND cbp_profile_code = v_profile_code
+                  AND cbp_param_name = 'Status';
 
-v_card_stat := '0';  -- VMS-8219
---            BEGIN
---               SELECT cbp_param_value
---                 INTO v_card_stat
---                 FROM cms_bin_param
---                WHERE cbp_inst_code = prm_instcode
---                  AND cbp_profile_code = v_profile_code
---                  AND cbp_param_name = 'Status';
---
---               IF v_card_stat IS NULL
---               THEN
---                  v_errmsg :=
---                         'Status is null for profile code ' || v_profile_code;
---                  RAISE exp_reject_file;
---               END IF;
---            EXCEPTION
---               WHEN exp_reject_file
---               THEN
---                  RAISE;
---               WHEN NO_DATA_FOUND
---               THEN
---                  v_errmsg :=
---                        'Status is not defined for profile code '
---                     || v_profile_code;
---                  RAISE exp_reject_file;
---               WHEN OTHERS
---               THEN
---                  v_errmsg :=
---                        'Error while selecting card status '
---                     || SUBSTR (SQLERRM, 1, 200);
---                  RAISE exp_reject_file;
---            END;
+               IF v_card_stat IS NULL
+               THEN
+                  v_errmsg :=
+                         'Status is null for profile code ' || v_profile_code;
+                  RAISE exp_reject_file;
+               END IF;
+            EXCEPTION
+               WHEN exp_reject_file
+               THEN
+                  RAISE;
+               WHEN NO_DATA_FOUND
+               THEN
+                  v_errmsg :=
+                        'Status is not defined for profile code '
+                     || v_profile_code;
+                  RAISE exp_reject_file;
+               WHEN OTHERS
+               THEN
+                  v_errmsg :=
+                        'Error while selecting card status '
+                     || SUBSTR (SQLERRM, 1, 200);
+                  RAISE exp_reject_file;
+            END;
 
             --Sn get member number from master
             BEGIN

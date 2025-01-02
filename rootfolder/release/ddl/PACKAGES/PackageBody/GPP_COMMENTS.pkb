@@ -121,33 +121,27 @@ create or replace PACKAGE BODY vmscms.GPP_COMMENTS IS
                           d.cum_user_name
                       END AS userid,*/
                       CASE nvl(b.ccd_ins_user, 0)
-                         WHEN 0 THEN  
-						  b.ccd_fsapi_username
+                         WHEN 0 THEN
+                          b.ccd_fsapi_username
                          ELSE
-						--d.cum_user_name				 --Commented for VMS_8375
-							(SELECT d.cum_user_name
-							  FROM vmscms.cms_userdetl_mast d
-							 WHERE d.cum_user_code = a.ccm_ins_user)	--Added for VMS_8375
+                          d.cum_user_name
                       END AS userid,
                       --Jira Issue: CFIP:187 ends
                       b.ccd_comments comments
                  FROM vmscms.cms_calllog_mast    a,
                       vmscms.cms_calllog_details b,
                       vmscms.cms_callcatg_mast   c,
-                     -- vmscms.cms_userdetl_mast   d,		 --Commented for VMS_8375
+                      vmscms.cms_userdetl_mast   d,
                       vmscms.cms_appl_pan        e,
                       vmscms.cms_cust_mast       f
-		 
                 WHERE a.ccm_call_id = b.ccd_call_id
                   AND a.ccm_inst_code = b.ccd_inst_code
                   AND a.ccm_inst_code = c.ccm_inst_code
                   AND a.ccm_call_catg = c.ccm_catg_id
-                  --AND a.ccm_ins_user = d.cum_user_code(+)  --Commented for VMS_8375
+                  AND a.ccm_ins_user = d.cum_user_code(+)
                   AND a.ccm_pan_code = b.ccd_pan_code
-                  --AND b.ccd_acct_no = e.cap_acct_no		 --Commented for VMS_8375				  
-				  AND b.ccd_inst_code= e.cap_inst_code		 --Added for VMS_8375
-				  AND b.ccd_pan_code = e.cap_pan_code		 --Added for VMS_8375				  
-                  --AND e.cap_pan_code = ccm_pan_code		 --Commented for VMS_8375
+                  AND b.ccd_acct_no = e.cap_acct_no
+                  AND e.cap_pan_code = ccm_pan_code
                   AND e.cap_cust_code = f.ccm_cust_code
                   AND f.ccm_cust_id = p_customer_id_in
                   --AND f.ccm_partner_id IN (l_partner_id)
@@ -156,9 +150,7 @@ create or replace PACKAGE BODY vmscms.GPP_COMMENTS IS
                                              '^') =
                              vmscms.gpp_utils.get_prod_code_card_type(p_partner_id_in => l_partner_id,
                                                                       p_prod_code_in  => f.ccm_prod_code,
-                                                                      p_card_type_in  => f.ccm_card_type)	
-
-																  
+                                                                      p_card_type_in  => f.ccm_card_type)
                 ORDER BY call_date DESC;
 
          WHEN upper(l_comment_type) = 'SUMMARY' THEN

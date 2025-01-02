@@ -97,8 +97,6 @@ create or replace PACKAGE BODY        VMSCMS.GPP_ACCOUNTS IS
     l_token_tab vmscms.account_detail_token_list_t := account_detail_token_list_t();
     L_DELETE_DATE DATE;
 
-    -- new code for package gpp acc release 6 build 1
-
 
 /***************************************************************************************
 
@@ -2439,7 +2437,7 @@ FROM vmscms.cms_appl_mast      a,
      WHERE cpm_prod_code = l_prod_code;
 
     SELECT to_char(to_char(SYSDATE,
-                           'YYMMDDHH24MISS') ||  --Changes VMS-8279 ~ HH has been replaced as HH24
+                           'YYMMDDHHMISS') ||
                    lpad(vmscms.seq_deppending_rrn.nextval,
                         3,
                         '0'))
@@ -3138,7 +3136,7 @@ FROM vmscms.cms_appl_mast      a,
                                    l_acct_no);
     --customer id validation cfip:133 ends
     SELECT to_char(to_char(SYSDATE,
-                           'YYMMDDHH24MISS') ||  --Changes VMS-8279 ~ HH has been replaced as HH24
+                           'YYMMDDHHMISS') ||
                    lpad(vmscms.seq_deppending_rrn.nextval,
                         3,
                         '0'))
@@ -3480,7 +3478,7 @@ FROM vmscms.cms_appl_mast      a,
     g_debug.display(g_debug.format('reason_description : $1',
                                    l_reason_desc));
     l_rrn := to_char(to_char(SYSDATE,
-                             'YYMMDDHH24MISS') ||  --Changes VMS-8279 ~ HH has been replaced as HH24
+                             'YYMMDDHHMISS') ||
                      lpad(vmscms.seq_deppending_rrn.nextval,
                           3,
                           '0'));

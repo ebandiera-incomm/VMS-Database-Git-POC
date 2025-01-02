@@ -69,7 +69,6 @@ create or replace PROCEDURE                   VMSCMS.SP_AUTHORIZE_TXN_POT_ISO93 
                                               ,p_product_type IN VARCHAR2 default 'O'
                                               ,p_expiry_date_check IN VARCHAR2 default 'Y'
                                               ,p_surchrg_ind   IN VARCHAR2 DEFAULT '2' --Added for VMS-5856
-                                              ,p_resp_id OUT VARCHAR2 --Added for sending to FSS (VMS-8018)
                                               ) IS
 /*************************************************
   * Modified by       : Sagar M.
@@ -194,7 +193,7 @@ create or replace PROCEDURE                   VMSCMS.SP_AUTHORIZE_TXN_POT_ISO93 
    * Modified Date    : 21.NOV.2013
    * Reviewer         : Dhiraj
    * Reviewed Date    :
-   * Build Number     : RI0024.6.1_B0001
+   * Build Number     : RI0024.6.1_B0002
 
    * Modified Date    : 10-Dec-2013
    * Modified By      : Sagar More
@@ -227,7 +226,7 @@ create or replace PROCEDURE                   VMSCMS.SP_AUTHORIZE_TXN_POT_ISO93 
      * Modified Date     : 06-Mar-2014
      * Reviewer          : Dhiraj
      * Reviewed Date     : 10-Mar-2014
-     * Build Number      : RI0027.2_B0001
+     * Build Number      : RI0027.2_B0002
 
      * Modified by       : Dhinakaran B
      * Modified for      : VISA Certtification Changes integration in 2.2.2
@@ -244,7 +243,7 @@ create or replace PROCEDURE                   VMSCMS.SP_AUTHORIZE_TXN_POT_ISO93 
      * Modified By      : Abdul Hameed M.A
      * Modified for     : FWR 70
      * Reviewer         : Spankaj
-     * Release Number   : RI0027.4_B0001
+     * Release Number   : RI0027.4_B0002
 
      * Modified Date    : 11-Nov2014
      * Modified By      : Dhinakaran B
@@ -256,7 +255,7 @@ create or replace PROCEDURE                   VMSCMS.SP_AUTHORIZE_TXN_POT_ISO93 
      * Modified Date    : 18-Nov-2014
      * Modified for     : PPE Changes
      * Reviewer         : Saravanakumar
-     * Release Number   : RI0027.4.2.2_B0001
+     * Release Number   : RI0027.4.2.2_B0002
 
      * Modified Date    : 11-DEC-2014
      * Modified By      : MageshKumar S
@@ -441,12 +440,6 @@ create or replace PROCEDURE                   VMSCMS.SP_AUTHORIZE_TXN_POT_ISO93 
      * Purpose          : VMS-5546
      * Reviewer         : VENKAT S.
      * Release Number   : VMSGPRHOST R70
-
-	 * Modified by      : Areshka A.
-     * Modified for     : VMS-8018: Added new out parameter (response id) for sending to FSS
-     * Modified Date    : 03-Nov-2023
-     * Reviewer         : 
-     * Build Number     : 
 **************************************************/
   V_ERR_MSG            VARCHAR2(900) := 'OK';
   V_ACCT_BALANCE       NUMBER;
@@ -617,7 +610,6 @@ V_ADDR_ONE CMS_ADDR_MAST.CAM_ADD_ONE%type;
     v_redemption_delay_flag cms_acct_mast.cam_redemption_delay_flag%type;
   v_delayed_amount number:=0;
   V_PROFILE_CODE CMS_PROD_CATTYPE.CPC_PROFILE_CODE%TYPE;
-  V_CPC_B2B_LMTPRFL CMS_PROD_CATTYPE.CPC_B2B_LMTPRFL%TYPE;
   v_badcredit_flag             cms_prod_cattype.cpc_badcredit_flag%TYPE;
    v_badcredit_transgrpid       vms_group_tran_detl.vgd_group_id%TYPE;
      v_cnt       number;
@@ -769,16 +761,14 @@ BEGIN
 	       CPC_ENCRYPT_ENABLE,
 	       cpc_badcredit_flag,
 	       cpc_badcredit_transgrpid, 
-	       NVL(CPC_ADDR_VERIFICATION_RESPONSE, 'U'),
-           CPC_B2B_LMTPRFL
+	       NVL(CPC_ADDR_VERIFICATION_RESPONSE, 'U')
         INTO V_PROFILE_CODE, 
              V_ADDRVRIFY_FLAG, 
              V_INTERNATIONAL_FLAG,
 	     V_ENCRYPT_ENABLE,
 	     v_badcredit_flag,
 	     v_badcredit_transgrpid , 
-	     V_ADDRVERIFY_RESP,
-         v_CPC_B2B_LMTPRFL
+	     V_ADDRVERIFY_RESP
         FROM cms_prod_cattype
         WHERE  cpc_inst_code = p_inst_code
            AND cpc_prod_code = v_prod_code
@@ -2282,33 +2272,6 @@ END IF;
      
      
            BEGIN
-            begin-- Added for VMS-9160
-                if v_prfl_code is null then
-                
-                    select CPL_LMTPRFL_ID 
-                      into v_prfl_code
-                      from cms_prdcattype_lmtprfl
-                     where CPL_PROD_CODE = v_prod_code
-                       and CPL_CARD_TYPE = V_PROD_CATTYPE;
-                end if;
-                exception
-                when no_data_found then
-                    begin 
-                        select CPL_LMTPRFL_ID 
-                        into v_prfl_code
-                        from CMS_PROD_LMTPRFL
-                        where CPL_PROD_CODE = v_prod_code;
-                    exception
-                    when others then
-                        v_err_msg := 'Error trying to set Limit Profile before sp_limits_check ';
-                        RAISE exp_reject_record;
-                    end;
-                    
-                when others then
-                    v_err_msg := 'Error trying to set Limit Profile before sp_limits_check ';
-                    RAISE exp_reject_record;
-                
-            end;
 
             IF V_PRFL_CODE IS NOT NULL AND V_PRFL_FLAG ='Y' THEN
               
@@ -3709,8 +3672,6 @@ END IF;
 
       --EN Added on 19.09.2013 for FSS-1313
 
-      p_resp_id := v_resp_cde; --Added for VMS-8018
-
       --SN Commented and moved here on 19.09.2013 for FSS-1313
       BEGIN
          SELECT cms_b24_respcde,
@@ -3981,7 +3942,6 @@ END IF;
        END IF;
        P_RESP_CODE := V_RESP_CDE;
        P_RESP_MSG  := V_ERR_MSG;
-       p_resp_id   := V_RESP_CDE; --Added for VMS-8018
        -- Assign the response code to the out parameter
        SELECT CMS_B24_RESPCDE, --Changed  CMS_ISO_RESPCDE to  CMS_B24_RESPCDE for HISO SPECIFIC Response codes
               cms_iso_respcde             -- Added for OLS changes
@@ -3997,7 +3957,6 @@ END IF;
         P_RESP_MSG  := 'Problem while selecting data from response master ' ||
                     V_RESP_CDE || SUBSTR(SQLERRM, 1, 300);
         P_RESP_CODE := '69';
-        p_resp_id   := '69'; --Added for VMS-8018
         ---ISO MESSAGE FOR DATABASE ERROR Server Declined
         ROLLBACK;
      END;
@@ -4124,7 +4083,6 @@ END IF;
         P_RESP_MSG  := 'Problem while inserting data into transaction log  dtl' ||
                     SUBSTR(SQLERRM, 1, 300);
         P_RESP_CODE := '69'; -- Server Declined
-        p_resp_id   := '69'; --Added for VMS-8018
         ROLLBACK;
         RETURN;
      END;
@@ -4501,13 +4459,11 @@ END IF;
             CMS_RESPONSE_ID = V_RESP_CDE;
 
        P_RESP_MSG := V_ERR_MSG;
-       p_resp_id  := V_RESP_CDE; --Added for VMS-8018
      EXCEPTION
        WHEN OTHERS THEN
         P_RESP_MSG  := 'Problem while selecting data from response master ' ||
                     V_RESP_CDE || SUBSTR(SQLERRM, 1, 300);
         P_RESP_CODE := '69'; -- Server Declined
-        p_resp_id   := '69'; --Added for VMS-8018
         ROLLBACK;
      END;
 
@@ -4593,7 +4549,6 @@ END IF;
         P_RESP_MSG  := 'Problem while inserting data into transaction log  dtl' ||
                     SUBSTR(SQLERRM, 1, 300);
         P_RESP_CODE := '69'; -- Server Decline Response 220509
-        p_resp_id   := '69'; --Added for VMS-8018
         ROLLBACK;
         RETURN;
      END;
@@ -4857,7 +4812,6 @@ END IF;
      P_RESP_CODE := '69'; -- Server Declione
      P_RESP_MSG  := 'Problem while inserting data into transaction log  ' ||
                  SUBSTR(SQLERRM, 1, 300);
-     p_resp_id   := '69'; --Added for VMS-8018
   END;
   --En create a entry in txn log
 
@@ -4887,7 +4841,6 @@ EXCEPTION
     P_RESP_CODE := '69'; -- Server Declined
     P_RESP_MSG  := 'Main exception from  authorization ' ||
                 SUBSTR(SQLERRM, 1, 300);
-    p_resp_id   := '69'; --Added for VMS-8018
 END;
 /
 Show error

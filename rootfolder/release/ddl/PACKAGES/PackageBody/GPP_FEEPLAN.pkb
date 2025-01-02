@@ -453,7 +453,7 @@ create or replace PACKAGE BODY   vmscms.GPP_FEEPLAN IS
                                    'x-incfs-sessionid'));
       l_session_id := to_number(l_session_id, '999999999');
       --fetching the rrn
-      SELECT to_char(to_char(SYSDATE, 'YYMMDDHH24MISS') ||  --Changes VMS-8279 ~ HH has been replaced as HH24
+      SELECT to_char(to_char(SYSDATE, 'YYMMDDHHMISS') ||
                      lpad(vmscms.seq_deppending_rrn.nextval, 3, '0'))
         INTO l_rrn
         FROM dual;

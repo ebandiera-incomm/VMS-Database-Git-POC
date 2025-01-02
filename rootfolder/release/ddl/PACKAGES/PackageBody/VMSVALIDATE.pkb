@@ -63,7 +63,6 @@ IS
                            p_mobile_deliverymode_out  OUT   VARCHAR2,
                            p_email_deliverymode_out   OUT   VARCHAR2,
                            p_reason_code_out          OUT   VARCHAR2,  --Added for VMS-6617 Changes
-                           p_allowredemptions_out     OUT VARCHAR2, --Added for VMS-8677
                            p_transactions_out         OUT   SYS_REFCURSOR)
    AS
    
@@ -109,13 +108,6 @@ IS
      * Purpose                     : Fraud - ONHOLD cardstatus updates - Auth changes
      * Reviewer                    : Venkat S.
      * Release Number              : R70.2
-
-     * Modified By                 : Pankaj S.
-     * Modified For                : VMS-8677
-     * Purpose                     : Enable Redemptions Upon Successful IVR or CHW Authentication
-     * Reviewer                    : Venkat S.
-     * Release Number              : R97
-
 ************************************************************************************/
       l_hash_pan           cms_appl_pan.cap_pan_code%TYPE; 
       l_encr_pan           cms_appl_pan.cap_pan_code_encr%TYPE;
@@ -170,7 +162,6 @@ IS
          v_compl_fee varchar2(10);
    v_compl_feetxn_excd varchar2(10);
    v_compl_feecode varchar2(10);
-   l_allow_redemption   cms_appl_pan.cap_allow_redemptions%TYPE;  --Added for VMS-8677
 
       TYPE t_address IS TABLE OF VARCHAR2 (50)
                            INDEX BY VARCHAR2 (50);
@@ -258,8 +249,7 @@ IS
                    cap_user_identify_type,
                    nvl(cap_repl_flag,0),
                    CAP_REPLACE_EXPRYDT,
-                   cap_panmast_param5,  --Added for VMS-6617 Changes
-                   cap_allow_redemptions --Added for VMS-8677 Changes 
+                   cap_panmast_param5  --Added for VMS-6617 Changes
               INTO l_prod_code,
                    l_card_type,
                    l_card_stat,
@@ -275,8 +265,7 @@ IS
                    l_cust_id_type,
                    l_repl_flag,
                    l_replace_expry_date,
-                   p_reason_code_out,   --Added for VMS-6617 Changes
-                   l_allow_redemption   --Added for VMS-8677 Changes
+                   p_reason_code_out   --Added for VMS-6617 Changes
               FROM cms_appl_pan
              WHERE     cap_pan_code = l_hash_pan
                    AND cap_mbr_numb = '000'
@@ -870,36 +859,6 @@ IS
             END;
          END IF;
          --EN: VMS-6617 Changes
-		 
-		p_allowredemptions_out:='False';  --Added for VMS-8798
-		
---SN: VMS-8677 Changes
-         IF NVL(l_allow_redemption,'NA') = 'N' AND (l_card_stat =1 OR p_card_stat_out='ACTIVE') THEN
-            BEGIN
-                UPDATE vmscms.cms_appl_pan
-                   SET cap_allow_redemptions = 'Y',
-                       cap_redemptions_enabled_timestamp = SYSDATE
-                 WHERE cap_pan_code = l_hash_pan 
-                   AND cap_mbr_numb = '000';
-                   
-                  p_allowredemptions_out:='True';
-            EXCEPTION
-                WHEN OTHERS
-                THEN
-                    l_resp_cde := '21';
-                    l_err_msg :='Error while enabling redemptions - ' || SUBSTR (SQLERRM, 1, 200);
-                    RAISE exp_reject_record;
-            END;
-            
-            END IF;
-         --EN: VMS-8677 Changes
-            
-           /* IF NVL(l_allow_redemption,'NA') = 'Y' THEN 
-            p_allowredemptions_out:='True';
-         ELSE p_allowredemptions_out:='False';
-         END IF;*/
-         --EN: VMS-8677 Changes     
-         
 
          --SN :Update limits
          IF l_prfl_code IS NOT NULL AND l_prfl_flag = 'Y'

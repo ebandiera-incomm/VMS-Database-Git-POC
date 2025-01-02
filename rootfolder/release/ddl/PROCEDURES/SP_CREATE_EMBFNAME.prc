@@ -45,12 +45,6 @@ AS
   * Modified Date     : 12-mar-2018
   * Modified For      : FSS-5157 B2B
   * Reviewer          :
-  
-  * Modified By      : Shanmugavel
-  * Modified Date    : 13/09/2024
-  * Purpose          : VMS-9087-Enhance CCF Spec(5.0) File Format to include Network Specifications 
-  * Reviewer         : John/Filipe
-  * Release Number   : VMSGPRHOSTR103_B0002
   *************************************************/
   V_CURR_DATE VARCHAR2(8);
   V_FILE_NUM  NUMBER(3);
@@ -61,7 +55,6 @@ AS
   V_REISSU_FILE_FORMAT VMS_FULFILLMENT_VENDOR_MAST.VFV_REPLACE_CCF_FILE_FORMAT%TYPE;
   V_FLE_FORMAT VMS_FULFILLMENT_VENDOR_MAST.VFV_CCF_FILE_FORMAT%TYPE;
   V_EMB_FNAME VARCHAR2(200);
-  V_INTERCHANGE_NAME VARCHAR2(100); -- VMS-9087
 BEGIN
   BEGIN
     SELECT TO_CHAR(SYSDATE, 'mmddyyyy') INTO V_CURR_DATE FROM DUAL;
@@ -84,35 +77,6 @@ BEGIN
     WHEN OTHERS THEN
       ERRMSG := 'Exeption Prod -- ' || SQLCODE || '--' || SQLERRM;
     END;
-    /** VMS-9087 : Enhance CCF Spec(5.0) File Format to include Network Specifications */
-    -- Start
-    IF TYPEOFORDER  IN ('03') THEN
-    BEGIN
-    SELECT CASE WHEN CIM_INTERCHANGE_CODE in('X','S','V') THEN
-    'NONAMEX' ELSE REPLACE(CIM_INTERCHANGE_NAME,' ','_') END 
-    INTO V_INTERCHANGE_NAME 
-    FROM VMSCMS.CMS_PROD_MAST, VMSCMS.CMS_INTERCHANGE_MAST
-    WHERE CPM_INST_CODE = CIM_INST_CODE AND
-    CPM_INTERCHANGE_CODE = CIM_INTERCHANGE_CODE AND
-    CPM_PROD_CODE=V_PROD_CODE AND CPM_INST_CODE=INSTCODE;
-    EXCEPTION
-    WHEN OTHERS THEN
-      ERRMSG := 'Exeption Prod -- ' || SQLCODE || '--' || SQLERRM;
-    END;
-    ELSE
-    BEGIN 
-    SELECT DISTINCT REPLACE(CIM_INTERCHANGE_NAME,' ','_') 
-    INTO V_INTERCHANGE_NAME 
-    FROM VMSCMS.CMS_PROD_MAST, VMSCMS.CMS_INTERCHANGE_MAST
-    WHERE CPM_INST_CODE = CIM_INST_CODE AND
-    CPM_INTERCHANGE_CODE = CIM_INTERCHANGE_CODE AND
-    CPM_PROD_CODE=V_PROD_CODE AND CPM_INST_CODE = INSTCODE;
-    EXCEPTION
-    WHEN OTHERS THEN
-      ERRMSG := 'Exeption Prod -- ' || SQLCODE || '--' || SQLERRM;
-    END;
-    END IF;
-    -- End
     END IF;
     BEGIN
       SELECT regexp_replace(NVL(DECODE(TYPEOFORDER,'03',VFV_REPLACE_CCF_FILE_FORMAT,'05',VFV_REPLACE_CCF_FILE_FORMAT,'06',VFV_REPLACE_CCF_FILE_FORMAT,VFV_CCF_FILE_FORMAT),''),'('||CHR(10)||'|'||CHR(13)||')+','')
@@ -120,8 +84,8 @@ BEGIN
       FROM VMS_FULFILLMENT_VENDOR_MAST
       WHERE VFV_FVENDOR_ID=VENDER;
 
-       IF TYPEOFORDER not in ('04','05') THEN
-      SELECT   replace(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(V_FILE_FORMAT ,'<<PrintVendor>>', VENDER),'<<Network>>',V_INTERCHANGE_NAME),'<<ProductCode>>',V_PROD_CODE),'<<FileCount>>',V_FILE_CNT),'<<Date>>',V_CURR_DATE),'<<FileType>>',TYPEOFORDER)  
+       IF TYPEOFORDER not in ('04','05') THEN 
+      SELECT   replace(REPLACE(REPLACE(REPLACE(REPLACE(V_FILE_FORMAT ,'<<PrintVendor>>', VENDER),'<<ProductCode>>',V_PROD_CODE),'<<FileCount>>',V_FILE_CNT),'<<Date>>',V_CURR_DATE),'<<FileType>>',TYPEOFORDER)
       INTO V_EMB_FNAME
       FROM dual;
       else 

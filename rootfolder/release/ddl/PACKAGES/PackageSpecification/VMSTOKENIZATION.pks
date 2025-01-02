@@ -43,8 +43,7 @@ PROCEDURE CHECK_ELIGIBILITY(
           P_CARDART_ID_OUT              OUT   VARCHAR2,
           P_TANDC_ID_OUT                OUT   VARCHAR2,
           P_ACTION_CODE_OUT             OUT   VARCHAR2,
-          p_error_code_out              OUT   VARCHAR2,
-          p_resp_id_out                 OUT   VARCHAR2);
+          p_error_code_out              OUT   VARCHAR2);
 
 
 
@@ -74,8 +73,7 @@ PROCEDURE  send_passcode_req (
           p_email_id_out                out   varchar2,
           p_verify_method_out           out  	varchar2,
           p_action_code_out             out  	varchar2,
-          p_error_code_out              out  	varchar2,
-          p_resp_id_out                 out  	varchar2
+          p_error_code_out              out  	varchar2
            );
 
 PROCEDURE  CardholderVerification (
@@ -138,8 +136,7 @@ PROCEDURE  CardholderVerification (
           p_resmsg_out                  out 	varchar2,
           p_action_code_out             out  	varchar2,
           p_error_code_out              out  	varchar2,
-          p_de27response_out            out   varchar2,
-          p_resp_id_out                 out   varchar2
+          p_de27response_out            out   varchar2
    );
 
    PROCEDURE validate_pan_token(
@@ -217,8 +214,7 @@ PROCEDURE  CardholderVerification (
           p_resmsg_out                  out 	varchar2,
           P_ACTION_CODE_OUT             OUT  	VARCHAR2,
           p_error_code_out              out  	varchar2,
-          P_TOKEN_ACT_FLAG_OUT           out   varchar2,
-          p_resp_id_out                  out   varchar2
+          P_TOKEN_ACT_FLAG_OUT           out   varchar2
    );
 
 
@@ -280,8 +276,7 @@ PROCEDURE  CardholderVerification (
           ,p_wp_reqid_in              in  	varchar2 default null
           ,p_wp_convid_in             in  	varchar2 default null
           ,P_WALLET_ID_IN             IN  	VARCHAR2 DEFAULT NULL
-          ,P_TOKEN_ACT_FLAG_OUT           out   varchar2     
-          ,p_resp_id_out                  out   varchar2
+          ,P_TOKEN_ACT_FLAG_OUT           out   varchar2          
           );
 
 PROCEDURE  Token_STIPAdvice(p_inst_code_in  in    number,
@@ -304,8 +299,7 @@ PROCEDURE  Token_STIPAdvice(p_inst_code_in  in    number,
           p_auth_id_out                 out 	varchar2,
           p_iso_resp_code_out           out 	varchar2,
           p_resp_code_out               out 	varchar2,
-          p_resmsg_out                  out 	VARCHAR2,
-          p_resp_id_out                 out 	varchar2);
+          p_resmsg_out                  out 	VARCHAR2);
 
 PROCEDURE cleanup_suspend_tokens(
     p_job_id_in   IN NUMBER,
@@ -401,7 +395,6 @@ PROCEDURE  TokenCompleteNotification (
           ,p_wallet_id_in             in  	varchar2 default null
           ,p_correlation_id_in             in  	varchar2 default null
           ,p_payment_appplninstanceid_in     in  	varchar2 default null
-          ,p_resp_id_out                 out   varchar2
           );    
           
 PROCEDURE  TokenActivationNotification (
@@ -428,8 +421,7 @@ PROCEDURE  TokenActivationNotification (
           p_resmsg_out                  out 	VARCHAR2,
           p_cell_no_out                 out   VARCHAR2,
           p_email_id_out                out   VARCHAR2,
-          p_verify_method_out           out  	varchar2,
-          p_resp_id_out                 out  	varchar2);  
+          p_verify_method_out           out  	varchar2);  
           
 PROCEDURE  TokenEventNotification (
           p_inst_code_in                in    number,
@@ -465,8 +457,7 @@ PROCEDURE  TokenEventNotification (
           p_auth_id_out                 out 	varchar2,
           p_resp_code_out               out 	VARCHAR2,
           p_iso_resp_code_out           out 	VARCHAR2,
-          p_resmsg_out                  out 	varchar2,
-          p_resp_id_out                 out 	varchar2 );    
+          p_resmsg_out                  out 	varchar2 );    
           
 PROCEDURE TOKEN_AUTHORISE_PRECHECK(
     P_INST_CODE_IN        IN VARCHAR2,
@@ -613,8 +604,7 @@ PROCEDURE TOKEN_AUTHORISE_PRECHECK(
           p_resmsg_out                  out 	VARCHAR2,
           p_de27response_out            out   varchar2,
           P_TOKEN_ACT_FLAG_OUT          out   varchar2,
-          P_ADDR_VERFY_RESPONSE_OUT     OUT   VARCHAR2,
-          p_resp_id_out                 OUT   VARCHAR2
+          P_ADDR_VERFY_RESPONSE_OUT     OUT   VARCHAR2
           );
 
     PROCEDURE AMEX_TOKEN_AUTHORISE_PRECHECK(
@@ -696,8 +686,7 @@ PROCEDURE TOKEN_AUTHORISE_PRECHECK(
           p_auth_id_out                 out 	varchar2,
           p_iso_resp_code_out           out 	varchar2,
           p_resp_code_out               out 	varchar2,
-          p_resmsg_out                  out 	varchar2,
-          p_resp_id_out                 OUT 	VARCHAR2
+          p_resmsg_out                  out 	varchar2
           );
           
  PROCEDURE AMEX_TOKEN_CREATE_UPDATE(
@@ -818,8 +807,7 @@ PROCEDURE TOKEN_AUTHORISE_PRECHECK(
           p_auth_id_out                 out 	varchar2,
           p_iso_resp_code_out           out 	varchar2,
           p_resp_code_out               out 	varchar2,
-          P_Resmsg_Out                  Out 	Varchar2,
-          p_resp_id_out                 out 	varchar2 
+          P_Resmsg_Out                  Out 	Varchar2 
           );
     
 END VMSTOKENIZATION;

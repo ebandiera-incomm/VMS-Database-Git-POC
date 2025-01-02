@@ -16,7 +16,7 @@ BEGIN
       SELECT COUNT (1)
         INTO dmp
         FROM pcms_requisition_ctrl
-       WHERE TRUNC (prc_requisition_date) = TRUNC (prm_in_date);
+       WHERE TRUNC (prc_requisition_date) = prm_in_date;
 
       DBMS_OUTPUT.put_line ('COUNT' || dmp);
    EXCEPTION
@@ -85,7 +85,7 @@ BEGIN
       SELECT TO_CHAR (prc_requisition_date, 'YYMMDD'), prc_ctrl_numb
         INTO v_requisition_date, v_ctrl_no
         FROM pcms_requisition_ctrl
-       WHERE TRUNC (prc_requisition_date) = TRUNC (prm_in_date);
+       WHERE TRUNC (prc_requisition_date) = prm_in_date;
 
       DBMS_OUTPUT.put_line ('PRC_CTRL_NUMB: ' || v_ctrl_no);
       prm_req_id := v_requisition_date || LPAD (v_ctrl_no, 5, '0');

@@ -358,7 +358,7 @@ BEGIN
               AND b.cam_acct_no       = a.cap_acct_no
               AND b.cam_acct_bal     > 0
               AND b.cam_acct_bal      = b.cam_ledger_bal
-              AND TRUNC(a.cap_expry_date)   <= TRUNC(SYSDATE) --NVL (c.cpc_addl_sweep_period, 0) --VMS:8532 changes for Usecase-2 & 3
+              AND a.cap_expry_date   <= SYSDATE - NVL (c.cpc_addl_sweep_period, 0)
 			  AND NVL(C.CPC_YEAREND_SWEEP,'N') = 'N'
               AND NOT EXISTS (SELECT vli_pan_code                                         -- VMS-1081 (Enhance Sweep Job for Amex products)
                                FROM vms_line_item_dtl d,

@@ -1,4 +1,3 @@
-SET DEFINE OFF;
 create or replace
 PROCEDURE  VMSCMS.SP_IVR_MOBILE_UPDATE(P_INSTCODE      IN NUMBER,
                                            P_RRN           IN VARCHAR2,
@@ -65,12 +64,6 @@ PROCEDURE  VMSCMS.SP_IVR_MOBILE_UPDATE(P_INSTCODE      IN NUMBER,
     * Reviewer         : Vini
     * Release Number   : VMSGPRHOST_R01
 
-
-    * Modified By      : venkat Singamaneni
-    * Modified Date    : 4-25-2022
-    * Purpose          : Archival changes.
-    * Reviewer         : Jyothi G
-    * Release Number   : VMSGPRHOST60 for VMS-5735/FSP-991
   ********************************************************************************************/
 
   V_CAP_PROD_CATG CMS_APPL_PAN.CAP_PROD_CATG%TYPE;
@@ -155,8 +148,6 @@ Type CurrentAlert_Collection Is Table Of Varchar2(30);
    V_Incorrectpin_Flag      CMS_SMSANDEMAIL_ALERT.CSA_INCORRPIN_FLAG%Type;
    V_Fast50_Flag  Cms_Smsandemail_Alert.Csa_Fast50_Flag%Type; 
    v_federal_state_flag  CMS_SMSANDEMAIL_ALERT.CSA_FEDTAX_REFUND_FLAG%Type;
-   v_Retperiod  date;  --Added for VMS-5735/FSP-991
-v_Retdate  date; --Added for VMS-5735/FSP-991
    
 BEGIN
   P_ERRMSG   := 'OK';
@@ -225,31 +216,12 @@ p_optin_flag_out :='N';
   --Sn Duplicate RRN Check
 
   BEGIN
---Added for VMS-5735/FSP-991
- select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
-       INTO   v_Retperiod 
-       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
-       WHERE  OPERATION_TYPE='ARCHIVE' 
-       AND OBJECT_NAME='TRANSACTIONLOG_EBR';
-       
-       v_Retdate := TO_DATE(SUBSTR(TRIM(p_trandate), 1, 8), 'yyyymmdd');
-
-
-IF (v_Retdate>v_Retperiod)
-    THEN 
-   SELECT COUNT(1)
+  
+    SELECT COUNT(1)
      INTO V_RRN_COUNT
      FROM TRANSACTIONLOG
     WHERE RRN = P_RRN AND BUSINESS_DATE = P_TRANDATE AND
          INSTCODE = P_INSTCODE AND DELIVERY_CHANNEL = P_DELIVERY_CHNL; 
-ELSE
-    SELECT COUNT(1)
-     INTO V_RRN_COUNT
-     FROM VMSCMS_HISTORY.TRANSACTIONLOG_HIST --Added for VMS-5733/FSP-991
-    WHERE RRN = P_RRN AND BUSINESS_DATE = P_TRANDATE AND
-         INSTCODE = P_INSTCODE AND DELIVERY_CHANNEL = P_DELIVERY_CHNL; 
-END IF;
-
   
     IF V_RRN_COUNT > 0 THEN
     
@@ -595,9 +567,6 @@ END IF;
     END;
      
      BEGIN
-
-IF (v_Retdate>v_Retperiod)
-    THEN
       UPDATE transactionlog
          SET 
              ANI=P_ANI, 
@@ -610,21 +579,6 @@ IF (v_Retdate>v_Retperiod)
          AND msgtype = P_MSG_TYPE
          AND customer_card_no = v_hash_pan
          AND instcode = P_INSTCODE;
-ELSE
-        UPDATE VMSCMS_HISTORY.TRANSACTIONLOG_HIST --Added for VMS-5733/FSP-991
-         SET 
-             ANI=P_ANI, 
-             DNI=P_DNI       
-       WHERE rrn = p_rrn
-         AND delivery_channel = P_DELIVERY_CHNL
-         AND txn_code = p_txn_code
-         AND business_date = p_trandate
-         AND business_time = P_TRANTIME
-         AND msgtype = P_MSG_TYPE
-         AND customer_card_no = v_hash_pan
-         AND instcode = P_INSTCODE;
-
-END IF;
 
       
       IF SQL%ROWCOUNT = 0
@@ -648,18 +602,6 @@ END IF;
    END;
    
    BEGIN
---Added for VMS-5735/FSP-991
- select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
-       INTO   v_Retperiod 
-       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
-       WHERE  OPERATION_TYPE='ARCHIVE' 
-       AND OBJECT_NAME='CMS_TRANSACTION_LOG_DTL_EBR';
-       
-       v_Retdate := TO_DATE(SUBSTR(TRIM(p_trandate), 1, 8), 'yyyymmdd');
-
-
-IF (v_Retdate>v_Retperiod)
-    THEN
         UPDATE CMS_TRANSACTION_LOG_DTL
          SET 
              CTD_MOBILE_NUMBER=P_MOBILENUMBER
@@ -671,20 +613,6 @@ IF (v_Retdate>v_Retperiod)
          AND CTD_MSG_TYPE = P_MSG_TYPE
          AND CTD_CUSTOMER_CARD_NO = v_hash_pan
          AND CTD_INST_CODE = P_INSTCODE;
-ELSE
-
-         UPDATE VMSCMS_HISTORY.cms_transaction_log_dtl_HIST --Added for VMS-5733/FSP-991
-         SET 
-             CTD_MOBILE_NUMBER=P_MOBILENUMBER
-       WHERE CTD_RRN = p_rrn
-         AND CTD_DELIVERY_CHANNEL = P_DELIVERY_CHNL
-         AND CTD_TXN_CODE = p_txn_code
-         AND CTD_BUSINESS_DATE = p_trandate
-         AND CTD_BUSINESS_TIME = P_TRANTIME
-         AND CTD_MSG_TYPE = P_MSG_TYPE
-         AND CTD_CUSTOMER_CARD_NO = v_hash_pan
-         AND CTD_INST_CODE = P_INSTCODE;
-END IF;
 
       
       IF SQL%ROWCOUNT = 0
@@ -717,19 +645,6 @@ EXCEPTION
       P_ERRMSG := V_RESPMSG;
       
        BEGIN
-       
---Added for VMS-5735/FSP-991
- select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
-       INTO   v_Retperiod 
-       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
-       WHERE  OPERATION_TYPE='ARCHIVE' 
-       AND OBJECT_NAME='TRANSACTIONLOG_EBR';
-	   
-	          v_Retdate := TO_DATE(SUBSTR(TRIM(p_trandate), 1, 8), 'yyyymmdd');
-
-
-IF (v_Retdate>v_Retperiod)
-    THEN
       UPDATE transactionlog
          SET 
              ANI=P_ANI, 
@@ -742,23 +657,6 @@ IF (v_Retdate>v_Retperiod)
          AND msgtype = P_MSG_TYPE
          AND customer_card_no = v_hash_pan
          AND instcode = P_INSTCODE;
-ELSE
-
-      UPDATE VMSCMS_HISTORY.TRANSACTIONLOG_HIST --Added for VMS-5733/FSP-991
-         SET 
-             ANI=P_ANI, 
-             DNI=P_DNI 
-       WHERE rrn = p_rrn
-         AND delivery_channel = P_DELIVERY_CHNL
-         AND txn_code = p_txn_code
-         AND business_date = p_trandate
-         AND business_time = P_TRANTIME
-         AND msgtype = P_MSG_TYPE
-         AND customer_card_no = v_hash_pan
-         AND instcode = P_INSTCODE;
-
-END IF;
-
 
       
       IF SQL%ROWCOUNT = 0
@@ -782,18 +680,6 @@ END IF;
    END;
    
    BEGIN
-   
---Added for VMS-5735/FSP-991
- select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
-       INTO   v_Retperiod 
-       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
-       WHERE  OPERATION_TYPE='ARCHIVE' 
-       AND OBJECT_NAME='CMS_TRANSACTION_LOG_DTL_EBR';
-	   
-	   v_Retdate := TO_DATE(SUBSTR(TRIM(p_trandate), 1, 8), 'yyyymmdd');
-
-  IF (v_Retdate>v_Retperiod)
-    THEN
         UPDATE CMS_TRANSACTION_LOG_DTL
          SET 
              CTD_MOBILE_NUMBER=P_MOBILENUMBER,                           
@@ -806,21 +692,6 @@ END IF;
          AND CTD_MSG_TYPE = P_MSG_TYPE
          AND CTD_CUSTOMER_CARD_NO = v_hash_pan
          AND CTD_INST_CODE = P_INSTCODE;
-ELSE
- UPDATE VMSCMS_HISTORY.cms_transaction_log_dtl_HIST --Added for VMS-5733/FSP-991
-         SET 
-             CTD_MOBILE_NUMBER=P_MOBILENUMBER,                           
-             ctd_hashkey_id=V_HASHKEY_ID       
-       WHERE CTD_RRN = p_rrn
-         AND CTD_DELIVERY_CHANNEL = P_DELIVERY_CHNL
-         AND CTD_TXN_CODE = p_txn_code
-         AND CTD_BUSINESS_DATE = p_trandate
-         AND CTD_BUSINESS_TIME = P_TRANTIME
-         AND CTD_MSG_TYPE = P_MSG_TYPE
-         AND CTD_CUSTOMER_CARD_NO = v_hash_pan
-         AND CTD_INST_CODE = P_INSTCODE;
- 
-END IF;
 
       
       IF SQL%ROWCOUNT = 0

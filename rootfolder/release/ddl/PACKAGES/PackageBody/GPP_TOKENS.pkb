@@ -1,4 +1,4 @@
-create or replace PACKAGE BODY        vmscms.GPP_TOKENS IS
+create or replace PACKAGE BODY vmscms.GPP_TOKENS IS
 
   -- PL/SQL Package using FS Framework
   -- Author  : Rojalin Beura
@@ -276,14 +276,14 @@ create or replace PACKAGE BODY        vmscms.GPP_TOKENS IS
     l_activation_code      vmscms.vms_token_transactionlog.vtt_auth_id%TYPE;
     --EN:Added by FSS
 
-/****************************************************************************
+/****************************************************************************    
 	* Modified By        : Ubaidur Rahman.H
          * Modified Date      : 17-Jan-2020
          * Modified Reason    : VMS-1719 - CCA RRN Logging Issue.
          * Reviewer           : SaravanaKumar A
          * Reviewed Date      : 17-Jan-2020
          * Build Number       : R25_B0002
-
+	 
 ****************************************************************************/
 
   BEGIN
@@ -374,10 +374,7 @@ create or replace PACKAGE BODY        vmscms.GPP_TOKENS IS
 
      --SN:Modified by FSS
     SELECT TO_CHAR (
-              --SN: Changes VMS-8279 ~ HH has been replaced as HH24, Length of RRN changed to 15
-              --SUBSTR (TO_CHAR (SYSDATE, 'YYMMDDHHMISS'), 1, 9)
-              substr(to_char(SYSDATE,'YYMMDDHH24MISS'),4)
-              --EN: Changes VMS-8279 ~ HH has been replaced as HH24
+              SUBSTR (TO_CHAR (SYSDATE, 'YYMMDDHHMISS'), 1, 9)
               || LPAD (vmscms.seq_deppending_rrn.NEXTVAL, 3, '0')),
            LPAD (vmscms.seq_auth_id.NEXTVAL, 6, '0')
       INTO l_rrn, l_activation_code
@@ -462,9 +459,9 @@ create or replace PACKAGE BODY        vmscms.GPP_TOKENS IS
                     ' secs');
 
     p_status_out := vmscms.gpp_const.c_success_status;
-
+    
         ----Commented for VMS-1719 - CCA RRN Logging Issue.
-
+	
     /*vmscms.gpp_transaction.audit_transaction_log(l_api_name,
                                                  p_customer_id_in,
                                                  l_hash_pan,
@@ -552,8 +549,6 @@ create or replace PACKAGE BODY        vmscms.GPP_TOKENS IS
     l_replace_provisioning vmscms.cms_prod_cattype.cpc_replacement_provision_flag%TYPE;
     l_card_no              vmscms.cms_appl_pan.cap_pan_code%TYPE;
     l_token_savepoint      NUMBER := 1;
-	l_wallet_count         NUMBER; -- added for VMS_8349
-	l_vms8349_toggle 	   cms_inst_param.cip_param_value%type :='Y';  -- added for VMS_8349
 
   BEGIN
     p_err_msg_out := 'OK';
@@ -621,7 +616,6 @@ create or replace PACKAGE BODY        vmscms.GPP_TOKENS IS
                          vti_token_expiry_date,
                          vti_token_stat,
                          vti_token_old_status,
-						 vti_wallet_identifier, -- added for VMS_8349
                          CASE
                            WHEN p_action_out = 'A'
                                 AND vti_token_stat <> l_token_status THEN --Condition added for FSS-5248
@@ -639,59 +633,27 @@ create or replace PACKAGE BODY        vmscms.GPP_TOKENS IS
 
      IF NOT(l_idx.vti_token_stat='I' AND l_idx.vti_token_old_status IS NULL AND l_token_status='S') THEN
       --Update token status
+      BEGIN
+        UPDATE vmscms.vms_token_info
+           SET vti_token_stat = l_idx.token_stat
+         WHERE vti_token = l_idx.token
+           AND vti_token_stat <> l_idx.token_stat;
 
-				---Sn added for VMS_8349
-			BEGIN
-                Select CIP_PARAM_VALUE
-				into l_vms8349_toggle
-				from vmscms.cms_inst_param
-				where cip_param_key='VMS_8349_TOGGLE';
-			EXCEPTION
-                WHEN NO_DATA_FOUND THEN
-                   l_vms8349_toggle:='Y';
-                WHEN OTHERS THEN
-                   p_err_msg_out := 'Error while selecting toggle value' ||
-                   SUBSTR (SQLERRM, 1, 200);
-			END;
+        IF SQL%ROWCOUNT = 0
+        THEN
+          CONTINUE;
+        END IF;
+      EXCEPTION
+        WHEN OTHERS THEN
+          p_err_msg_out := 'Update TOKEN Status Failed For ' || l_idx.token || ' :' ||
+                           SQLERRM;
+          EXIT;
+      END;
 
-		IF l_vms8349_toggle = 'Y' then
-
-					SELECT count(*)
-					  INTO l_wallet_count
-					  FROM vmscms.vms_wallet_mast
-					  WHERE lower(vwm_wallet_name) like '%apple%'
-					  AND  vwm_wallet_id = l_idx.vti_token_requestor_id;--l_idx.vti_wallet_identifier; Modified for VMS_9234
-		ELSE
-			l_wallet_count := 0;
-		END IF;
-				---En added for VMS_8349
-
-			IF NOT (l_card_stat = 2 and l_wallet_count > 0 ) THEN -- added for VMS_8349
-
-			BEGIN
-				UPDATE vmscms.vms_token_info
-				   SET vti_token_stat = l_idx.token_stat
-				 WHERE vti_token = l_idx.token
-				   AND vti_token_stat <> l_idx.token_stat;
-
-				IF SQL%ROWCOUNT = 0
-				THEN
-				  CONTINUE;
-				END IF;
-			EXCEPTION
-				WHEN OTHERS THEN
-				  p_err_msg_out := 'Update TOKEN Status Failed For ' || l_idx.token || ' :' ||
-								   SQLERRM;
-				  EXIT;
-			END;
-
-
-      SELECT
-            --SN: Changes VMS-8279 ~ HHMM has been replaced as HH24MI, Length of RRN changes to 15
-            to_char( --substr(to_char(SYSDATE,'YYMMDDHHMMSS'),1,9)
-            substr(to_char(SYSDATE,'YYMMDDHH24MISS'),4)
-            --EN: Changes VMS-8279 ~ HHMM has been replaced as HH24MI
-            || lpad(vmscms.seq_deppending_rrn.nextval,
+      SELECT to_char(substr(to_char(SYSDATE,
+                                    'YYMMDDHHMMSS'),
+                            1,
+                            9) || lpad(vmscms.seq_deppending_rrn.nextval,
                                        3,
                                        '0')),
              lpad(vmscms.seq_auth_stan.nextval,
@@ -901,7 +863,6 @@ create or replace PACKAGE BODY        vmscms.GPP_TOKENS IS
           EXIT;
       END;
       END IF;
-	  END IF;
     END LOOP;
 
     IF p_err_msg_out = 'OK'

@@ -69,7 +69,6 @@ create or replace PROCEDURE                   VMSCMS.SP_AUTHORIZE_TXN_POT_ISO93 
                                               ,p_product_type IN VARCHAR2 default 'O'
                                               ,p_expiry_date_check IN VARCHAR2 default 'Y'
                                               ,p_surchrg_ind   IN VARCHAR2 DEFAULT '2' --Added for VMS-5856
-                                              ,p_resp_id OUT VARCHAR2 --Added for sending to FSS (VMS-8018)
                                               ) IS
 /*************************************************
   * Modified by       : Sagar M.
@@ -441,12 +440,6 @@ create or replace PROCEDURE                   VMSCMS.SP_AUTHORIZE_TXN_POT_ISO93 
      * Purpose          : VMS-5546
      * Reviewer         : VENKAT S.
      * Release Number   : VMSGPRHOST R70
-
-	 * Modified by      : Areshka A.
-     * Modified for     : VMS-8018: Added new out parameter (response id) for sending to FSS
-     * Modified Date    : 03-Nov-2023
-     * Reviewer         : 
-     * Build Number     : 
 **************************************************/
   V_ERR_MSG            VARCHAR2(900) := 'OK';
   V_ACCT_BALANCE       NUMBER;
@@ -3679,8 +3672,6 @@ END IF;
 
       --EN Added on 19.09.2013 for FSS-1313
 
-      p_resp_id := v_resp_cde; --Added for VMS-8018
-
       --SN Commented and moved here on 19.09.2013 for FSS-1313
       BEGIN
          SELECT cms_b24_respcde,
@@ -3951,7 +3942,6 @@ END IF;
        END IF;
        P_RESP_CODE := V_RESP_CDE;
        P_RESP_MSG  := V_ERR_MSG;
-       p_resp_id   := V_RESP_CDE; --Added for VMS-8018
        -- Assign the response code to the out parameter
        SELECT CMS_B24_RESPCDE, --Changed  CMS_ISO_RESPCDE to  CMS_B24_RESPCDE for HISO SPECIFIC Response codes
               cms_iso_respcde             -- Added for OLS changes
@@ -3967,7 +3957,6 @@ END IF;
         P_RESP_MSG  := 'Problem while selecting data from response master ' ||
                     V_RESP_CDE || SUBSTR(SQLERRM, 1, 300);
         P_RESP_CODE := '69';
-        p_resp_id   := '69'; --Added for VMS-8018
         ---ISO MESSAGE FOR DATABASE ERROR Server Declined
         ROLLBACK;
      END;
@@ -4094,7 +4083,6 @@ END IF;
         P_RESP_MSG  := 'Problem while inserting data into transaction log  dtl' ||
                     SUBSTR(SQLERRM, 1, 300);
         P_RESP_CODE := '69'; -- Server Declined
-        p_resp_id   := '69'; --Added for VMS-8018
         ROLLBACK;
         RETURN;
      END;
@@ -4471,13 +4459,11 @@ END IF;
             CMS_RESPONSE_ID = V_RESP_CDE;
 
        P_RESP_MSG := V_ERR_MSG;
-       p_resp_id  := V_RESP_CDE; --Added for VMS-8018
      EXCEPTION
        WHEN OTHERS THEN
         P_RESP_MSG  := 'Problem while selecting data from response master ' ||
                     V_RESP_CDE || SUBSTR(SQLERRM, 1, 300);
         P_RESP_CODE := '69'; -- Server Declined
-        p_resp_id   := '69'; --Added for VMS-8018
         ROLLBACK;
      END;
 
@@ -4563,7 +4549,6 @@ END IF;
         P_RESP_MSG  := 'Problem while inserting data into transaction log  dtl' ||
                     SUBSTR(SQLERRM, 1, 300);
         P_RESP_CODE := '69'; -- Server Decline Response 220509
-        p_resp_id   := '69'; --Added for VMS-8018
         ROLLBACK;
         RETURN;
      END;
@@ -4827,7 +4812,6 @@ END IF;
      P_RESP_CODE := '69'; -- Server Declione
      P_RESP_MSG  := 'Problem while inserting data into transaction log  ' ||
                  SUBSTR(SQLERRM, 1, 300);
-     p_resp_id   := '69'; --Added for VMS-8018
   END;
   --En create a entry in txn log
 
@@ -4857,7 +4841,6 @@ EXCEPTION
     P_RESP_CODE := '69'; -- Server Declined
     P_RESP_MSG  := 'Main exception from  authorization ' ||
                 SUBSTR(SQLERRM, 1, 300);
-    p_resp_id   := '69'; --Added for VMS-8018
 END;
 /
 Show error

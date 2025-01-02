@@ -155,8 +155,7 @@ PACKAGE BODY                             vmscms.VMSTOKENIZATION IS
           p_email_id_out                out   varchar2,
           p_verify_method_out           out  	varchar2,
           p_action_code_out             out  	varchar2,
-          p_error_code_out              out  	varchar2,
-          p_resp_id_out                 out  	varchar2 --Added for sending to FSS (VMS-8018)
+          p_error_code_out              out  	varchar2
    )
    IS
       /************************************************************************************************************
@@ -188,13 +187,6 @@ PACKAGE BODY                             vmscms.VMSTOKENIZATION IS
      * Purpose          : VMS-162 (encryption changes)
      * Reviewer         : Vini.P
      * Release Number   : VMSGPRHOST18.01
-     
-     * Modified By      : Areshka A.
-     * Modified Date    : 03-Nov-2023
-     * Purpose          : VMS-8018: Added new out parameter (response id) for sending to FSS
-     * Reviewer         : 
-     * Release Number   : 
-     
       ************************************************************************************************************/
       l_auth_savepoint       NUMBER                                 DEFAULT 0;
       l_err_msg              VARCHAR2 (500);
@@ -548,7 +540,6 @@ PACKAGE BODY                             vmscms.VMSTOKENIZATION IS
             ROLLBACK TO l_auth_savepoint;
       END;
    --Sn Get responce code from  master
-         p_resp_id_out := l_resp_cde; --Added for VMS-8018
          BEGIN
             SELECT cms_b24_respcde,cms_iso_respcde
               INTO p_iso_resp_code_out,p_resp_code_out
@@ -564,7 +555,6 @@ PACKAGE BODY                             vmscms.VMSTOKENIZATION IS
                   || l_resp_cde
                   || SUBSTR (SQLERRM, 1, 300);
                p_resp_code_out := '69';
-               p_resp_id_out := '69'; --Added for VMS-8018
          END;
       --En Get responce code from master
       
@@ -584,7 +574,6 @@ PACKAGE BODY                             vmscms.VMSTOKENIZATION IS
                   || l_resp_cde
                   || SUBSTR (SQLERRM, 1, 300);
                p_resp_code_out := '69';
-               p_resp_id_out := '69'; --Added for VMS-8018
          END;
       --En Get action code,error code from  token response master
       
@@ -679,7 +668,6 @@ PACKAGE BODY                             vmscms.VMSTOKENIZATION IS
          WHEN OTHERS
          THEN
             p_resp_code_out := '69';
-            p_resp_id_out := '69'; --Added for VMS-8018
             l_err_msg :=
                   'Exception while inserting to transaction log '
                || SQLCODE
@@ -725,7 +713,6 @@ PACKAGE BODY                             vmscms.VMSTOKENIZATION IS
                   'Problem while inserting data into transaction log  dtl'
                || SUBSTR (SQLERRM, 1, 300);
             p_resp_code_out := '69';
-            p_resp_id_out := '69'; --Added for VMS-8018
       END;
         --Assign output variable
       p_resmsg_out := l_err_msg;
@@ -734,7 +721,6 @@ PACKAGE BODY                             vmscms.VMSTOKENIZATION IS
       THEN
          ROLLBACK;
          p_resp_code_out := '69';                              -- Server Declined
-         p_resp_id_out := '69'; --Added for VMS-8018
          p_resmsg_out :=
             'Main exception from  authorization ' || SUBSTR (SQLERRM, 1, 300);
    END;
@@ -799,8 +785,7 @@ PACKAGE BODY                             vmscms.VMSTOKENIZATION IS
           p_resmsg_out                  out 	varchar2,
           p_action_code_out             out  	varchar2,
           p_error_code_out              out  	varchar2,
-          p_de27response_out            out   varchar2,
-          p_resp_id_out                 out   varchar2 --Added for sending to FSS (VMS-8018)
+          p_de27response_out            out   varchar2
    )
    IS
       /************************************************************************************************************
@@ -834,11 +819,7 @@ PACKAGE BODY                             vmscms.VMSTOKENIZATION IS
      * Reviewer         : Vini.P
      * Release Number   : VMSGPRHOST18.01
 
-     * Modified By      : Areshka A.
-     * Modified Date    : 03-Nov-2023
-     * Purpose          : VMS-8018: Added new out parameter (response id) for sending to FSS
-     * Reviewer         : 
-     * Release Number   : 
+	   
        
       ************************************************************************************************************/
       l_auth_savepoint       NUMBER                                 DEFAULT 0;
@@ -1284,7 +1265,6 @@ PACKAGE BODY                             vmscms.VMSTOKENIZATION IS
            ROLLBACK;
       END;
    --Sn Get responce code from  master
-         p_resp_id_out := l_resp_cde; --Added for VMS-8018
          BEGIN
             SELECT cms_b24_respcde,cms_iso_respcde
               INTO p_iso_resp_code_out,p_resp_code_out
@@ -1300,7 +1280,6 @@ PACKAGE BODY                             vmscms.VMSTOKENIZATION IS
                   || l_resp_cde
                   || SUBSTR (SQLERRM, 1, 300);
                p_resp_code_out := '69';
-               p_resp_id_out := '69'; --Added for VMS-8018
          END;
       --En Get responce code from master
       
@@ -1414,7 +1393,6 @@ PACKAGE BODY                             vmscms.VMSTOKENIZATION IS
          WHEN OTHERS
          THEN
             p_resp_code_out := '69';
-            p_resp_id_out := '69'; --Added for VMS-8018
             l_err_msg :=
                   'Exception while inserting to transaction log '
                || SQLCODE
@@ -1460,7 +1438,6 @@ PACKAGE BODY                             vmscms.VMSTOKENIZATION IS
                   'Problem while inserting data into transaction log  dtl'
                || SUBSTR (SQLERRM, 1, 300);
             p_resp_code_out := '69';
-            p_resp_id_out := '69'; --Added for VMS-8018
       END;
         --Assign output variable
       p_resmsg_out := l_err_msg;
@@ -1469,7 +1446,6 @@ PACKAGE BODY                             vmscms.VMSTOKENIZATION IS
       THEN
          ROLLBACK;
          p_resp_code_out := '69';                              -- Server Declined
-         p_resp_id_out := '69'; --Added for VMS-8018
          p_resmsg_out :=
             'Main exception from  authorization ' || substr (sqlerrm, 1, 300);
    END CARDHOLDERVERIFICATION;
@@ -1498,9 +1474,7 @@ PROCEDURE  check_eligibility(p_inst_code_in  in    number,
           P_CARDART_ID_OUT              OUT   VARCHAR2,
           P_TANDC_ID_OUT                OUT   VARCHAR2,
           P_ACTION_CODE_OUT             OUT   VARCHAR2,
-          p_error_code_out              OUT   VARCHAR2,
-          p_resp_id_out                 OUT   VARCHAR2 --Added for sending to FSS (VMS-8018)
-          )
+          p_error_code_out              OUT   VARCHAR2)
 IS
 /************************************************************************************************************
  * Created Date     :  22-JUNE-2016
@@ -1522,13 +1496,6 @@ IS
      * Modified reason  : Token Provision retry count changes
      * Reviewer         : Saravankumar/Spankaj
      * Build Number     : VMSGPRHOST4.7
-
-     * Modified by      : Areshka A.
-     * Modified For     : VMS-8018
-     * Modified Date    : 03-Nov-2023
-     * Modified reason  : Added new out parameter (response id) for sending to FSS
-     * Reviewer         : 
-     * Build Number     : 
 
 ************************************************************************************************************/
       
@@ -1922,7 +1889,6 @@ WHEN OTHERS   THEN
 END;
 
    --Sn Get responce code from  master
-         p_resp_id_out := l_resp_cde; --Added for VMS-8018
          BEGIN
             SELECT cms_b24_respcde,cms_iso_respcde
               INTO p_iso_resp_code_out,p_resp_code_out
@@ -1938,7 +1904,6 @@ END;
                   || l_resp_cde
                   || SUBSTR (SQLERRM, 1, 300);
                p_resp_code_out := '69';
-               p_resp_id_out := '69'; --Added for VMS-8018
          END;
       --En Get responce code from master
  --Sn Get action code,error code from  token response master
@@ -2062,7 +2027,6 @@ END;
          WHEN OTHERS
          THEN
             p_resp_code_out := '69';
-            p_resp_id_out := '69'; --Added for VMS-8018
             l_err_msg :=
                   'Exception while inserting to transaction log '
                || SQLCODE
@@ -2110,7 +2074,6 @@ END;
                   'Problem while inserting data into transaction log  dtl'
                || SUBSTR (SQLERRM, 1, 300);
             p_resp_code_out := '69';
-            p_resp_id_out := '69'; --Added for VMS-8018
       END;
 
 END check_eligibility;
@@ -2178,8 +2141,7 @@ END check_eligibility;
           p_resmsg_out                  out 	varchar2,
           P_ACTION_CODE_OUT             OUT  	VARCHAR2,
           p_error_code_out              out  	varchar2,
-          P_TOKEN_ACT_FLAG_OUT           out   varchar2,
-          p_resp_id_out                  out   varchar2 --Added for sending to FSS (VMS-8018)
+          P_TOKEN_ACT_FLAG_OUT           out   varchar2
           
    )
    IS
@@ -2201,12 +2163,6 @@ END check_eligibility;
        * Modified reason  : FSS-5277 - Additional Tokenization Changes
        * Reviewer         : Saravankumar/Spankaj
        * Build Number     : VMSGPRHOST_17.05.07
-
-       * Modified by      : Areshka A.
-       * Modified Date    : 03-Nov-2023
-       * Modified reason  : VMS-8018: Added new out parameter (response id) for sending to FSS
-       * Reviewer         : 
-       * Build Number     : 
 	   
       ************************************************************************************************************/
       l_auth_savepoint       NUMBER                                 DEFAULT 0;
@@ -2659,7 +2615,6 @@ END check_eligibility;
             ROLLBACK TO l_auth_savepoint;
       END;
    --Sn Get responce code from  master
-         p_resp_id_out := l_resp_cde; --Added for VMS-8018
          BEGIN
             SELECT cms_b24_respcde,cms_iso_respcde
               INTO p_iso_resp_code_out,p_resp_code_out
@@ -2675,7 +2630,6 @@ END check_eligibility;
                   || l_resp_cde
                   || SUBSTR (SQLERRM, 1, 300);
                p_resp_code_out := '69';
-               p_resp_id_out := '69'; --Added for VMS-8018
          END;
       --En Get responce code from master
       
@@ -2803,7 +2757,6 @@ END check_eligibility;
          WHEN OTHERS
          THEN
             p_resp_code_out := '69';
-            p_resp_id_out := '69'; --Added for VMS-8018
             l_err_msg :=
                   'Exception while inserting to transaction log '
                || SQLCODE
@@ -2851,7 +2804,6 @@ END check_eligibility;
                   'Problem while inserting data into transaction log  dtl'
                || SUBSTR (SQLERRM, 1, 300);
             p_resp_code_out := '69';
-            p_resp_id_out := '69'; --Added for VMS-8018
       END;
       
       
@@ -2865,7 +2817,6 @@ END check_eligibility;
       THEN
          ROLLBACK;
          p_resp_code_out := '69';                              -- Server Declined
-         p_resp_id_out := '69'; --Added for VMS-8018
          p_resmsg_out :=
             'Main exception from  authorization ' || SUBSTR (SQLERRM, 1, 300);
    END TokenServiceAdvice;
@@ -2930,7 +2881,6 @@ END check_eligibility;
           ,P_WP_CONVID_IN             IN  	VARCHAR2 DEFAULT NULL
           ,P_WALLET_ID_IN             IN  	VARCHAR2 DEFAULT NULL
           ,P_TOKEN_ACT_FLAG_OUT           out   varchar2
-          ,p_resp_id_out                  out   varchar2 --Added for sending to FSS (VMS-8018)
           )
    IS
       /************************************************************************************************************
@@ -2989,11 +2939,6 @@ END check_eligibility;
      * Reviewer         : Saravanakumar
      * Release Number   : VMSGPRHOST_R35_B0001
 
-     * Modified By      : Areshka A.
-     * Modified Date    : 03-Nov-2023
-     * Purpose          : VMS-8018: Added new out parameter (response id) for sending to FSS
-     * Reviewer         : 
-     * Release Number   : 
        
       ************************************************************************************************************/
       
@@ -3504,7 +3449,6 @@ end if;
       END;
       
    --Sn Get responce code from  master
-         p_resp_id_out := l_resp_cde; --Added for VMS-8018
          BEGIN
             SELECT cms_b24_respcde,cms_iso_respcde
               INTO p_iso_resp_code_out,p_resp_code_out
@@ -3520,7 +3464,6 @@ end if;
                   || l_resp_cde 
                   || SUBSTR (SQLERRM, 1, 300);
                p_resp_code_out := '69';
-               p_resp_id_out := '69'; --Added for VMS-8018
          END;
       --En Get responce code from master
 
@@ -3627,7 +3570,6 @@ end if;
          WHEN OTHERS
          THEN
             p_resp_code_out := '69';
-            p_resp_id_out := '69'; --Added for VMS-8018
             l_err_msg :=
                   'Exception while inserting to transaction log '
                || SQLCODE
@@ -3675,7 +3617,6 @@ end if;
                   'Problem while inserting data into transaction log  dtl'
                || SUBSTR (SQLERRM, 1, 300);
             p_resp_code_out := '69';
-            p_resp_id_out := '69'; --Added for VMS-8018
       END;
         --Assign output variable
       p_resmsg_out := l_err_msg;
@@ -3684,7 +3625,6 @@ end if;
       THEN
          ROLLBACK;
          p_resp_code_out := '69';                              -- Server Declined
-         p_resp_id_out := '69'; --Added for VMS-8018
          p_resmsg_out :=
             'Main exception from  authorization ' || SUBSTR (SQLERRM, 1, 300);
    end tokencreateadvice;
@@ -3718,9 +3658,7 @@ PROCEDURE  Token_STIPAdvice(p_inst_code_in  in    number,
           p_auth_id_out                 out 	varchar2,
           p_iso_resp_code_out           out 	varchar2,
           p_resp_code_out               out 	varchar2,
-          p_resmsg_out                  out 	varchar2,
-          p_resp_id_out                 out 	varchar2 --Added for sending to FSS (VMS-8018)
-          )
+          p_resmsg_out                  out 	varchar2)
 IS
 /************************************************************************************************************
      * Modified by      : Siva Kumar M
@@ -3736,14 +3674,6 @@ IS
      * Modified reason  : Tokenization Changes
      * Reviewer         : Saravankumar/Spankaj
      * Build Number     : VMSGPRHOST4.5_B0003
-     
-     * Modified by      : Areshka A.
-     * Modified For     : VMS-8018
-     * Modified Date    : 03-Nov-2023
-     * Modified reason  : Added new out parameter (response id) for sending to FSS
-     * Reviewer         : 
-     * Build Number     : 
-     
 ************************************************************************************************************/
       
       l_auth_savepoint       NUMBER          DEFAULT 0;
@@ -3889,7 +3819,6 @@ WHEN OTHERS   THEN
 END;
 
    --Sn Get responce code from  master
-         p_resp_id_out := l_resp_cde; --Added for VMS-8018
          BEGIN
             SELECT cms_b24_respcde,cms_iso_respcde
               INTO p_iso_resp_code_out,p_resp_code_out
@@ -3905,7 +3834,6 @@ END;
                   || l_resp_cde
                   || SUBSTR (SQLERRM, 1, 300);
                p_resp_code_out := '69';
-               p_resp_id_out := '69'; --Added for VMS-8018
          END;
       --En Get responce code from master
        
@@ -4008,7 +3936,6 @@ END;
          WHEN OTHERS
          THEN
             p_resp_code_out := '69';
-            p_resp_id_out := '69'; --Added for VMS-8018
             l_err_msg :=
                   'Exception while inserting to transaction log '
                || SQLCODE
@@ -4056,7 +3983,6 @@ END;
                   'Problem while inserting data into transaction log  dtl'
                || SUBSTR (SQLERRM, 1, 300);
             p_resp_code_out := '69';
-            p_resp_id_out := '69'; --Added for VMS-8018
       END;
 
 END Token_STIPAdvice;
@@ -5031,7 +4957,6 @@ PROCEDURE  TokenCompleteNotification (
           ,p_wallet_id_in             in  	varchar2 default null
           ,p_correlation_id_in             in  	varchar2 default null
           ,p_payment_appplninstanceid_in     in  	varchar2 default null
-          ,p_resp_id_out                 out   varchar2 --Added for sending to FSS (VMS-8018)
           )
    IS
       /************************************************************************************************************
@@ -5042,13 +4967,6 @@ PROCEDURE  TokenCompleteNotification (
        * Created reason  : Token Complete Notification (TCN)  changes
        * Reviewer         : Saravankumar/Spankaj
        * Build Number     : VMSGPRHOST 17.05
-       
-       * Modified Date    :  03-Nov-2023
-       * Modified By      :  Areshka A.
-       * Modified For     :  VMS-8018: Added new out parameter (response id) for sending to FSS
-       * Reviewer         :  
-       * Build Number     :         
-       
       ************************************************************************************************************/
       l_err_msg              VARCHAR2 (500) DEFAULT 'OK';
       l_hash_pan             cms_appl_pan.cap_pan_code%TYPE;
@@ -5300,7 +5218,6 @@ PROCEDURE  TokenCompleteNotification (
             ROLLBACK ;
       END;
    --Sn Get responce code from  master
-         p_resp_id_out := l_resp_cde; --Added for VMS-8018
          BEGIN
             SELECT cms_b24_respcde,cms_iso_respcde
               INTO p_iso_resp_code_out,p_resp_code_out
@@ -5316,7 +5233,6 @@ PROCEDURE  TokenCompleteNotification (
                   || l_resp_cde
                   || SUBSTR (SQLERRM, 1, 300);
                p_resp_code_out := '69';
-               p_resp_id_out := '69'; --Added for VMS-8018
          END;
       --En Get responce code from master
 
@@ -5422,7 +5338,6 @@ PROCEDURE  TokenCompleteNotification (
          WHEN OTHERS
          THEN
             p_resp_code_out := '69';
-            p_resp_id_out := '69'; --Added for VMS-8018
             l_err_msg :=
                   'Exception while inserting to transaction log '
                || SQLCODE
@@ -5470,7 +5385,6 @@ PROCEDURE  TokenCompleteNotification (
                   'Problem while inserting data into transaction log  dtl'
                || SUBSTR (SQLERRM, 1, 300);
             p_resp_code_out := '69';
-            p_resp_id_out := '69'; --Added for VMS-8018
       END;
         --Assign output variable
       p_resmsg_out := l_err_msg;
@@ -5479,7 +5393,6 @@ PROCEDURE  TokenCompleteNotification (
       THEN
          ROLLBACK;
          p_resp_code_out := '69';                              -- Server Declined
-         p_resp_id_out := '69'; --Added for VMS-8018
          p_resmsg_out :=
             'Main exception from  authorization ' || SUBSTR (SQLERRM, 1, 300);
    end TokenCompleteNotification;
@@ -5508,8 +5421,7 @@ PROCEDURE  TokenCompleteNotification (
           p_resmsg_out                  out 	VARCHAR2,
           p_cell_no_out                 out   VARCHAR2,
           p_email_id_out                out   VARCHAR2,
-          p_verify_method_out           out  	varchar2,
-          p_resp_id_out                 out  	varchar2 --Added for sending to FSS (VMS-8018)
+          p_verify_method_out           out  	varchar2
    )
    IS
       /************************************************************************************************************          
@@ -5531,13 +5443,6 @@ PROCEDURE  TokenCompleteNotification (
      * Purpose          : VMS-162 (encryption changes)
      * Reviewer         : Vini.P
      * Release Number   : VMSGPRHOST18.01
-     
-     * Modified By      : Areshka A.
-     * Modified Date    : 03-Nov-2023
-     * Purpose          : VMS-8018: Added new out parameter (response id) for sending to FSS
-     * Reviewer         : 
-     * Release Number   :    
-     
       ************************************************************************************************************/
 
       l_auth_savepoint       NUMBER                                 DEFAULT 0;
@@ -5828,7 +5733,6 @@ PROCEDURE  TokenCompleteNotification (
             ROLLBACK TO l_auth_savepoint;
       END;
    --Sn Get responce code from  master
-         p_resp_id_out := l_resp_cde; --Added for VMS-8018
          BEGIN
             SELECT cms_b24_respcde,cms_iso_respcde
               INTO p_iso_resp_code_out,p_resp_code_out
@@ -5844,7 +5748,6 @@ PROCEDURE  TokenCompleteNotification (
                   || l_resp_cde
                   || SUBSTR (SQLERRM, 1, 300);
                p_resp_code_out := '69';
-               p_resp_id_out := '69'; --Added for VMS-8018
          END;
       --En Get responce code from master      
       
@@ -5939,7 +5842,6 @@ PROCEDURE  TokenCompleteNotification (
          WHEN OTHERS
          THEN
             p_resp_code_out := '69';
-            p_resp_id_out := '69'; --Added for VMS-8018
             l_err_msg :=
                   'Exception while inserting to transaction log '
                || SQLCODE
@@ -5985,7 +5887,6 @@ PROCEDURE  TokenCompleteNotification (
                   'Problem while inserting data into transaction log  dtl'
                || SUBSTR (SQLERRM, 1, 300);
             p_resp_code_out := '69';
-            p_resp_id_out := '69'; --Added for VMS-8018
       END;
         --Assign output variable
       p_resmsg_out := l_err_msg;
@@ -5994,7 +5895,6 @@ PROCEDURE  TokenCompleteNotification (
       THEN
          ROLLBACK;
          p_resp_code_out := '69';                              -- Server Declined
-         p_resp_id_out := '69'; --Added for VMS-8018
          p_resmsg_out :=
             'Main exception from  authorization ' || SUBSTR (SQLERRM, 1, 300);
    END TokenActivationNotification;
@@ -6033,9 +5933,7 @@ PROCEDURE  TokenEventNotification (
           p_auth_id_out                 out 	varchar2,
           p_resp_code_out               out 	varchar2,
           p_iso_resp_code_out           out 	varchar2,
-          p_resmsg_out                  out 	varchar2,
-          p_resp_id_out                 out 	varchar2 --Added for sending to FSS (VMS-8018)
-          )
+          p_resmsg_out                  out 	varchar2  )
    IS
       /************************************************************************************************************
           
@@ -6052,14 +5950,6 @@ PROCEDURE  TokenEventNotification (
        * Modified reason  : Remarks logging changes
        * Reviewer         : Saravankumar
        * Build Number     : VMSGPRHOST 17.05.4
-       
-	   * Modified by      : Areshka A.
-       * Modified For     : VMS-8018
-       * Modified Date    : 03-Nov-2023
-       * Modified reason  : Added new out parameter (response id) for sending to FSS
-       * Reviewer         : 
-       * Build Number     : 
-       
       ************************************************************************************************************/
       l_err_msg              VARCHAR2 (500) DEFAULT 'OK';
       l_hash_pan             cms_appl_pan.cap_pan_code%TYPE;
@@ -6275,7 +6165,6 @@ PROCEDURE  TokenEventNotification (
             ROLLBACK ;
       END;
    --Sn Get responce code from  master
-         p_resp_id_out := l_resp_cde; --Added for VMS-8018
          BEGIN
             SELECT cms_b24_respcde,cms_iso_respcde
               INTO p_iso_resp_code_out,p_resp_code_out
@@ -6291,7 +6180,6 @@ PROCEDURE  TokenEventNotification (
                   || l_resp_cde
                   || SUBSTR (SQLERRM, 1, 300);
                p_resp_code_out := '69';
-               p_resp_id_out := '69'; --Added for VMS-8018
          END;
       --En Get responce code from master
 
@@ -6411,7 +6299,6 @@ PROCEDURE  TokenEventNotification (
          WHEN OTHERS
          THEN
             p_resp_code_out := '69';
-            p_resp_id_out := '69'; --Added for VMS-8018
             l_err_msg :=
                   'Exception while inserting to transaction log '
                || SQLCODE
@@ -6459,7 +6346,6 @@ PROCEDURE  TokenEventNotification (
                   'Problem while inserting data into transaction log  dtl'
                || SUBSTR (SQLERRM, 1, 300);
             p_resp_code_out := '69';
-            p_resp_id_out := '69'; --Added for VMS-8018
       END;
         --Assign output variable
       p_resmsg_out := l_err_msg;
@@ -6468,7 +6354,6 @@ PROCEDURE  TokenEventNotification (
       THEN
          ROLLBACK;
          p_resp_code_out := '69';                              -- Server Declined
-         p_resp_id_out := '69'; --Added for VMS-8018
          p_resmsg_out :=
             'Main exception from  authorization ' || SUBSTR (SQLERRM, 1, 300);
    end TokenEventNotification;  
@@ -7449,8 +7334,7 @@ PROCEDURE  AMEXTokenCreateAdvice (
           p_resmsg_out                  out 	varchar2,
           p_de27response_out            out   varchar2,
           P_TOKEN_ACT_FLAG_OUT          out   varchar2,
-          P_ADDR_VERFY_RESPONSE_OUT     OUT   VARCHAR2,
-          p_resp_id_out                 OUT   VARCHAR2 --Added for sending to FSS (VMS-8018)
+          P_ADDR_VERFY_RESPONSE_OUT     OUT   VARCHAR2
           )
    IS
       /************************************************************************************************************
@@ -7465,12 +7349,6 @@ PROCEDURE  AMEXTokenCreateAdvice (
      * Purpose          : VMS-511 (Permanent Fraud Override Support)
      * Reviewer         : Saravanakumar
      * Release Number   : VMSR12_B0003
-
-	   * Modified By      :  Areshka A.
-       * Modified Date    :  03-Nov-2023
-       * Purpose          :  VMS-8018: Added new out parameter (response id) for sending to FSS
-       * Reviewer         :  
-       * Build Number     :  
        
       ************************************************************************************************************/
       
@@ -7855,7 +7733,6 @@ end if;
       END;
       
    --Sn Get responce code from  master
-         p_resp_id_out := l_resp_cde; --Added for VMS-8018
          BEGIN
             SELECT cms_b24_respcde,cms_iso_respcde
               INTO p_iso_resp_code_out,p_resp_code_out
@@ -7871,7 +7748,6 @@ end if;
                   || l_resp_cde 
                   || SUBSTR (SQLERRM, 1, 300);
                p_resp_code_out := '69';
-               p_resp_id_out := '69'; --Added for VMS-8018
          END;
       --En Get responce code from master
 
@@ -7978,7 +7854,6 @@ end if;
          WHEN OTHERS
          THEN
             p_resp_code_out := '69';
-            p_resp_id_out := '69'; --Added for VMS-8018
             l_err_msg :=
                   'Exception while inserting to transaction log '
                || SQLCODE
@@ -8026,7 +7901,6 @@ end if;
                   'Problem while inserting data into transaction log  dtl'
                || SUBSTR (SQLERRM, 1, 300);
             p_resp_code_out := '69';
-            p_resp_id_out := '69'; --Added for VMS-8018
       END;
         --Assign output variable
       p_resmsg_out := l_err_msg;
@@ -8035,7 +7909,6 @@ end if;
       THEN
          ROLLBACK;
          p_resp_code_out := '69';                              -- Server Declined
-         p_resp_id_out := '69'; --Added for VMS-8018
          p_resmsg_out :=
             'Main exception from  authorization ' || substr (sqlerrm, 1, 300);
    end AMEXtokencreateadvice;
@@ -8557,8 +8430,7 @@ PROCEDURE  AMEXTokenCompleteNotification (
           p_auth_id_out                 out 	varchar2,
           p_iso_resp_code_out           out 	varchar2,
           p_resp_code_out               out 	varchar2,
-          p_resmsg_out                  out 	varchar2,
-          p_resp_id_out                 OUT 	VARCHAR2 --Added for sending to FSS (VMS-8018)
+          p_resmsg_out                  out 	varchar2 
           )
    IS
       /************************************************************************************************************
@@ -8568,13 +8440,6 @@ PROCEDURE  AMEXTokenCompleteNotification (
        * Created Date    : 28-June-2018
        * Reviewer        : Saravankumar
        * Build Number    : VMSR03_B0002
-       
-       * Modified Date    :  03-Nov-2023
-       * Modified By      :  Areshka A.
-       * Modified For     :  VMS-8018: Added new out parameter (response id) for sending to FSS
-       * Reviewer         :  
-       * Build Number     :         
-       
       ************************************************************************************************************/
       l_err_msg              VARCHAR2 (500) DEFAULT 'OK';
       l_resp_cde             transactionlog.response_id%TYPE;
@@ -8827,7 +8692,6 @@ PROCEDURE  AMEXTokenCompleteNotification (
             ROLLBACK ;
       END;
    --Sn Get responce code from  master
-         p_resp_id_out := l_resp_cde; --Added for VMS-8018
          BEGIN
             SELECT cms_b24_respcde,cms_iso_respcde
               INTO p_iso_resp_code_out,p_resp_code_out
@@ -8843,7 +8707,6 @@ PROCEDURE  AMEXTokenCompleteNotification (
                   || l_resp_cde
                   || SUBSTR (SQLERRM, 1, 300);
                p_resp_code_out := '69';
-               p_resp_id_out := '69'; --Added for VMS-8018
          END;
       --En Get responce code from master
 
@@ -8949,7 +8812,6 @@ PROCEDURE  AMEXTokenCompleteNotification (
          WHEN OTHERS
          THEN
             p_resp_code_out := '69';
-            p_resp_id_out := '69'; --Added for VMS-8018
             l_err_msg :=
                   'Exception while inserting to transaction log '
                || SQLCODE
@@ -8997,7 +8859,6 @@ PROCEDURE  AMEXTokenCompleteNotification (
                   'Problem while inserting data into transaction log  dtl'
                || SUBSTR (SQLERRM, 1, 300);
             p_resp_code_out := '69';
-            p_resp_id_out := '69'; --Added for VMS-8018
       END;
         --Assign output variable
       p_resmsg_out := l_err_msg;
@@ -9006,7 +8867,6 @@ PROCEDURE  AMEXTokenCompleteNotification (
       THEN
          ROLLBACK;
          p_resp_code_out := '69';                              -- Server Declined
-         p_resp_id_out := '69'; --Added for VMS-8018
          p_resmsg_out :=
             'Main exception from  authorization ' || SUBSTR (SQLERRM, 1, 300);
    end AMEXTokenCompleteNotification;
@@ -10093,8 +9953,7 @@ Procedure  Tokenexpiryupdateadvice (
           p_auth_id_out                 out 	varchar2,
           p_iso_resp_code_out           out 	varchar2,
           p_resp_code_out               out 	varchar2,
-          p_resmsg_out                  out 	varchar2,
-          p_resp_id_out                 out 	varchar2 --Added for sending to FSS (VMS-8018)
+          p_resmsg_out                  out 	varchar2 
           )
    IS
       /************************************************************************************************************
@@ -10104,14 +9963,6 @@ Procedure  Tokenexpiryupdateadvice (
        * Created Date    : 24-Sep-2018
        * Reviewer        : Saravankumar
        * Build Number    : VMSR06_B0003
-       
-	   * Modified by      : Areshka A.
-       * Modified For     : VMS-8018
-       * Modified Date    : 03-Nov-2023
-       * Modified reason  : Added new out parameter (response id) for sending to FSS
-       * Reviewer         : 
-       * Build Number     :        
-       
       ************************************************************************************************************/
       L_Err_Msg              Varchar2 (500) Default 'OK';
      l_resp_cde             transactionlog.response_id%TYPE;
@@ -10335,7 +10186,6 @@ Procedure  Tokenexpiryupdateadvice (
            l_err_msg := ' Exception ' || SQLCODE || '---' || SQLERRM;
             END;
    --Sn Get responce code from  master
-         p_resp_id_out := l_resp_cde; --Added for VMS-8018
          BEGIN
             SELECT cms_b24_respcde,cms_iso_respcde
               INTO p_iso_resp_code_out,p_resp_code_out
@@ -10351,7 +10201,6 @@ Procedure  Tokenexpiryupdateadvice (
                   || l_resp_cde
                   || SUBSTR (SQLERRM, 1, 300);
                p_resp_code_out := '69';
-               p_resp_id_out := '69'; --Added for VMS-8018
          END;
       --En Get responce code from master
 
@@ -10412,7 +10261,6 @@ Procedure  Tokenexpiryupdateadvice (
          WHEN OTHERS
          THEN
             p_resp_code_out := '69';
-            p_resp_id_out := '69'; --Added for VMS-8018
             l_err_msg :=
                   'Exception while inserting to transaction log '
                || SQLCODE
@@ -10460,7 +10308,6 @@ Procedure  Tokenexpiryupdateadvice (
                   'Problem while inserting data into transaction log  dtl'
                || SUBSTR (SQLERRM, 1, 300);
             p_resp_code_out := '69';
-            p_resp_id_out := '69'; --Added for VMS-8018
       END;
         --Assign output variable
       p_resmsg_out := l_err_msg;
@@ -10469,7 +10316,6 @@ Procedure  Tokenexpiryupdateadvice (
       THEN
          ROLLBACK;
          p_resp_code_out := '69';                              -- Server Declined
-         p_resp_id_out := '69'; --Added for VMS-8018
          p_resmsg_out :=
             'Main exception from  authorization ' || SUBSTR (SQLERRM, 1, 300);
    End Tokenexpiryupdateadvice;

@@ -58,7 +58,6 @@ CREATE OR REPLACE PROCEDURE VMSCMS.SP_PREAUTHCOMP_CMSAUTH_ISO93 (P_INST_CODE    
                                                  ,P_RESP_TIME OUT VARCHAR2
                                                 ,P_RESPTIME_DETAIL OUT VARCHAR2
 												,p_surchrg_ind   IN VARCHAR2 DEFAULT '2' --Added for VMS-5856
-                                                ,P_RESP_ID       OUT VARCHAR2 --Added for sending to FSS (VMS-8018)
                                                  ) IS
 
   /*************************************************
@@ -516,12 +515,6 @@ CREATE OR REPLACE PROCEDURE VMSCMS.SP_PREAUTHCOMP_CMSAUTH_ISO93 (P_INST_CODE    
     * Purpose          : Concurrent Pre-Auth Reversals
     * Reviewer         : 
     * Release Number   : VMSGPRHOSTR85 for VMS-5551
-
-    * Modified By      : Areshka A.
-    * Modified Date    : 03-Nov-2023
-    * Purpose          : VMS-8018: Added new out parameter (response id) for sending to FSS
-    * Reviewer         : 
-    * Release Number   : 
 
   *************************************************/
 
@@ -3740,8 +3733,7 @@ END IF;
            CMS_DELIVERY_CHANNEL = P_DELIVERY_CHANNEL AND
            CMS_RESPONSE_ID = TO_NUMBER(V_RESP_CDE);
     p_resp_msg := TO_CHAR (v_acct_balance);            
-     P_LEDGER_BAL := TO_CHAR (v_ledger_bal);  
-     P_RESP_ID := V_RESP_CDE; --Added for VMS-8018
+     P_LEDGER_BAL := TO_CHAR (v_ledger_bal);          
 
     EXCEPTION
      WHEN OTHERS THEN
@@ -3805,7 +3797,6 @@ END IF;
      BEGIN
        P_RESP_MSG  := V_ERR_MSG;
        P_RESP_CODE := V_RESP_CDE;
-       P_RESP_ID   := V_RESP_CDE; --Added for VMS-8018
       SELECT CMS_B24_RESPCDE,
               cms_iso_respcde      
         INTO P_RESP_CODE,
@@ -3819,7 +3810,6 @@ END IF;
         P_RESP_MSG  := 'Problem while selecting data from response master ' ||
                     V_RESP_CDE || SUBSTR(SQLERRM, 1, 300);
         P_RESP_CODE := '69';
-        P_RESP_ID   := '69'; --Added for VMS-8018
          ROLLBACK;
      END;
 
@@ -3908,7 +3898,6 @@ END IF;
         P_RESP_MSG  := 'Problem while inserting data into transaction log  dtl' ||
                     SUBSTR(SQLERRM, 1, 300);
         P_RESP_CODE := '69';
-        P_RESP_ID   := '69'; --Added for VMS-8018
         ROLLBACK;
         RETURN;
      END;
@@ -3933,13 +3922,11 @@ END IF;
             CMS_RESPONSE_ID = V_RESP_CDE;
 
        P_RESP_MSG := V_ERR_MSG;
-       P_RESP_ID  := V_RESP_CDE; --Added for VMS-8018
      EXCEPTION
        WHEN OTHERS THEN
         P_RESP_MSG  := 'Problem while selecting data from response master ' ||
                     V_RESP_CDE || SUBSTR(SQLERRM, 1, 300);
         P_RESP_CODE := '69';
-        P_RESP_ID   := '69'; --Added for VMS-8018
         ROLLBACK;
      END;
 
@@ -4028,7 +4015,6 @@ END IF;
         P_RESP_MSG  := 'Problem while inserting data into transaction log  dtl' ||
                     SUBSTR(SQLERRM, 1, 300);
         P_RESP_CODE := '69'; 
-        P_RESP_ID   := '69'; --Added for VMS-8018
         ROLLBACK;
         RETURN;
      END;
@@ -4082,7 +4068,6 @@ END IF;
        P_RESP_MSG  := 'Error while generating authid ' ||
                    SUBSTR(SQLERRM, 1, 300);
        P_RESP_CODE := '89'; 
-       P_RESP_ID   := '89'; --Added for VMS-8018
        ROLLBACK;
     END;
 
@@ -4398,7 +4383,6 @@ END IF;
     WHEN OTHERS THEN
      ROLLBACK;
      P_RESP_CODE := '69';
-     P_RESP_ID   := '69'; --Added for VMS-8018
      P_Resp_Msg  := 'Problem while inserting data into transaction log  ' ||
                  SUBSTR(SQLERRM, 1, 300);
   END;
@@ -4428,7 +4412,6 @@ EXCEPTION
   WHEN OTHERS THEN
     ROLLBACK;
     P_RESP_CODE := '69'; 
-    P_RESP_ID   := '69'; --Added for VMS-8018
     P_RESP_MSG  := 'Main exception from  authorization ' ||
                 Substr(Sqlerrm, 1, 300);
 END;

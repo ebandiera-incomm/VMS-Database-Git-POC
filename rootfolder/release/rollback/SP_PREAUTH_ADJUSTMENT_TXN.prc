@@ -61,7 +61,6 @@ PROCEDURE      VMSCMS.SP_PREAUTH_ADJUSTMENT_TXN (
    ,P_MERCHANT_CNTRYCODE IN       VARCHAR2  DEFAULT NULL
     ,P_acqInstAlphaCntrycode_in IN       VARCHAR2  DEFAULT NULL
 	 ,p_surchrg_ind   IN VARCHAR2 DEFAULT '2' --Added for VMS-5856
-     ,p_resp_id       OUT VARCHAR2 --Added for sending to FSS (VMS-8018)
 )
 IS
 /*************************************************
@@ -259,13 +258,6 @@ IS
        * Purpose          : Archival changes.
        * Reviewer         : Venkat Singamaneni
        * Release Number   : VMSGPRHOST64 for VMS-5739/FSP-991
-       
-       * Modified By      : Areshka A.
-       * Modified Date    : 03-Nov-2023
-       * Purpose          : VMS-8018: Added new out parameter (response id) for sending to FSS
-       * Reviewer         : 
-       * Release Number   : 
-       
 *************************************************/
    v_err_msg              VARCHAR2 (900)                              := 'OK';
    v_acct_balance         NUMBER;
@@ -2515,7 +2507,6 @@ end if; --Added for 15606
 
       --En create detail for response message
       v_resp_cde := '1';
-      p_resp_id  := v_resp_cde; --Added for VMS-8018
 
       BEGIN
          SELECT cms_b24_respcde, cms_iso_respcde
@@ -2550,7 +2541,6 @@ end if; --Added for 15606
          --Sn select response code and insert record into txn log dtl
          BEGIN
             p_resp_msg := v_err_msg;
-            p_resp_id  := v_resp_cde; --Added for VMS-8018
 
             SELECT cms_b24_respcde, cms_iso_respcde
               INTO p_resp_code, p_iso_respcde
@@ -2566,7 +2556,6 @@ end if; --Added for 15606
                   || v_resp_cde
                   || SUBSTR (SQLERRM, 1, 300);
                p_resp_code := '69';
-               p_resp_id   := '69'; --Added for VMS-8018
          --  ROLLBACK; Commented based on the code review commencts on Sep-17 by Deepa
          END;
 
@@ -2616,7 +2605,6 @@ end if; --Added for 15606
                      'Problem while inserting data into transaction log  dtl'
                   || SUBSTR (SQLERRM, 1, 300);
                p_resp_code := '69';                         -- Server Declined
-               p_resp_id   := '69'; --Added for VMS-8018
                --   ROLLBACK; Commented based on the code review commencts on Sep-17 by Deepa
                RETURN;
          END;
@@ -2634,7 +2622,6 @@ end if; --Added for 15606
                AND cms_response_id = v_resp_cde;
 
             p_resp_msg := v_err_msg;
-            p_resp_id  := v_resp_cde; --Added for VMS-8018
          EXCEPTION
             WHEN OTHERS
             THEN
@@ -2643,7 +2630,6 @@ end if; --Added for 15606
                   || v_resp_cde
                   || SUBSTR (SQLERRM, 1, 300);
                p_resp_code := '69';
-               p_resp_id   := '69'; --Added for VMS-8018
          --ROLLBACK; Commented based on the code review commencts on Sep-17 by Deepa
          END;
 
@@ -2693,7 +2679,6 @@ end if; --Added for 15606
                      'Problem while inserting data into transaction log  dtl'
                   || SUBSTR (SQLERRM, 1, 300);
                p_resp_code := '69';
-               p_resp_id   := '69'; --Added for VMS-8018
          --  ROLLBACK; Commented based on the code review commencts on Sep-17 by Deepa
          END;
    --En select response code and insert record into txn log dtl
@@ -2856,7 +2841,6 @@ end if; --Added for 15606
       THEN
          ROLLBACK;
          p_resp_code := '69';
-         p_resp_id   := '69'; --Added for VMS-8018
          p_resp_msg :=
                'Problem while inserting data into transaction log  '
             || SUBSTR (SQLERRM, 1, 300);
@@ -2867,7 +2851,6 @@ EXCEPTION
    THEN
       ROLLBACK;
       p_resp_code := '69';
-      p_resp_id   := '69'; --Added for VMS-8018
       p_resp_msg :=
             'Main exception from  authorization ' || SUBSTR (SQLERRM, 1, 300);
 END;

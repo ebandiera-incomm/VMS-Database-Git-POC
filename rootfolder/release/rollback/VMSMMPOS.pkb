@@ -2366,12 +2366,6 @@ PROCEDURE sp_mmpos_cardreload_txnstatus (
                * Modified For                : VMS-2875
                * Reviewer                    : Saravana Kumar A
                * Build Number                : VMSGPRHOST_R34_B1
-               
-               * Modified by                 : Shanmugavel M
-               * Modified Date               : 15-DEC-2023
-               * Modified For                : VMS-8133-MMPOS - GetReloadStatus API returns "89" response code when the original RRN not found.
-               * Reviewer                    : Venkat/John/Pankaj
-               * Build Number                : VMSGPRHOST_R90_B1
 /**********************************************************************************************/
     BEGIN
         v_time_stamp := systimestamp;
@@ -2601,10 +2595,6 @@ PROCEDURE sp_mmpos_cardreload_txnstatus (
 					END IF;
                     
             EXCEPTION
-            WHEN NO_DATA_FOUND THEN
-                    v_resp_cde := '97';
-                    v_err_msg := 'Original Not found,Retry  ';
-                    RAISE exp_reject_record;
                 WHEN OTHERS THEN
                     v_resp_cde := '21';
                     v_err_msg := ' Error while  getting the original status of the reload transaction  '

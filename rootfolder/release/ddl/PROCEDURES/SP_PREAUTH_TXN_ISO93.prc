@@ -72,6 +72,7 @@ PROCEDURE             VMSCMS.SP_PREAUTH_TXN_ISO93 (P_INST_CODE         IN NUMBER
                                          ,p_product_type IN VARCHAR2 default 'O'
                                          ,p_expiry_date_check IN VARCHAR2 default 'Y'
 										 ,p_surchrg_ind   IN VARCHAR2 DEFAULT '2' --Added for VMS-5856
+                                         ,p_resp_id   OUT VARCHAR2 --Added for sending to FSS (VMS-8018)
     
                                          ) IS
   /************************************************************************************************************
@@ -593,6 +594,11 @@ PROCEDURE             VMSCMS.SP_PREAUTH_TXN_ISO93 (P_INST_CODE         IN NUMBER
 	   * Reviewer         : Venkat Singamaneni
 	   * Release Number   : VMSGPRHOST64 for VMS-5739/FSP-991
 	
+	   * Modified By      : Areshka A.
+	   * Modified Date    : 03-Nov-2023
+	   * Purpose          : VMS-8018: Added new out parameter (response id) for sending to FSS
+	   * Reviewer         : 
+	   * Release Number   : 
 	
  *****************************************************************************************************************/
   V_ERR_MSG            VARCHAR2(900) := 'OK';
@@ -4234,7 +4240,7 @@ v_comp_total_fee,v_complfee_increment_type,v_comp_fee_code,v_comp_feeattach_type
          END IF;
     END;
       
-      
+    P_RESP_ID := V_RESP_CDE; --Added for VMS-8018
     BEGIN
      SELECT CMS_B24_RESPCDE, --Changed  CMS_ISO_RESPCDE to  CMS_B24_RESPCDE for HISO SPECIFIC Response codes
             cms_iso_respcde  -- Added for OLS changes
@@ -4362,7 +4368,9 @@ v_comp_total_fee,v_complfee_increment_type,v_comp_fee_code,v_comp_feeattach_type
         IF v_delayed_amount>0 AND v_resp_cde='15' THEN
              v_resp_cde:='1000';
         END IF;
-
+        
+       P_RESP_ID := V_RESP_CDE; --Added for VMS-8018
+       
        -- Assign the response code to the out parameter
        SELECT CMS_B24_RESPCDE, --Changed  CMS_ISO_RESPCDE to  CMS_B24_RESPCDE for HISO SPECIFIC Response codes
               cms_iso_respcde  -- Added for OLS changes
@@ -4378,6 +4386,7 @@ v_comp_total_fee,v_complfee_increment_type,v_comp_fee_code,v_comp_feeattach_type
         P_RESP_MSG  := 'Problem while selecting data from response master ' ||
                     V_RESP_CDE || SUBSTR(SQLERRM, 1, 300);
         P_RESP_CODE := '69';
+        P_RESP_ID   := '69'; --Added for VMS-8018
         ---ISO MESSAGE FOR DATABASE ERROR Server Declined
         ROLLBACK;
      END;
@@ -4477,6 +4486,7 @@ v_comp_total_fee,v_complfee_increment_type,v_comp_fee_code,v_comp_feeattach_type
         P_RESP_MSG  := 'Problem while inserting data into transaction log  dtl' ||
                     SUBSTR(SQLERRM, 1, 300);
         P_RESP_CODE := '69'; -- Server Declined
+        P_RESP_ID   := '69'; --Added for VMS-8018
         ROLLBACK;
         RETURN;
      END;
@@ -4571,11 +4581,13 @@ v_comp_total_fee,v_complfee_increment_type,v_comp_fee_code,v_comp_feeattach_type
             CMS_RESPONSE_ID = V_RESP_CDE;
 
        P_RESP_MSG := V_ERR_MSG;
+       P_RESP_ID  := V_RESP_CDE; --Added for VMS-8018
      EXCEPTION
        WHEN OTHERS THEN
         P_RESP_MSG  := 'Problem while selecting data from response master ' ||
                     V_RESP_CDE || SUBSTR(SQLERRM, 1, 300);
         P_RESP_CODE := '69'; -- Server Declined
+        P_RESP_ID   := '69'; --Added for VMS-8018
         ROLLBACK;
      END;
 
@@ -4668,6 +4680,7 @@ v_comp_total_fee,v_complfee_increment_type,v_comp_fee_code,v_comp_feeattach_type
         P_RESP_MSG  := 'Problem while inserting data into transaction log  dtl' ||
                     SUBSTR(SQLERRM, 1, 300);
         P_RESP_CODE := '69'; -- Server Decline Response 220509
+        P_RESP_ID   := '69'; --Added for VMS-8018
         ROLLBACK;
         RETURN;
      END;
@@ -4987,6 +5000,7 @@ v_comp_total_fee,v_complfee_increment_type,v_comp_fee_code,v_comp_feeattach_type
     WHEN OTHERS THEN
      ROLLBACK;
      P_RESP_CODE := '69'; -- Server Declione
+     P_RESP_ID   := '69'; --Added for VMS-8018
      P_RESP_MSG  := 'Problem while inserting data into transaction log  ' ||
                  SUBSTR(SQLERRM, 1, 300);
   END;
@@ -4996,6 +5010,7 @@ EXCEPTION
   WHEN OTHERS THEN
     ROLLBACK;
     P_RESP_CODE := '69'; -- Server Declined
+    P_RESP_ID   := '69'; --Added for VMS-8018
     P_RESP_MSG  := 'Main exception from  authorization ' ||
                 SUBSTR(SQLERRM, 1, 300);
 END;

@@ -55,7 +55,6 @@ PROCEDURE VMSCMS.SP_PREAUTH_TXN (
     P_CAPTURE_DATE                 OUT DATE,
     P_ADDR_VERFY_RESPONSE        OUT VARCHAR2,
     P_PARTIALAUTH_AMOUNT         OUT VARCHAR2 --T.Narayanan Changed for Address Verification Indicator Changes.
-    ,P_RESP_ID                   OUT VARCHAR2 --Added for sending to FSS (VMS-8018)
                                                         )
 IS
     /***************************************************************************************************
@@ -351,13 +350,6 @@ IS
    * Purpose          : Archival changes.
    * Reviewer         : Venkat Singamaneni
    * Release Number   : VMSGPRHOST64 for VMS-5739/FSP-991
-
-   * Modified By      : Areshka A.
-   * Modified Date    : 03-Nov-2023
-   * Purpose          : VMS-8018: Added new out parameter (response id) for sending to FSS
-   * Reviewer         : 
-   * Release Number   : 
-
     ******************************************************************************************************/
     V_ERR_MSG                    VARCHAR2 (900) := 'OK';
     V_ACCT_BALANCE             NUMBER;
@@ -4345,7 +4337,6 @@ BEGIN
 
 
         ---En Updation of Usage limit and amount
-        P_RESP_ID := V_RESP_CDE; --Added for VMS-8018
         BEGIN
             SELECT CMS_ISO_RESPCDE
               INTO P_RESP_CODE
@@ -4530,7 +4521,6 @@ BEGIN
                      v_resp_cde:='1000';
                 END IF;                
 
-                P_RESP_ID := V_RESP_CDE; --Added for VMS-8018
                 -- Assign the response code to the out parameter
                 SELECT CMS_ISO_RESPCDE
                   INTO P_RESP_CODE
@@ -4547,7 +4537,6 @@ BEGIN
                         || SUBSTR (SQLERRM, 1, 300);
                     P_RESP_CODE := '69';
                     ---ISO MESSAGE FOR DATABASE ERROR Server Declined
-                    P_RESP_ID := '69'; --Added for VMS-8018
                     ROLLBACK;
             END;
 
@@ -4643,7 +4632,6 @@ BEGIN
                         'Problem while inserting data into transaction log  dtl'
                         || SUBSTR (SQLERRM, 1, 300);
                     P_RESP_CODE := '69';                         -- Server Declined
-                    P_RESP_ID := '69'; --Added for VMS-8018
                     ROLLBACK;
                     RETURN;
             END;
@@ -4754,7 +4742,6 @@ BEGIN
                          AND CMS_RESPONSE_ID = V_RESP_CDE;
 
                 P_RESP_MSG := V_ERR_MSG;
-                P_RESP_ID := V_RESP_CDE; --Added for VMS-8018
             EXCEPTION
                 WHEN OTHERS
                 THEN
@@ -4763,7 +4750,6 @@ BEGIN
                         || V_RESP_CDE
                         || SUBSTR (SQLERRM, 1, 300);
                     P_RESP_CODE := '69';                         -- Server Declined
-                    P_RESP_ID := '69'; --Added for VMS-8018
                     ROLLBACK;
             END;
 
@@ -4857,7 +4843,6 @@ BEGIN
                         'Problem while inserting data into transaction log  dtl'
                         || SUBSTR (SQLERRM, 1, 300);
                     P_RESP_CODE := '69';          -- Server Decline Response 220509
-                    P_RESP_ID := '69'; --Added for VMS-8018
                     ROLLBACK;
                     RETURN;
             END;
@@ -5166,7 +5151,6 @@ BEGIN
         THEN
             ROLLBACK;
             P_RESP_CODE := '69';                               -- Server Declione
-            P_RESP_ID := '69'; --Added for VMS-8018
             P_RESP_MSG :=
                 'Problem while inserting data into transaction log  '
                 || SUBSTR (SQLERRM, 1, 300);
@@ -5177,7 +5161,6 @@ EXCEPTION
     THEN
         ROLLBACK;
         P_RESP_CODE := '69';                                  -- Server Declined
-        P_RESP_ID := '69'; --Added for VMS-8018
         P_RESP_MSG :=
             'Main exception from  authorization ' || SUBSTR (SQLERRM, 1, 300);
 END;

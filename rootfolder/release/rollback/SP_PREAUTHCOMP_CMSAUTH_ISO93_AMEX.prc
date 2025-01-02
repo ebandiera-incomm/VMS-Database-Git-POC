@@ -1,5 +1,5 @@
 
-CREATE OR REPLACE PROCEDURE VMSCMS.SP_PREAUTHCOMP_CMSAUTH_ISO93 (P_INST_CODE        IN NUMBER,
+CREATE OR REPLACE PROCEDURE VMSCMS.SP_PREAUTHCOMP_CMSAUTH_ISO93_AMEX (P_INST_CODE        IN NUMBER,
                                                 P_MSG              IN VARCHAR2,
                                                 P_RRN              VARCHAR2,
                                                 P_DELIVERY_CHANNEL VARCHAR2,
@@ -58,7 +58,6 @@ CREATE OR REPLACE PROCEDURE VMSCMS.SP_PREAUTHCOMP_CMSAUTH_ISO93 (P_INST_CODE    
                                                  ,P_RESP_TIME OUT VARCHAR2
                                                 ,P_RESPTIME_DETAIL OUT VARCHAR2
 												,p_surchrg_ind   IN VARCHAR2 DEFAULT '2' --Added for VMS-5856
-                                                ,P_RESP_ID       OUT VARCHAR2 --Added for sending to FSS (VMS-8018)
                                                  ) IS
 
   /*************************************************
@@ -511,18 +510,18 @@ CREATE OR REPLACE PROCEDURE VMSCMS.SP_PREAUTHCOMP_CMSAUTH_ISO93 (P_INST_CODE    
     * Reviewer         : venkat Singamaneni
     * Release Number   : VMSGPRHOST64 for VMS-5739/FSP-991
 
+    * Modified By      : Magesh S.
+    * Modified Date    : 05-19-2023
+    * Purpose          : VMS-7383:Amex Split Shipments - Interim Fix
+    * Reviewer         : venkat Singamaneni
+    * Release Number   : VMSGPRHOST_R80
+    
     * Modified By      : John Gingrich
     * Modified Date    : 08-28-2023
     * Purpose          : Concurrent Pre-Auth Reversals
     * Reviewer         : 
     * Release Number   : VMSGPRHOSTR85 for VMS-5551
-
-    * Modified By      : Areshka A.
-    * Modified Date    : 03-Nov-2023
-    * Purpose          : VMS-8018: Added new out parameter (response id) for sending to FSS
-    * Reviewer         : 
-    * Release Number   : 
-
+    
   *************************************************/
 
   V_ERR_MSG            VARCHAR2(900) := 'OK';
@@ -715,6 +714,7 @@ v_complfee_increment_type VARCHAR2(1);
    
    v_Retperiod  date;  --Added for VMS-5739/FSP-991
    v_Retdate  date; --Added for VMS-5739/FSP-991
+   v_de38_authid     transactionlog.auth_id%TYPE; --Added for VMS-7383
 BEGIN
   SAVEPOINT V_AUTH_SAVEPOINT;
   V_RESP_CDE := '1';
@@ -725,7 +725,8 @@ BEGIN
   V_TIMESTAMP:=systimestamp;
    V_MS_PYMNT_TYPE:=P_MS_PYMNT_TYPE;
      v_start_time := systimestamp;  
-
+  v_de38_authid:=p_consodium_code; --Added for VMS-7383
+  
   BEGIN
     BEGIN
      V_HASH_PAN := GETHASH(P_CARD_NO);
@@ -959,7 +960,7 @@ BEGIN
        --Added VMS-5551
        IF v_err_msg != 'OK' THEN
        V_RESP_CDE     := '191';
-       RAISE EXP_REJECT_RECORD;
+       RAISE exp_reject_record;
        END IF;
       EXCEPTION
       WHEN exp_reject_record THEN
@@ -2199,7 +2200,88 @@ BEGIN
      v_rule := 'U';
     END IF;
 
+    --SN: Added for VMS-7383
+    IF v_rule = 'U' THEN
+        SELECT MIN (cpt_ins_date)
+          INTO v_oldest_preauth
+          FROM cms_preauth_transaction
+         WHERE     cpt_mbr_no = p_mbr_numb
+               AND cpt_inst_code = p_inst_code
+               AND cpt_card_no = v_orgnl_hash_pan
+               AND cpt_preauth_validflag <> 'N'
+               AND cpt_expiry_flag = 'N'
+               AND cpt_preauth_type = v_preauth_type
+               AND EXISTS
+                       (SELECT 1
+                          FROM transactionlog
+                         WHERE     business_date = cpt_txn_date
+                               AND business_time = cpt_txn_time
+                               --and   system_trace_audit_no = p_org_stan
+                               AND rrn = cpt_rrn
+                               AND response_code = '00'
+                               AND delivery_channel = p_delivery_channel
+                               AND customer_card_no = cpt_card_no
+                               AND auth_id = v_de38_authid
+                               AND instcode = p_inst_code
+                               AND NVL (tran_reverse_flag, 'N') <> 'Y');
+                             
+        IF v_oldest_preauth IS NULL THEN
+           v_pre_auth_check := 'N';
+           v_rule := 'U';
 
+        ELSE
+            BEGIN
+                SELECT ROWID,
+                       cpt_totalhold_amt,
+                       cpt_expiry_flag,
+                       cpt_rrn,
+                       NVL (cpt_completion_fee, '0'),
+                       cpt_approve_amt,
+                       NVL (cpt_complfree_flag, 'N'),
+                       cpt_txn_code,
+                       cpt_mcc_code,
+                       cpt_internation_ind_response,
+                       cpt_pos_verification,
+                       cpt_ins_date,
+                       cpt_payment_type
+                  INTO v_rowid,
+                       v_hold_amount,
+                       v_preauth_expiry_flag,
+                       v_cpt_rrn,
+                       v_completion_fee,
+                       v_preauth_txnamt,
+                       v_complfree_flag,
+                       v_org_txn_code,
+                       v_org_mcc_code,
+                       v_org_internation_ind_resp,
+                       v_org_pos_verification,
+                       v_org_date,
+                       v_org_payment_type
+                  FROM cms_preauth_transaction
+                 WHERE     cpt_mbr_no = p_mbr_numb
+                       AND cpt_inst_code = p_inst_code
+                       AND cpt_card_no = v_orgnl_hash_pan
+                       AND cpt_ins_date = v_oldest_preauth
+                       AND cpt_preauth_validflag <> 'N'
+                       AND cpt_expiry_flag = 'N'
+                       AND cpt_preauth_type = v_preauth_type
+                       AND ROWNUM < 2;                
+                       
+            EXCEPTION
+                WHEN OTHERS THEN
+                    v_resp_cde := '21';
+                    v_err_msg :='Error while selecting the oldest PreAuth details for rule 6 '
+                        || SUBSTR (SQLERRM, 1, 200);
+                    RAISE exp_reject_record;
+            END;
+
+            v_pre_auth_check := 'Y';
+            v_rule := 'Rule6';
+            v_duplicate_comp_check := 'N';
+            END IF;    
+    END IF;
+    --EN: Added for VMS-7383
+    
         if v_duplicate_comp_check='Y' AND v_ignore_dup_cnt=0 then
 
         if v_total_completion_amt >= v_preauth_txnamt then
@@ -2250,6 +2332,12 @@ BEGIN
              RAISE EXP_REJECT_RECORD;
 		END IF;
 	END IF;
+	
+	--SN:Added for VMS-7383
+	IF v_last_comp_ind = 'L' AND v_tran_amt < v_hold_amount THEN
+        v_last_comp_ind:='N';
+	END IF;
+	--EN:Added for VMS-7383
 
    if(v_PREAUTH_TYPE='C') then
 
@@ -3740,8 +3828,7 @@ END IF;
            CMS_DELIVERY_CHANNEL = P_DELIVERY_CHANNEL AND
            CMS_RESPONSE_ID = TO_NUMBER(V_RESP_CDE);
     p_resp_msg := TO_CHAR (v_acct_balance);            
-     P_LEDGER_BAL := TO_CHAR (v_ledger_bal);  
-     P_RESP_ID := V_RESP_CDE; --Added for VMS-8018
+     P_LEDGER_BAL := TO_CHAR (v_ledger_bal);          
 
     EXCEPTION
      WHEN OTHERS THEN
@@ -3805,7 +3892,6 @@ END IF;
      BEGIN
        P_RESP_MSG  := V_ERR_MSG;
        P_RESP_CODE := V_RESP_CDE;
-       P_RESP_ID   := V_RESP_CDE; --Added for VMS-8018
       SELECT CMS_B24_RESPCDE,
               cms_iso_respcde      
         INTO P_RESP_CODE,
@@ -3819,7 +3905,6 @@ END IF;
         P_RESP_MSG  := 'Problem while selecting data from response master ' ||
                     V_RESP_CDE || SUBSTR(SQLERRM, 1, 300);
         P_RESP_CODE := '69';
-        P_RESP_ID   := '69'; --Added for VMS-8018
          ROLLBACK;
      END;
 
@@ -3908,7 +3993,6 @@ END IF;
         P_RESP_MSG  := 'Problem while inserting data into transaction log  dtl' ||
                     SUBSTR(SQLERRM, 1, 300);
         P_RESP_CODE := '69';
-        P_RESP_ID   := '69'; --Added for VMS-8018
         ROLLBACK;
         RETURN;
      END;
@@ -3933,13 +4017,11 @@ END IF;
             CMS_RESPONSE_ID = V_RESP_CDE;
 
        P_RESP_MSG := V_ERR_MSG;
-       P_RESP_ID  := V_RESP_CDE; --Added for VMS-8018
      EXCEPTION
        WHEN OTHERS THEN
         P_RESP_MSG  := 'Problem while selecting data from response master ' ||
                     V_RESP_CDE || SUBSTR(SQLERRM, 1, 300);
         P_RESP_CODE := '69';
-        P_RESP_ID   := '69'; --Added for VMS-8018
         ROLLBACK;
      END;
 
@@ -4028,7 +4110,6 @@ END IF;
         P_RESP_MSG  := 'Problem while inserting data into transaction log  dtl' ||
                     SUBSTR(SQLERRM, 1, 300);
         P_RESP_CODE := '69'; 
-        P_RESP_ID   := '69'; --Added for VMS-8018
         ROLLBACK;
         RETURN;
      END;
@@ -4082,7 +4163,6 @@ END IF;
        P_RESP_MSG  := 'Error while generating authid ' ||
                    SUBSTR(SQLERRM, 1, 300);
        P_RESP_CODE := '89'; 
-       P_RESP_ID   := '89'; --Added for VMS-8018
        ROLLBACK;
     END;
 
@@ -4398,7 +4478,6 @@ END IF;
     WHEN OTHERS THEN
      ROLLBACK;
      P_RESP_CODE := '69';
-     P_RESP_ID   := '69'; --Added for VMS-8018
      P_Resp_Msg  := 'Problem while inserting data into transaction log  ' ||
                  SUBSTR(SQLERRM, 1, 300);
   END;
@@ -4428,7 +4507,6 @@ EXCEPTION
   WHEN OTHERS THEN
     ROLLBACK;
     P_RESP_CODE := '69'; 
-    P_RESP_ID   := '69'; --Added for VMS-8018
     P_RESP_MSG  := 'Main exception from  authorization ' ||
                 Substr(Sqlerrm, 1, 300);
 END;

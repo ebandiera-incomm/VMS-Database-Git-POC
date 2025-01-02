@@ -63,7 +63,6 @@ create or replace PROCEDURE        VMSCMS.SP_CL_OLS_REDEMPTION_SAF (
    ,P_MERCHANT_CNTRYCODE IN       VARCHAR2 DEFAULT NULL
     ,P_cust_addr      IN VARCHAR2   DEFAULT NULL
 	 ,P_acqInstAlphaCntrycode_in IN       VARCHAR2 DEFAULT NULL
-     ,p_resp_id                  OUT      VARCHAR2 --Added for sending to FSS (VMS-8018)
 )
 IS
 /*************************************************
@@ -313,12 +312,6 @@ IS
      * Purpose          : VMS-619 (RULE)
      * Reviewer         : SARAVANAKMAR A
      * Release Number   : R08
-
-     * Modified By      : Areshka A.
-     * Modified Date    : 03-Nov-2023
-     * Purpose          : VMS-8018: Added new out parameter (response id) for sending to FSS
-     * Reviewer         : 
-     * Release Number   : 
 
 *************************************************/
    v_err_msg               VARCHAR2 (900)                             := 'OK';
@@ -2324,7 +2317,6 @@ IF (v_Retdate>v_Retperiod)
       v_resp_cde := '1';
 
       ---En Updation of Usage limit and amount
-      p_resp_id := v_resp_cde; --Added for VMS-8018
       BEGIN
          SELECT cms_b24_respcde, cms_iso_respcde
 --Changed  CMS_ISO_RESPCDE to  CMS_B24_RESPCDE for HISO SPECIFIC Response codes
@@ -2464,7 +2456,6 @@ IF (v_Retdate>v_Retperiod)
          BEGIN
             p_resp_msg := v_err_msg;
             p_resp_code := v_resp_cde;
-            p_resp_id := v_resp_cde; --Added for VMS-8018
 
             -- Assign the response code to the out parameter
             SELECT cms_b24_respcde, cms_iso_respcde
@@ -2485,7 +2476,6 @@ IF (v_Retdate>v_Retperiod)
                   || SUBSTR (SQLERRM, 1, 300);
                p_resp_code := '69';
                ---ISO MESSAGE FOR DATABASE ERROR Server Declined
-               p_resp_id := '69'; --Added for VMS-8018
                ROLLBACK;
          END;
 
@@ -2534,7 +2524,6 @@ IF (v_Retdate>v_Retperiod)
                      'Problem while inserting data into transaction log  dtl'
                   || SUBSTR (SQLERRM, 1, 300);
                p_resp_code := '69';                         -- Server Declined
-               p_resp_id := '69'; --Added for VMS-8018
                ROLLBACK;
                RETURN;
          END;
@@ -2640,7 +2629,6 @@ IF (v_Retdate>v_Retperiod)
                AND cms_response_id = v_resp_cde;
 
             p_resp_msg := v_err_msg;
-            p_resp_id := v_resp_cde; --Added for VMS-8018
          EXCEPTION
             WHEN OTHERS
             THEN
@@ -2649,7 +2637,6 @@ IF (v_Retdate>v_Retperiod)
                   || v_resp_cde
                   || SUBSTR (SQLERRM, 1, 300);
                p_resp_code := '69';                         -- Server Declined
-               p_resp_id := '69'; --Added for VMS-8018
                ROLLBACK;
          END;
 
@@ -2698,7 +2685,6 @@ IF (v_Retdate>v_Retperiod)
                      'Problem while inserting data into transaction log  dtl'
                   || SUBSTR (SQLERRM, 1, 300);
                p_resp_code := '69';          -- Server Decline Response 220509
-               p_resp_id := '69'; --Added for VMS-8018
                ROLLBACK;
                RETURN;
          END;
@@ -2881,7 +2867,6 @@ END IF;
       THEN
          ROLLBACK;
          p_resp_code := '69';                              -- Server Declione
-         p_resp_id := '69'; --Added for VMS-8018
          p_resp_msg :=
                'Problem while inserting data into transaction log  '
             || SUBSTR (SQLERRM, 1, 300);
@@ -2892,7 +2877,6 @@ EXCEPTION
    THEN
       ROLLBACK;
       p_resp_code := '69';                                 -- Server Declined
-      p_resp_id := '69'; --Added for VMS-8018
       p_resp_msg :=
             'Main exception from  authorization ' || SUBSTR (SQLERRM, 1, 300);
 END;

@@ -43,8 +43,7 @@ CREATE OR REPLACE PROCEDURE VMSCMS.SP_PREAUTHCOMP_CMSAUTH (
    p_auth_id              OUT      VARCHAR2,
    p_resp_code            OUT      VARCHAR2,
    p_resp_msg             OUT      VARCHAR2,
-   p_capture_date         OUT      DATE,
-   p_resp_id              OUT      VARCHAR2 --Added for sending to FSS (VMS-8018)
+   p_capture_date         OUT      DATE
 )
 IS
    /*******************************************************************************************
@@ -242,13 +241,6 @@ IS
 	   * Purpose          : Archival changes.
 	   * Reviewer         : Venkat Singamaneni
 	   * Release Number   : VMSGPRHOST64 for VMS-5739/FSP-991	 
-
-	   * Modified By      : Areshka A.
-	   * Modified Date    : 03-Nov-2023
-	   * Purpose          : VMS-8018: Added new out parameter (response id) for sending to FSS
-	   * Reviewer         : 
-	   * Release Number   : 
-
    *********************************************************************************************/
    v_err_msg                 VARCHAR2 (900)                           := 'OK';
    v_acct_balance            NUMBER;
@@ -3354,7 +3346,6 @@ BEGIN
 
          --p_resp_msg := TO_CHAR (v_upd_amt);               --Commented on 08-Mar-2013 for defect 0010555 same is not require        
          p_resp_msg := TO_CHAR (v_acct_balance);            --Added on 08-Mar-2013 for defect 0010555
-         p_resp_id := v_resp_cde; --Added for VMS-8018
          
       EXCEPTION
          WHEN NO_DATA_FOUND
@@ -3506,7 +3497,6 @@ BEGIN
          BEGIN
             p_resp_msg := v_err_msg;
             p_resp_code := v_resp_cde;
-            p_resp_id := v_resp_cde; --Added for VMS-8018
 
             -- Assign the response code to the out parameter
             SELECT cms_iso_respcde
@@ -3524,7 +3514,6 @@ BEGIN
                   || SUBSTR (SQLERRM, 1, 300);
                p_resp_code := '69';
                ---ISO MESSAGE FOR DATABASE ERROR Server Declined
-               p_resp_id := '69'; --Added for VMS-8018
                ROLLBACK;
          -- RETURN;
          END;
@@ -3571,7 +3560,6 @@ BEGIN
                      'Problem while inserting data into transaction log  dtl'
                   || SUBSTR (SQLERRM, 1, 300);
                p_resp_code := '69';                         -- Server Declined
-               p_resp_id := '69'; --Added for VMS-8018
                ROLLBACK;
                RETURN;
          END;
@@ -3695,7 +3683,6 @@ BEGIN
                AND cms_response_id = v_resp_cde;
 
             p_resp_msg := v_err_msg;
-            p_resp_id := v_resp_cde; --Added for VMS-8018
          EXCEPTION
             WHEN OTHERS
             THEN
@@ -3704,7 +3691,6 @@ BEGIN
                   || v_resp_cde
                   || SUBSTR (SQLERRM, 1, 300);
                p_resp_code := '69';                         -- Server Declined
-               p_resp_id := '69'; --Added for VMS-8018
                --ROLLBACK;                                  -- Commented as per review observation for MVHOST-354
          -- RETURN;
          END;
@@ -3749,7 +3735,6 @@ BEGIN
                      'Problem while inserting data into transaction log  dtl'
                   || SUBSTR (SQLERRM, 1, 300);
                p_resp_code := '69';          -- Server Decline Response 220509
-               p_resp_id := '69'; --Added for VMS-8018
                --ROLLBACK;                   -- Commented as per review observation for MVHOST-354
                RETURN;
          END;
@@ -3775,7 +3760,6 @@ BEGIN
             p_resp_msg :=
                  'Error while generating authid ' || SUBSTR (SQLERRM, 1, 300);
             p_resp_code := '89';                           -- Server Declined
-            p_resp_id := '89'; --Added for VMS-8018
             ROLLBACK;
       END;
    END IF;
@@ -3949,7 +3933,6 @@ BEGIN
       THEN
          ROLLBACK;
          p_resp_code := '69';                              -- Server Declione
-         p_resp_id := '69'; --Added for VMS-8018
          p_resp_msg :=
                'Problem while inserting data into transaction log  '
             || SUBSTR (SQLERRM, 1, 300);
@@ -3960,7 +3943,6 @@ EXCEPTION
    THEN
       ROLLBACK;
       p_resp_code := '69';                                 -- Server Declined
-      p_resp_id := '69'; --Added for VMS-8018
       p_resp_msg :=
             'Main exception from  authorization ' || SUBSTR (SQLERRM, 1, 300);
 END;

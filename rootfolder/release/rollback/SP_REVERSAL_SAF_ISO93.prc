@@ -56,7 +56,6 @@ CREATE OR REPLACE PROCEDURE VMSCMS.SP_REVERSAL_SAF_ISO93 (P_INST_CODE           
                                          --EN Added by Pankaj S. for DB time logging changes
                      ,P_MS_PYMNT_TYPE      in     varchar2 default null
                                         ,P_MS_PYMNT_DESC      IN      VARCHAR2  DEFAULT NULL
-                                        ,P_RESP_ID            OUT     VARCHAR2 --Added for sending to FSS (VMS-8018)
                                         ) IS 
    /*************************************************
       * Modified By      :  Trivikram
@@ -355,13 +354,6 @@ CREATE OR REPLACE PROCEDURE VMSCMS.SP_REVERSAL_SAF_ISO93 (P_INST_CODE           
     * Purpose          : Archival changes.
     * Reviewer         : venkat Singamaneni
     * Release Number   : VMSGPRHOST64 for VMS-5739/FSP-991
-    
-	* Modified By      : Areshka A.
-    * Modified Date    : 03-Nov-2023
-    * Purpose          : VMS-8018: Added new out parameter (response id) for sending to FSS
-    * Reviewer         : 
-    * Release Number   : 
-    
    *************************************************/
   V_ORGNL_DELIVERY_CHANNEL   TRANSACTIONLOG.DELIVERY_CHANNEL%TYPE;
   V_ORGNL_RESP_CODE          TRANSACTIONLOG.RESPONSE_CODE%TYPE;
@@ -2380,7 +2372,6 @@ END IF;
   --Sn generate response code
 
   -- V_RESP_CDE := '1';
-  P_RESP_ID := V_RESP_CDE; --Added for VMS-8018
   BEGIN
     SELECT CMS_B24_RESPCDE, --Changed  CMS_ISO_RESPCDE to  CMS_B24_RESPCDE for HISO SPECIFIC Response codes
      cms_iso_respcde    --OLS CHANGES on 13062013 
@@ -3027,13 +3018,11 @@ EXCEPTION
            CMS_DELIVERY_CHANNEL = P_DELV_CHNL AND
            CMS_RESPONSE_ID = TO_NUMBER(V_RESP_CDE);
      P_RESP_MSG := V_ERRMSG;
-     P_RESP_ID  := V_RESP_CDE; --Added for VMS-8018
     EXCEPTION
      WHEN OTHERS THEN
        P_RESP_MSG := 'Problem while selecting data from response master ' ||
                   V_RESP_CDE || SUBSTR(SQLERRM, 1, 300);
        P_RESP_CDE := '89';
-       P_RESP_ID  := '89'; --Added for VMS-8018
     END;
 
    /*           --Sn:Commented as per review observation for FSS-1246
@@ -3391,7 +3380,6 @@ END IF;
        WHEN OTHERS THEN
 
         P_RESP_CDE := '89';
-        P_RESP_ID  := '89'; --Added for VMS-8018
         P_RESP_MSG := 'Problem while inserting data into transaction log  dtl' ||
                     SUBSTR(SQLERRM, 1, 300);
      END;
@@ -3475,7 +3463,6 @@ END IF;
        P_RESP_MSG := 'Problem while inserting data into transaction log  dtl' ||
                   SUBSTR(SQLERRM, 1, 300);
        P_RESP_CDE := '89'; -- Server Decline Response 220509
-       P_RESP_ID  := '89'; --Added for VMS-8018
        ROLLBACK;
        RETURN;
     END;
@@ -3505,13 +3492,11 @@ END IF;
            CMS_DELIVERY_CHANNEL = P_DELV_CHNL AND
            CMS_RESPONSE_ID = TO_NUMBER(V_RESP_CDE);
      P_RESP_MSG := V_ERRMSG;
-     P_RESP_ID  := V_RESP_CDE; --Added for VMS-8018
     EXCEPTION
      WHEN OTHERS THEN
        P_RESP_MSG := 'Problem while selecting data from response master ' ||
                   V_RESP_CDE || SUBSTR(SQLERRM, 1, 300);
        P_RESP_CDE := '69';
-       P_RESP_ID  := '69'; --Added for VMS-8018
     END;
     
    /*                   --Sn:Commented as per review observation for FSS-1246
@@ -3865,7 +3850,6 @@ END IF;
        WHEN OTHERS THEN
 
         P_RESP_CDE := '89';
-        P_RESP_ID  := '89'; --Added for VMS-8018
         P_RESP_MSG := 'Problem while inserting data into transaction log  dtl' ||
                     SUBSTR(SQLERRM, 1, 300);
      END;
@@ -3950,7 +3934,6 @@ END IF;
        P_RESP_MSG := 'Problem while inserting data into transaction log  dtl' ||
                   SUBSTR(SQLERRM, 1, 300);
        P_RESP_CDE := '89'; -- Server Decline Response 220509
-       P_RESP_ID  := '89'; --Added for VMS-8018
        ROLLBACK;
        RETURN;
     END;

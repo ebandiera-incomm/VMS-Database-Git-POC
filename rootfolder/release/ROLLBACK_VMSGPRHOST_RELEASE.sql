@@ -24,22 +24,35 @@ SET ECHO OFF
 SET DEFINE OFF
 
 --ROLLBACK
-PROMPT ROLLBACK DDL
-		
-	PROMPT     *** ROLLBACK__  ***
-    @$VMS_HOME/NOV_VMSGPRHOST_R90_RELEASE/RELEASE/ROLLBACK/GPP_ACCOUNTS.pkb
-	PROMPT     --------------------------------------------------------------------------------
+PROMPT *** Build 3 ***			
+	PROMPT *** DDL ROLLBACK ***	
+    PROMPT     *** CMS_INST_PARAM.sql *****
+    @$VMS_HOME/NOV_VMSGPRHOST_R90_RELEASE/ROOTFOLDER/RELEASE/ROLLBACK/CMS_INST_PARAM.sql
+    PROMPT     --------------------------------------------------------------------------------
 
-    PROMPT     *** ROLLBACK__  ***
-    @$VMS_HOME/NOV_VMSGPRHOST_R90_RELEASE/RELEASE/ROLLBACK/GPP_ACCOUNTS.pks
-	PROMPT     --------------------------------------------------------------------------------
+    PROMPT *** DML ROLLBACK ***
+
+PROMPT *** Build 2 ***			
+    PROMPT *** DDL ROLLBACK ***
+	PROMPT     *** CMS_INST_PARAM.sql *****
+    @$VMS_HOME/NOV_VMSGPRHOST_R90_RELEASE/ROOTFOLDER/RELEASE/ROLLBACK/CMS_INST_PARAM.sql
+    PROMPT     --------------------------------------------------------------------------------
+
+    PROMPT *** DML ROLLBACK ***
+
+PROMPT *** Build 1 ***			
+	PROMPT *** DDL ROLLBACK ***
+	PROMPT     *** SP_DISPUTE_PROCESS *****
+    @$VMS_HOME/NOV_VMSGPRHOST_R90_RELEASE/ROOTFOLDER/RELEASE/ROLLBACK/SP_DISPUTE_PROCESS.prc
+    PROMPT     --------------------------------------------------------------------------------
 	
-PROMPT ROLLBACK DML
-	
-	PROMPT     *** no dml  ***
-    --@$VMS_HOME/NOV_VMSGPRHOST_R90_RELEASE/VMSGPRHOST_R90_B0002/ROLLBACK/ROLLBACK_VMS_8937_VMS_CONFIG_QUERY.sql
-	PROMPT     --------------------------------------------------------------------------------	
-	
+    PROMPT *** DML ROLLBACK ***
+    PROMPT     *** CMS_RESPONSE_MAST *****
+    @$VMS_HOME/NOV_VMSGPRHOST_R90_RELEASE/ROOTFOLDER/RELEASE/ROLLBACK/CMS_RESPONSE_MASTB1.sql
+    PROMPT     --------------------------------------------------------------------------------
+
+    @$VMS_HOME/NOV_VMSGPRHOST_R90_RELEASE/ROOTFOLDER/RELEASE/ROLLBACK/MANDATORY_DML_ROLLBACK.sql;
+
 PROMPT			 	END OF RELEASE ROLLBACK_VMSGPRHOST_R90
 
 spool off;

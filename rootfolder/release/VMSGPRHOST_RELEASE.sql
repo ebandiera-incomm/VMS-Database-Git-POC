@@ -21,24 +21,46 @@ PROMPT                 START OF RELEASE VMSGPRHOST_R90
 SET DEFINE OFF
 SET ECHO OFF
 
---VMSCMS(Schema)
-PROMPT DDL
-
-	PROMPT     *** CREATE_BACKUP  ***
-    @$VMS_HOME/NOV_VMSGPRHOST_R90_RELEASE/RELEASE/DDL/PACKAGES/PackageBody/GPP_ACCOUNTS.pkb
-	PROMPT     --------------------------------------------------------------------------------	
-
-	PROMPT     *** CREATE_BACKUP  ***
-    @$VMS_HOME/NOV_VMSGPRHOST_R90_RELEASE/RELEASE/DDL/PACKAGES/PackageSpecification/GPP_ACCOUNTS.pks
-	PROMPT     --------------------------------------------------------------------------------	
-
+	@$VMS_HOME/NOV_VMSGPRHOST_R90_RELEASE/ROOTFOLDER/RELEASE_B0/DDL/DROP_BACKUP.sql;	
 	
+PROMPT *** Build 1 ***		
+	PROMPT *** DDL ***	
+    PROMPT     *** CREATE_BACKUP_BUILD1  *****
+    @$VMS_HOME/NOV_VMSGPRHOST_R90_RELEASE/ROOTFOLDER/RELEASE/DDL/SCRIPTS/CREATE_BACKUP_BUILD1.sql
+    PROMPT     --------------------------------------------------------------------------------
+    PROMPT     *** SP_DISPUTE_PROCESS  *****
+    @$VMS_HOME/NOV_VMSGPRHOST_R90_RELEASE/ROOTFOLDER/RELEASE/DDL/PROCEDURES/SP_DISPUTE_PROCESS.prc
+    PROMPT     --------------------------------------------------------------------------------
 
-PROMPT DML
+	PROMPT *** DML ***
+	PROMPT *** CMS_RESPONSE_MAST.sql ***
+    @$VMS_HOME/NOV_VMSGPRHOST_R90_RELEASE/ROOTFOLDER/RELEASE/DML/CMS_RESPONSE_MAST.sql
+    PROMPT     -----------------------------------------------------------------------------
+
+PROMPT *** Build 2 ***		
+	PROMPT *** DDL ***
+	PROMPT     *** CREATE_BACKUP_BUILD2  *****
+    @$VMS_HOME/NOV_VMSGPRHOST_R90_RELEASE/ROOTFOLDER/RELEASE/DDL/SCRIPTS/CREATE_BACKUP_BUILD2.sql
+    PROMPT     --------------------------------------------------------------------------------
+
+	PROMPT *** DML ***
+	PROMPT *** CMS_INST_PARAM.sql ***
+    @$VMS_HOME/NOV_VMSGPRHOST_R90_RELEASE/ROOTFOLDER/RELEASE/DML/CMS_INST_PARAM.sql
+    PROMPT     --------------------------------------------------------------------------------
+
+
+PROMPT *** Build 3 ***		
+	PROMPT *** DDL ***
+	PROMPT     *** CREATE_BACKUPS  *****
+    @$VMS_HOME/NOV_VMSGPRHOST_R90_RELEASE/ROOTFOLDER/RELEASE/DDL/SCRIPTS/CREATE_BACKUP_BUILD3.sql
+    PROMPT     --------------------------------------------------------------------------------
+
+	PROMPT *** DML ***
+	PROMPT *** CMS_INST_PARAM.sql ***
+    @$VMS_HOME/NOV_VMSGPRHOST_R90_RELEASE/ROOTFOLDER/RELEASE/DML/CMS_INST_PARAM.sql
+    PROMPT     --------------------------------------------------------------------------------
 	
-	PROMPT     *** no dml  ***
-    --@$VMS_HOME/NOV_VMSGPRHOST_R90_RELEASE/VMSGPRHOST_R90_B0002/DML/VMS_8937_VMS_CONFIG_QUERY.sql
-	PROMPT     --------------------------------------------------------------------------------
+	@$VMS_HOME/NOV_VMSGPRHOST_R90_RELEASE/MANDATORY_DML.sql;
 
 PROMPT			 	END OF RELEASE VMSGPRHOST_R90
 

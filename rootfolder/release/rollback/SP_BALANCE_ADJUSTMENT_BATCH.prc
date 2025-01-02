@@ -109,12 +109,6 @@ AS
     * Purpose          : VMS-2615-Enhance Batch process to support serial
     * Reviewer         : Saravana Kumar A
     * Release Number   : R32
-    
-    * Modified By      : Shanmugavel
-    * Modified Date    : 23/11/2023
-    * Purpose          : VMS-8055-Batch File Upload Processing to Decline Voids with a Zero/Negative Balance
-    * Reviewer         : Venkat/John/Pankaj
-    * Release Number   : VMSGPRHOSTR89_B0001
 
 
  *************************************************/
@@ -134,7 +128,7 @@ AS
    v_business_time          VARCHAR2 (10);
    v_cr_dr_flag             VARCHAR2 (2);
    v_velocity_check         BOOLEAN                             DEFAULT FALSE;
-   v_msg                    VARCHAR2 (4)                         DEFAULT '0200';
+   v_msg                    VARCHAR2 (2)                         DEFAULT '00';
    v_txn_code               cms_func_mast.cfm_txn_code%TYPE;
    v_txn_mode               cms_func_mast.cfm_txn_mode%TYPE       DEFAULT '0';
   -- v_curr_code              cms_inst_param.cip_param_value%TYPE; --Institution currency validation removed for 3.0.4 release
@@ -326,7 +320,7 @@ END IF;
    --SN Set the txn_code & dr_cr_flag using txn_amount
    IF v_txn_amount = 0
    THEN
-      p_resp_code := '25';
+      p_resp_code := '12';
       p_errmsg := 'Transaction rejected for txn amount is zero';
       RAISE exp_main_reject_record;
    ELSE
@@ -351,8 +345,7 @@ END IF;
         FROM cms_spprt_reasons
        WHERE csr_spprt_rsncode = p_reason_code
          AND csr_spprt_key = 'MANADJDRCR'
-         AND csr_inst_code = p_instcode
-         AND csr_reason_ind = v_dr_cr_flag;
+         AND csr_inst_code = p_instcode;
 
       /*IF v_reason_count = 0
       THEN
@@ -364,8 +357,8 @@ END IF;
    EXCEPTION
       WHEN no_data_found
       THEN
-          p_resp_code := '81';
-         p_errmsg := 'Invalid Reason Code';
+          p_resp_code := '21';
+         p_errmsg := 'Invalid reason code ';
          RAISE exp_main_reject_record;
       WHEN OTHERS
       THEN
@@ -644,23 +637,6 @@ END IF;
 
    --En Get the Spending Account Number & Balance
 
-    -- start VMS-8055
-    IF v_ledger_bal IS NOT NULL AND v_ledger_bal < 0
-		 THEN
-		     p_resp_code := '82';
-			 p_errmsg := 'Account is having negative balance';
-			 RAISE exp_main_reject_record;
-    END IF;
-    
-    IF v_dr_cr_flag = 'DR' AND v_ledger_bal IS NOT NULL 
-            AND v_acct_bal IS NOT NULL AND v_acct_bal != v_ledger_bal
-         THEN 
-            p_resp_code := '83';
-            p_errmsg := 'Pending preauth available for this account';
-			RAISE exp_main_reject_record;
-    END IF;
-    -- End VMS-8055
-    
     --Sn - commented for fwr-48
 
    --SN Select the function code
@@ -791,7 +767,7 @@ END IF;
       --SN check balance
       IF (v_upd_ledger_bal > v_max_card_bal) OR (v_upd_amt > v_max_card_bal)
       THEN
-         p_resp_code := '111';
+         p_resp_code := '12';
          p_errmsg := 'EXCEEDING MAXIMUM CARD BALANCE';
          RAISE exp_main_reject_record;
       END IF;

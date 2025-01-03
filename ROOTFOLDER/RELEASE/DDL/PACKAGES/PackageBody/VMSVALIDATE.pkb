@@ -1,3 +1,4 @@
+set define off;
 create or replace
 PACKAGE BODY              VMSCMS.VMSVALIDATE
 IS
@@ -62,7 +63,7 @@ IS
                            p_isAuthorizedDevice_out   OUT   VARCHAR2,
                            p_mobile_deliverymode_out  OUT   VARCHAR2,
                            p_email_deliverymode_out   OUT   VARCHAR2,
-                           p_reason_code_out          OUT   VARCHAR2,  --Added for VMS-6617 Changes
+						    p_reason_code_out          OUT   VARCHAR2,  --Added for VMS-6617 Changes
                            p_transactions_out         OUT   SYS_REFCURSOR)
    AS
    
@@ -72,42 +73,49 @@ IS
      * Modified For      : VMS-423
      * Reviewer          : Saravanakumar A
      * Build Number      : R04_B0001
-
+     
      * Modified By      : ULAGAN A
      * Modified Date    : 12-AUG-2019
      * Purpose          : VMS 1053 - CSS: Web Alternative login restriction based on configuration.
      * Reviewer         : SaravanaKumar.A
      * Release Number   : VMSGPRHOST_R19
-
+          
      * Modified By      : Ubaidur Rahman.H
      * Modified Date    : 11-SEP-2019
      * Purpose          : VMS 1091 - Enhance Web login procedure to return info needed for OTP.
      * Reviewer         : SaravanaKumar.A
      * Release Number   : VMSGPRHOST_R20
-
+     
      * Modified by                 : DHINAKARAN B
      * Modified Date               : 26-NOV-2019
      * Modified For                : VMS-1415
      * Reviewer                    : Saravana Kumar A
      * Build Number                : VMSGPRHOST_R23_B1
-
+  
      * Modified by                 : Mageshkumar S
      * Modified Date               : 31-July-2020
      * Modified For                : VMS-2858
      * Reviewer                    : Saravana Kumar A
      * Build Number                : VMSGPRHOST_R34_B1
-
+     
      * Modified by                 : Ubaidur Rahman.H
      * Modified Date               : 15-June-2021
      * Modified For                : VMS- 4624
      * Reviewer                    : Saravana Kumar A
      * Build Number                : VMSGPRHOST_R47_B1
-
-     * Modified By                 : Pankaj S.
+	 
+	 * Modified By                 : Pankaj S.
      * Modified For                : VMS-6617
      * Purpose                     : Fraud - ONHOLD cardstatus updates - Auth changes
      * Reviewer                    : Venkat S.
      * Release Number              : R70.2
+	 
+	* Modified By      : venkat Singamaneni
+    * Modified Date    : 05-12-2022
+    * Purpose          : Archival changes.
+    * Reviewer         : Karthick/Jey
+    * Release Number   : VMSGPRHOST60 for VMS-5735/FSP-991
+  
 ************************************************************************************/
       l_hash_pan           cms_appl_pan.cap_pan_code%TYPE; 
       l_encr_pan           cms_appl_pan.cap_pan_code_encr%TYPE;
@@ -162,6 +170,9 @@ IS
          v_compl_fee varchar2(10);
    v_compl_feetxn_excd varchar2(10);
    v_compl_feecode varchar2(10);
+   
+      v_Retperiod  date;  --Added for VMS-5735/FSP-991
+      v_Retdate  date; --Added for VMS-5735/FSP-991
 
       TYPE t_address IS TABLE OF VARCHAR2 (50)
                            INDEX BY VARCHAR2 (50);
@@ -248,7 +259,7 @@ IS
                    cap_active_date,
                    cap_user_identify_type,
                    nvl(cap_repl_flag,0),
-                   CAP_REPLACE_EXPRYDT,
+                  CAP_REPLACE_EXPRYDT,
                    cap_panmast_param5  --Added for VMS-6617 Changes
               INTO l_prod_code,
                    l_card_type,
@@ -288,11 +299,11 @@ IS
              WHERE CAM_CUST_CODE=l_cust_code
              AND CAM_INST_CODE=p_inst_code_in
              AND CAM_ADDR_FLAG='P';
-
+             
              if p_zip_code_out='*' then
               p_zip_code_out:=NULL;
              end if;
-
+          
           EXCEPTION 
            WHEN OTHERS THEN
             l_resp_cde := '89';
@@ -384,6 +395,18 @@ IS
          END;
          if l_dup_rrn_check='Y' then
          BEGIN
+		 
+		    --Added for VMS-5735/FSP-991
+		   select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
+		   INTO   v_Retperiod 
+		   FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
+		   WHERE  OPERATION_TYPE='ARCHIVE' 
+		   AND OBJECT_NAME='TRANSACTIONLOG_EBR';
+       
+           v_Retdate := TO_DATE(SUBSTR(TRIM(p_tran_date_in), 1, 8), 'yyyymmdd');
+		   
+		IF (v_Retdate>v_Retperiod) THEN                                   --Added for VMS-5735/FSP-991
+		   
             SELECT COUNT (1)
               INTO l_rrn_count
               FROM transactionlog
@@ -391,6 +414,18 @@ IS
                    AND business_date = p_tran_date_in
                    AND instcode = p_inst_code_in
                    AND delivery_channel = p_delivery_chnl_in;
+				   
+		ELSE
+		    
+			SELECT COUNT (1)
+            INTO l_rrn_count
+            FROM VMSCMS_HISTORY.TRANSACTIONLOG_HIST                     --Added for VMS-5735/FSP-991
+            WHERE     rrn = p_rrn_in
+                   AND business_date = p_tran_date_in
+                   AND instcode = p_inst_code_in
+                   AND delivery_channel = p_delivery_chnl_in;
+		
+		END IF;
 
             IF l_rrn_count > 0
             THEN
@@ -413,7 +448,7 @@ IS
         end if;
 
          --EN: Duplicate RRN Check
-
+         
           --SN : Get customer detls
          BEGIN	 
             SELECT NVL (ccm_wrong_logincnt, '0'),
@@ -444,7 +479,7 @@ IS
          END;
 
          --EN : Get customer detls
-
+		 
 	 BEGIN
             SELECT DECODE (NVL(l_cust_id_type,cpc_user_identify_type),
                            1, 'Anonymous Gift',
@@ -457,7 +492,7 @@ IS
              WHERE     cpc_inst_code = p_inst_code_in
                    AND cpc_prod_code = l_prod_code
                    AND cpc_card_type = l_card_type;
-
+                            
          EXCEPTION
             WHEN OTHERS
             THEN
@@ -468,7 +503,7 @@ IS
                RAISE exp_reject_record;
          END;
 
-
+        
 
          IF NVL (p_dob_in, l_dob) <> l_dob
          THEN
@@ -603,7 +638,7 @@ IS
                   || SUBSTR (SQLERRM, 1, 200);
                RAISE exp_reject_record;
          END;
-
+         
      -- Start VMS-1091    
 	   -- Start p_isAuthorizedDevice_out using p_cust_id_out and p_device_id_in
        BEGIN
@@ -650,7 +685,7 @@ IS
                 tran_config.vtc_inst_code = p_inst_code_in
             AND 
                 tran_config.VTC_TRANS_CONF_CODE = 'O';
-
+             
      EXCEPTION 
      WHEN OTHERS
             THEN
@@ -660,9 +695,9 @@ IS
                   || SUBSTR (SQLERRM, 1, 200);
                RAISE exp_reject_record;
      END;
-
-
-
+     
+     
+     
       BEGIN
            SELECT count(*)
            INTO l_otp_count
@@ -674,14 +709,14 @@ IS
                      AND VTC_CARD_TYPE= l_card_type
                      AND vtc_delivery_channel = p_delivery_chnl_in
                      and vtc_inst_code = p_inst_code_in;
-
+                    
            IF l_otp_count = '0' THEN
-
+           
            p_mobile_deliverymode_out := NULL;
            p_email_deliverymode_out  := NULL;
-
+           
            END IF;
-
+                       
       EXCEPTION
       WHEN OTHERS
             THEN
@@ -817,7 +852,7 @@ IS
                RAISE exp_reject_record;
          END;
 
-         --SN: VMS-6617 Changes
+ --SN: VMS-6617 Changes
          IF l_card_stat='6' AND p_reason_code_out='311' THEN
             BEGIN
                 updt_cardstat_hld2actv (p_inst_code_in,
@@ -829,11 +864,11 @@ IS
                                         l_card_stat,
                                         l_resp_cde,
                                         l_err_msg);
-                                        
+
                 IF l_err_msg <> 'OK' THEN
                    RAISE exp_reject_record;
                 END IF;
-                
+
                 BEGIN
                    SELECT ccs_stat_desc
                      INTO p_card_stat_out
@@ -847,8 +882,8 @@ IS
                             'Error while selcting card status description'
                          || SUBSTR (SQLERRM, 1, 200);
                       RAISE exp_reject_record;
-                END; 
-                
+                END;
+
             EXCEPTION
              WHEN exp_reject_record THEN
                 RAISE;
@@ -899,10 +934,10 @@ IS
     ELSE
       p_replaced_card_out := 'false';
     END IF;
-
+	
 	--Get the order channel
     BEGIN
-
+    
 --    select vpi_order_channel INTO p_order_channel_out from vms_partner_id_mast where vpi_partner_id=(
 --    select vli_partner_id from vms_line_item_dtl where vli_pan_code=l_hash_pan);
       select NVL(vod_channel,vpi_order_channel) INTO p_order_channel_out
@@ -912,16 +947,16 @@ IS
       and vod_partner_id=VPI_PARTNER_ID
       and vod_partner_id=VLI_PARTNER_ID
       and  VLI_PARTNER_ID<>'Replace_Partner_ID';
-
+       
      EXCEPTION
      WHEN NO_DATA_FOUND THEN
      p_order_channel_out := NULL;
-
+     
         WHEN OTHERS THEN
            l_resp_cde := '12';
            l_err_msg :=  'Error while getting ORDER CHANNEL dtls-' || SUBSTR (SQLERRM, 1, 200);
            RAISE exp_reject_record;
-
+    
     END;
     --END the order channel
          l_resp_cde := '1';
@@ -1492,6 +1527,15 @@ IS
    p_resp_code_out           OUT      VARCHAR2,
    p_resp_msg_out            OUT      VARCHAR2
 )
+/********************************************************************************************************
+    * Modified By      : venkat Singamaneni
+    * Modified Date    : 05-12-2022
+    * Purpose          : Archival changes.
+    * Reviewer         : Karthick/Jey
+    * Release Number   : VMSGPRHOST60 for VMS-5735/FSP-991
+
+***************************************************************************/
+
 AS
    l_hash_pan          cms_appl_pan.cap_pan_code%TYPE;
    l_encr_pan          cms_appl_pan.cap_pan_code_encr%TYPE;
@@ -1599,7 +1643,7 @@ BEGIN
                || SUBSTR (SQLERRM, 1, 200);
             RAISE exp_reject_record;
       END;
-
+	  
       BEGIN
          SELECT cpc_encrypt_enable
            INTO l_encrypt_enable
@@ -1789,7 +1833,7 @@ BEGIN
 
             l_num := l_num + 1;
          END LOOP;
-
+		 
 		  IF l_num = 1
             THEN
                p_resp_code_out := '117';
@@ -1935,11 +1979,22 @@ BEGIN
 				  p_partner_id_in,
                                   l_errmsg
                                  );
-
+      
           update cms_transaction_log_dtl
           set CTD_DEVICE_ID= p_device_id_in,
           CTD_USER_NAME= p_user_name_in
           where CTD_HASHKEY_ID=l_hashkey_id;
+		  
+		  IF SQL%ROWCOUNT = 0 THEN                         
+		  
+		  update VMSCMS_HISTORY.CMS_TRANSACTION_LOG_DTL_HIST                  --Added for VMS-5735/FSP-991
+          set CTD_DEVICE_ID= p_device_id_in,
+          CTD_USER_NAME= p_user_name_in
+          where CTD_HASHKEY_ID=l_hashkey_id;
+		  
+		  END IF;
+		  
+		  
 
       IF l_errmsg <> 'OK'
       THEN
@@ -2033,7 +2088,7 @@ AS
 	  l_tran_amt          cms_acct_mast.cam_acct_bal%TYPE;
       l_errmsg            VARCHAR2 (500);
       exp_reject_record   EXCEPTION;
-
+	  
 	/********************************************************************************
 	 * Modified Date    : 30-Nov-2020
      * Modified By      : Puvanesh.N/Ubaidur.H
@@ -2142,7 +2197,7 @@ AS
          END;
          END IF;
          -- En validating Date Time RRN
-
+		 
 		 -- Modified for VMS-3349 Start
 
 /*         --SN : authorize_nonfinancial_txn check
@@ -2204,7 +2259,7 @@ AS
     --EN : authorize_nonfinancial_txn check
 */
 
-
+		 
 BEGIN
       sp_status_check_gpr (p_inst_code_in,
                            p_pan_code_in,
@@ -2301,7 +2356,7 @@ BEGIN
          END;
       END IF;
    END IF;
-
+ 
         --SN callLogId Validation
 		-- Modified for VMS-3349 End
         BEGIN
@@ -2362,9 +2417,9 @@ BEGIN
                   || SUBSTR (SQLERRM, 1, 300);
                p_resp_code_out := '69';
          END;
-
+		 
 	 BEGIN
-
+             
             SELECT LPAD (SEQ_AUTH_ID.NEXTVAL, 6, '0') INTO l_auth_id FROM DUAL;
          EXCEPTION
             WHEN OTHERS
@@ -2517,25 +2572,33 @@ END Validate_calllog_id;
                                        p_status_out                  OUT VARCHAR2,
                                        p_reason_code_out             OUT VARCHAR2)  --Added for VMS-6617 Changes
    AS
-
+   
    /*******************************************************************************
      * Modified by       : Divya Bhaskaran
      * Modified Date     : 22-Aug-18
      * Modified For      : VMS-465
      * Reviewer          : Saravanakumar A
      * Build Number      : R05_B0004
-
+     
      * Modified by       : Dhinakaran B
      * Modified Date     : 27-May-21
      * Modified For      : VMS-4426
      * Reviewer          : Saravanakumar A
      * Build Number      : R47 Build 2
-
-     * Modified By       : Pankaj S.
+	 
+	 * Modified By       : Pankaj S.
      * Modified For      : VMS-6617
      * Purpose           : Fraud - ONHOLD cardstatus updates - Virtual Auth changes
      * Reviewer          : Venkat S.
      * Release Number    : R70.2
+	 
+	* Modified By      : venkat Singamaneni
+    * Modified Date    : 05-12-2022
+    * Purpose          : Archival changes.
+    * Reviewer         : Karthick/Jey
+    * Release Number   : VMSGPRHOST60 for VMS-5735/FSP-991
+
+
 ************************************************************************************/
       l_hash_pan           cms_appl_pan.cap_pan_code%TYPE; 
       l_encr_pan           cms_appl_pan.cap_pan_code_encr%TYPE;
@@ -2583,11 +2646,15 @@ END Validate_calllog_id;
    v_compl_fee varchar2(10);
    v_compl_feetxn_excd varchar2(10);
    v_compl_feecode varchar2(10);
-
+   
    l_appl_code         cms_appl_pan.cap_appl_code%TYPE;
    l_kyc_flag          cms_caf_info_entry.cci_kyc_flag%TYPE;
    l_user_name         cms_cust_mast.ccm_user_name%TYPE;   
    l_user_identity CMS_PROD_CATTYPE.CPC_USER_IDENTIFY_TYPE%type;
+   
+   
+	v_Retperiod  date;  --Added for VMS-5735/FSP-991
+	v_Retdate  date; --Added for VMS-5735/FSP-991
    BEGIN
       BEGIN
 
@@ -2683,7 +2750,7 @@ END Validate_calllog_id;
                    l_cust_id_type,
                    l_repl_flag,
                    l_replace_expry_date,
-                   l_appl_code,
+                    l_appl_code,
                    p_reason_code_out   --Added for VMS-6617 Changes
               FROM cms_appl_pan
              WHERE     cap_pan_code = l_hash_pan
@@ -2707,11 +2774,11 @@ END Validate_calllog_id;
              WHERE CAM_CUST_CODE=l_cust_code
              AND CAM_INST_CODE=p_inst_code_in
              AND CAM_ADDR_FLAG='P';
-
+             
              if p_zip_code_out='*' then
               p_zip_code_out:='';
              end if;
-
+          
           EXCEPTION 
            WHEN OTHERS THEN
             l_resp_cde := '89';
@@ -2790,6 +2857,18 @@ END Validate_calllog_id;
          END;
          if l_dup_rrn_check='Y' then
          BEGIN
+		 
+		    --Added for VMS-5735/FSP-991
+		   select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
+		   INTO   v_Retperiod 
+		   FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
+		   WHERE  OPERATION_TYPE='ARCHIVE' 
+		   AND OBJECT_NAME='TRANSACTIONLOG_EBR';
+		   
+		   v_Retdate := TO_DATE(SUBSTR(TRIM(p_tran_date_in), 1, 8), 'yyyymmdd');
+		 
+		IF (v_Retdate>v_Retperiod)  THEN                                  --Added for VMS-5735/FSP-991
+		
             SELECT COUNT (1)
               INTO l_rrn_count
               FROM transactionlog
@@ -2797,6 +2876,18 @@ END Validate_calllog_id;
                    AND business_date = p_tran_date_in
                    AND instcode = p_inst_code_in
                    AND delivery_channel = p_delivery_chnl_in;
+				   
+		 ELSE
+		 
+		    SELECT COUNT (1)
+            INTO l_rrn_count
+            FROM VMSCMS_HISTORY.TRANSACTIONLOG_HIST                  --Added for VMS-5735/FSP-991
+            WHERE     rrn = p_rrn_in
+                   AND business_date = p_tran_date_in
+                   AND instcode = p_inst_code_in
+                   AND delivery_channel = p_delivery_chnl_in;
+		 
+		 END IF;
 
             IF l_rrn_count > 0
             THEN
@@ -2819,7 +2910,7 @@ END Validate_calllog_id;
         end if;
 
          --EN: Duplicate RRN Check
-
+         
          BEGIN
             SELECT CPC_PRODUCT_UPC,CPC_USER_IDENTIFY_TYPE
               INTO p_product_upc_out,l_user_identity
@@ -2827,7 +2918,7 @@ END Validate_calllog_id;
              WHERE     cpc_inst_code = p_inst_code_in
                    AND cpc_prod_code = l_prod_code
                    AND cpc_card_type = l_card_type;
-
+                            
          EXCEPTION
             WHEN OTHERS
             THEN
@@ -2837,7 +2928,7 @@ END Validate_calllog_id;
                   || SUBSTR (SQLERRM, 1, 200);
                RAISE exp_reject_record;
          END;
-
+		 
 	         --SN : Get customer detls
          BEGIN	 
             SELECT ccm_cust_id
@@ -2867,7 +2958,7 @@ END Validate_calllog_id;
                       SUBSTR(SQLERRM, 1, 200);
                 RAISE EXP_REJECT_RECORD;
         END;
-
+        
          --SN : CMSAUTH check
          BEGIN
             sp_cmsauth_check (p_inst_code_in,
@@ -2917,8 +3008,8 @@ END Validate_calllog_id;
          END;
 
          --EN : CMSAUTH check
-
-
+         
+         
     BEGIN
          SELECT cci_kyc_flag
            INTO l_kyc_flag
@@ -2934,7 +3025,7 @@ END Validate_calllog_id;
                || SUBSTR (SQLERRM, 1, 200);
             RAISE exp_reject_record;
       END;
-
+      
        BEGIN
          SELECT NVL (fn_dmaps_main(ccm_user_name), 0)
            INTO l_user_name
@@ -3017,7 +3108,7 @@ END Validate_calllog_id;
                RAISE exp_reject_record;
         END;
         END IF;
-
+        
          BEGIN
             SELECT LPAD (seq_auth_id.NEXTVAL, 6, '0')
               INTO l_auth_id
@@ -3094,7 +3185,7 @@ END Validate_calllog_id;
                RAISE exp_reject_record;
          END;
 
-         --SN: VMS-6617 Changes
+--SN: VMS-6617 Changes
          IF l_card_stat='6' AND p_reason_code_out='311' THEN
             BEGIN
                 updt_cardstat_hld2actv (p_inst_code_in,
@@ -3106,10 +3197,10 @@ END Validate_calllog_id;
                                         l_card_stat,
                                         l_resp_cde,
                                         l_err_msg);
-                                        
+
                 IF l_err_msg <> 'OK' THEN
                    RAISE exp_reject_record;
-                END IF; 
+                END IF;
 
                BEGIN
                    SELECT ccs_stat_desc
@@ -3124,7 +3215,7 @@ END Validate_calllog_id;
                             'Error while selcting card status description'
                          || SUBSTR (SQLERRM, 1, 200);
                       RAISE exp_reject_record;
-                END;                
+                END;
             EXCEPTION
              WHEN exp_reject_record THEN
                 RAISE;
@@ -3135,7 +3226,6 @@ END Validate_calllog_id;
             END;
          END IF;
          --EN: VMS-6617 Changes
-
 	        l_resp_cde := '1';
 
       EXCEPTION                                         --<<Main Exception>>--
@@ -3307,8 +3397,7 @@ END Validate_calllog_id;
          p_resp_code_out := '89';
          p_resp_msg_out := 'Main Excp- ' || SUBSTR (SQLERRM, 1, 300);
    END virtualcard_authenticate;
-
-   PROCEDURE updt_cardstat_hld2actv (
+    PROCEDURE updt_cardstat_hld2actv (
         p_inst_code_in          NUMBER,
         p_card_no_in            VARCHAR2,
         p_cardencr_in           VARCHAR2,
@@ -3319,12 +3408,12 @@ END Validate_calllog_id;
         p_resp_code_out  OUT    VARCHAR2,
         p_resp_msg_out   OUT    VARCHAR2
     ) AS
-        l_call_id      cms_calllog_mast.ccm_call_id%TYPE;  
+        l_call_id      cms_calllog_mast.ccm_call_id%TYPE;
         l_remark       cms_calllog_details.ccd_comments%TYPE := 'Your account has been updated to active from an on-hold status. It was put in a fraud prevention hold due to inactivity and is now active and ready to use.';
    BEGIN
        p_resp_msg_out := 'OK';
        p_resp_code_out := '00';
-       
+
        BEGIN
            UPDATE vmscms.cms_appl_pan
               SET cap_card_stat = '1',
@@ -3382,13 +3471,13 @@ END Validate_calllog_id;
                  INSERT INTO cms_calllog_details
                              (ccd_inst_code, ccd_call_id, ccd_pan_code, ccd_call_seq,
                               ccd_rrn, ccd_devl_chnl, ccd_txn_code, ccd_tran_date,
-                              ccd_tran_time, ccd_tbl_names, ccd_colm_name, 
-                              ccd_old_value, ccd_new_value, ccd_comments, ccd_ins_user, 
+                              ccd_tran_time, ccd_tbl_names, ccd_colm_name,
+                              ccd_old_value, ccd_new_value, ccd_comments, ccd_ins_user,
                               ccd_ins_date, ccd_lupd_user, ccd_lupd_date, ccd_acct_no)
                       VALUES (p_inst_code_in, l_call_id, p_card_no_in, 1,
-                              NULL, '05', '01', TO_CHAR (SYSDATE, 'yyyymmdd'), 
-                              TO_CHAR (SYSDATE, 'hh24miss'), NULL, NULL, 
-                              NULL, NULL, l_remark, 1, 
+                              NULL, '05', '01', TO_CHAR (SYSDATE, 'yyyymmdd'),
+                              TO_CHAR (SYSDATE, 'hh24miss'), NULL, NULL,
+                              NULL, NULL, l_remark, 1,
                               SYSDATE, 1, SYSDATE, p_acctno_in);
               EXCEPTION
                  WHEN OTHERS THEN
@@ -3407,7 +3496,7 @@ END Validate_calllog_id;
        WHEN OTHERS THEN
            p_resp_code_out := '21';
            p_resp_msg_out := 'Main excp updt_cardstat_hld2actv-'||substr(sqlerrm,1,200);
-   END updt_cardstat_hld2actv;  
+   END updt_cardstat_hld2actv;
 END;
 /
 show error

@@ -888,6 +888,8 @@ PACKAGE BODY                             vmscms.VMSTOKENIZATION IS
       l_customer_cardnum  cms_prod_cattype.cpc_customer_care_num%type;
       l_de27_customercare_number  varchar2(200):='';
       l_encrypt_enable    cms_prod_cattype.cpc_encrypt_enable%type; 
+	  l_otp_channel cms_prod_cattype.cpc_otp_channel%type;   --VMS-8262
+      l_vms8262_toggle cms_inst_param.cip_param_value%type :='Y';  --VMS-8262
    BEGIN
       l_resp_cde := '1';
       l_err_msg:='OK';
@@ -965,8 +967,8 @@ PACKAGE BODY                             vmscms.VMSTOKENIZATION IS
          --End Get the card details
          
          BEGIN
-            SELECT cpc_encrypt_enable
-              INTO l_encrypt_enable
+            SELECT cpc_encrypt_enable, decode(cpc_otp_channel,'0','N/A','1','SMS','2','EMAIL','3','SMS AND EMAIL','SMS AND EMAIL')
+              INTO l_encrypt_enable,l_otp_channel
               FROM cms_prod_cattype
              WHERE cpc_prod_code = l_prod_code
              AND  cpc_card_type = l_card_type
@@ -1208,7 +1210,19 @@ PACKAGE BODY                             vmscms.VMSTOKENIZATION IS
                    RAISE exp_reject_record;
                  WHEN OTHERS THEN
                    l_resp_cde := '21';
-                   l_err_msg := 'Error while selecting cellphone no and email id for physical address' || 
+                   l_err_msg := 'Error while selecting cellphone no and email id for physical address' ||
+                   SUBSTR (SQLERRM, 1, 200);
+                   RAISE exp_reject_record;
+           END;
+           
+           BEGIN
+                Select CIP_PARAM_VALUE into l_vms8262_toggle from vmscms.cms_inst_param where cip_param_key='VMS_8262_TOGGLE';
+           EXCEPTION
+                WHEN NO_DATA_FOUND THEN
+                   l_vms8262_toggle:='Y';
+                WHEN OTHERS THEN
+                   l_resp_cde := '21';
+                   l_err_msg := 'Error while selecting toggle value' ||
                    SUBSTR (SQLERRM, 1, 200);
                    RAISE exp_reject_record;
            END;
@@ -1247,14 +1261,34 @@ PACKAGE BODY                             vmscms.VMSTOKENIZATION IS
 			CONNECT BY LEVEL <= LENGTH (L_EMAIL_ID))) into L_EMAIL_ID from dual;  
 			l_de27_email:=rpad('EMAIL',32,' ')||rpad(l_email_id,64,' ')||rpad(('EMAIL_'||l_customer_id),32,' ')||rpad(' ',64,' ');
 		end if;
-		
-		if(l_de27_mobile is not null or l_de27_email is not null or l_de27_customercare_number is not null) then
-			p_de27response_out:='027'||length(l_de27_mobile||l_de27_email||l_de27_customercare_number)||l_de27_mobile||l_de27_email||l_de27_customercare_number;
-		else
-			P_DE27RESPONSE_OUT:='';
-			L_RESP_CDE := '21';
-			L_ERR_MSG := 'cellphone no and email id not found for customer id';
-			raise exp_reject_record;
+        
+        if(l_vms8262_toggle = 'N') then
+                if (l_de27_mobile is not null or l_de27_email is not null or l_de27_customercare_number is not null) then
+                        p_de27response_out:='027'||length(l_de27_mobile||l_de27_email||l_de27_customercare_number)||
+                        l_de27_mobile||l_de27_email||l_de27_customercare_number;
+                else
+                    P_DE27RESPONSE_OUT:='';
+                    L_RESP_CDE := '21';
+                    L_ERR_MSG := 'cellphone no and email id not found for customer id';
+                    raise exp_reject_record;
+                end if;
+        else
+                if (l_otp_channel = 'N/A' and l_de27_customercare_number is not null) then
+                    p_de27response_out:='027'||length(l_de27_customercare_number)||l_de27_customercare_number;
+                elsif (l_otp_channel = 'SMS' and (l_de27_mobile is not null or l_de27_customercare_number is not null)) then
+                    p_de27response_out:='027'||length(l_de27_mobile||l_de27_customercare_number)||l_de27_mobile||l_de27_customercare_number;
+                elsif  (l_otp_channel = 'EMAIL' and (l_de27_email is not null or l_de27_customercare_number is not null)) then
+                    p_de27response_out:='027'||length(l_de27_email||l_de27_customercare_number)||l_de27_email||l_de27_customercare_number;
+                elsif (l_otp_channel = 'SMS AND EMAIL')
+                  and (l_de27_mobile is not null or l_de27_email is not null or l_de27_customercare_number is not null) then
+                    p_de27response_out:='027'||length(l_de27_mobile||l_de27_email||l_de27_customercare_number)||
+                    l_de27_mobile||l_de27_email||l_de27_customercare_number;
+                else
+                    P_DE27RESPONSE_OUT:='';
+                    L_RESP_CDE := '21';
+                    L_ERR_MSG := 'cellphone no and email id not found for customer id';
+                    raise exp_reject_record;
+                end if;
 		end if;
 
         EXCEPTION
@@ -3048,7 +3082,9 @@ END check_eligibility;
      l_customer_cardnum  cms_prod_cattype.cpc_customer_care_num%type;
      l_de27_customercare_number  varchar2(200):='';
      l_encrypt_enable         cms_prod_cattype.cpc_encrypt_enable%type;
-	 
+	 l_otp_channel cms_prod_cattype.cpc_otp_channel%type;   --VMS-8262
+     l_vms8262_toggle cms_inst_param.cip_param_value%type :='Y';  --VMS-8262
+
    BEGIN
       l_resp_cde := '1';
       l_err_msg :='OK';
@@ -3127,8 +3163,8 @@ END check_eligibility;
          --End Get the card details  
          
          BEGIN
-            SELECT cpc_encrypt_enable
-              INTO l_encrypt_enable
+            SELECT cpc_encrypt_enable, decode(cpc_otp_channel,'0','N/A','1','SMS','2','EMAIL','3','SMS AND EMAIL','SMS AND EMAIL')
+              INTO l_encrypt_enable, l_otp_channel
               FROM cms_prod_cattype
              WHERE cpc_prod_code = l_prod_code
              AND  cpc_card_type = l_card_type
@@ -3418,6 +3454,19 @@ BEGIN
                    SUBSTR (SQLERRM, 1, 200);
                    RAISE exp_reject_record;
        end;
+       
+       BEGIN
+                Select CIP_PARAM_VALUE into l_vms8262_toggle from vmscms.cms_inst_param where cip_param_key='VMS_8262_TOGGLE';
+       EXCEPTION
+                WHEN NO_DATA_FOUND THEN
+                   l_vms8262_toggle:='Y';
+                WHEN OTHERS THEN
+                   l_resp_cde := '21';
+                   l_err_msg := 'Error while selecting toggle value' ||
+                   SUBSTR (SQLERRM, 1, 200);
+                   RAISE exp_reject_record;
+        END;
+          
 BEGIN
   IF L_CELL_NO   IS NOT NULL THEN  
     L_CELL_NO    :=fn_mask(L_CELL_NO,'*',1,LENGTH(L_CELL_NO)-4);
@@ -3471,16 +3520,35 @@ BEGIN
     END IF;
     
   END IF;
-  
-  IF(l_de27_mobile    IS NOT NULL OR l_de27_email IS NOT NULL or l_de27_customercare_number is not null) THEN
-    p_de27response_out:='027'||LENGTH(l_de27_mobile||l_de27_email||l_de27_customercare_number)||
-    l_de27_mobile||l_de27_email||l_de27_customercare_number;
-  ELSE
-    P_DE27RESPONSE_OUT:='';
-   -- L_RESP_CDE        := '21';
-   -- L_ERR_MSG         := 'cellphone no and email id not found for customer id';
-   -- raise exp_reject_record;
-  END IF;
+
+        if(l_vms8262_toggle = 'N') then
+                if (l_de27_mobile is not null or l_de27_email is not null or l_de27_customercare_number is not null) then
+                        p_de27response_out:='027'||length(l_de27_mobile||l_de27_email||l_de27_customercare_number)||
+                        l_de27_mobile||l_de27_email||l_de27_customercare_number;
+                else
+                    P_DE27RESPONSE_OUT:='';
+                    --L_RESP_CDE := '21';
+                    --L_ERR_MSG := 'cellphone no and email id not found for customer id';
+                    --raise exp_reject_record;                                      
+                end if;
+        else
+                if (l_otp_channel = 'N/A' and l_de27_customercare_number is not null) then
+                    p_de27response_out:='027'||length(l_de27_customercare_number)||l_de27_customercare_number;
+                elsif (l_otp_channel = 'SMS' and (l_de27_mobile is not null or l_de27_customercare_number is not null)) then
+                    p_de27response_out:='027'||length(l_de27_mobile||l_de27_customercare_number)||l_de27_mobile||l_de27_customercare_number;
+                elsif  (l_otp_channel = 'EMAIL' and (l_de27_email is not null or l_de27_customercare_number is not null)) then
+                    p_de27response_out:='027'||length(l_de27_email||l_de27_customercare_number)||l_de27_email||l_de27_customercare_number;
+                elsif (l_otp_channel = 'SMS AND EMAIL')
+                  and (l_de27_mobile is not null or l_de27_email is not null or l_de27_customercare_number is not null) then
+                    p_de27response_out:='027'||length(l_de27_mobile||l_de27_email||l_de27_customercare_number)||
+                    l_de27_mobile||l_de27_email||l_de27_customercare_number;
+                else
+                    P_DE27RESPONSE_OUT:='';
+                    --L_RESP_CDE := '21';
+                    --L_ERR_MSG := 'cellphone no and email id not found for customer id';
+                    --raise exp_reject_record;
+                end if;
+		end if;
 END;
 --END IF;
 end if;

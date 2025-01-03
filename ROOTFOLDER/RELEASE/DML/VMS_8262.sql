@@ -1,0 +1,1 @@
+update vmscms.cms_prod_cattype set cpc_otp_channel= decode(cpc_token_eligibility, 'Y','3','N','0');

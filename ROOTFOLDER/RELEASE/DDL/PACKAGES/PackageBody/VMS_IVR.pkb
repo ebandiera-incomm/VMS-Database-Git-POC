@@ -33,6 +33,13 @@ IS
   * BUILD NUMBER       : VMSGPRHOST_4.3_B0001
   *****************************************************************************
   *******************/
+  
+    /* Modified By      : venkat Singamaneni
+    * Modified Date    : 5-11-2022
+    * Purpose          : Archival changes.
+    * Reviewer         : Karthick/Jay
+    * Release Number   : VMSGPRHOST60 for VMS-5735/FSP-991*/
+	
   l_acct_balance NUMBER;
   l_ledger_bal   NUMBER;
   l_tran_amt     NUMBER;
@@ -135,6 +142,10 @@ IS
   l_federal_flag cms_prodcatg_smsemail_alerts.cps_fedtax_refund_flag%type;
   l_alert_lang_id cms_prodcatg_smsemail_alerts.cps_alert_lang_id%type;
   V_PROD_TYPE CMS_PRODUCT_PARAM.CPP_PRODUCT_TYPE%TYPE;
+  
+  v_Retperiod  date;  --Added for VMS-5735/FSP-991
+  v_Retdate  date; --Added for VMS-5735/FSP-991
+
 BEGIN
   SAVEPOINT l_auth_savepoint;
   l_resp_cde   := '1';
@@ -287,16 +298,45 @@ BEGIN
     --En find debit and credit flag
     --Sn Duplicate RRN Check
     BEGIN
-      SELECT
-        COUNT(1)
-      INTO
-        l_rrn_count
-      FROM
-        transactionlog
-      WHERE
-        rrn                = p_rrn_in
-      AND business_date    = p_trandate_in
-      AND delivery_channel = p_delivery_channel_in;
+	
+	   --Added for VMS-5735/FSP-991
+	   
+       select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
+       INTO   v_Retperiod 
+       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
+       WHERE  OPERATION_TYPE='ARCHIVE' 
+       AND OBJECT_NAME='TRANSACTIONLOG_EBR';
+       
+       v_Retdate := TO_DATE(SUBSTR(TRIM(p_trandate_in), 1, 8), 'yyyymmdd');
+	 
+    IF (v_Retdate>v_Retperiod) THEN                                      --Added for VMS-5733/FSP-991
+	
+        SELECT
+         COUNT(1)
+        INTO
+         l_rrn_count
+        FROM
+         transactionlog
+        WHERE
+         rrn                = p_rrn_in
+        AND business_date    = p_trandate_in
+        AND delivery_channel = p_delivery_channel_in;
+	  
+	 ELSE 
+	 
+	    SELECT
+         COUNT(1)
+        INTO
+         l_rrn_count
+        FROM
+         VMSCMS_HISTORY.TRANSACTIONLOG_HIST                  --Added for VMS-5733/FSP-991
+        WHERE
+         rrn                = p_rrn_in
+        AND business_date    = p_trandate_in
+        AND delivery_channel = p_delivery_channel_in;
+	  
+	END IF;
+	  
       IF l_rrn_count       > 0 THEN
         l_resp_cde        := '22';
         l_err_msg         := 'Duplicate RRN from the Terminal on ' ||
@@ -1006,18 +1046,42 @@ BEGIN
         raise exp_reject_record;
       END;
       BEGIN
-        UPDATE
-          transactionlog
-        SET
-          ani = p_ani_in,
-          dni = p_dni_in
-        WHERE
-          rrn                = p_rrn_in
-        AND business_date    = p_trandate_in
-        AND txn_code         = p_txn_code_in
-        AND msgtype          = p_msg_type_in
-        AND business_time    = p_trantime_in
-        AND delivery_channel = p_delivery_channel_in;
+	  
+	   --Added for VMS-5735/FSP-991
+	   
+	   v_Retdate := TO_DATE(SUBSTR(TRIM(p_trandate_in), 1, 8), 'yyyymmdd');
+	  
+	   IF (v_Retdate>v_Retperiod) THEN                                 --Added for VMS-5735/FSP-991
+	   
+			UPDATE
+			  transactionlog
+			SET
+			  ani = p_ani_in,
+			  dni = p_dni_in
+			WHERE
+			  rrn                = p_rrn_in
+			AND business_date    = p_trandate_in
+			AND txn_code         = p_txn_code_in
+			AND msgtype          = p_msg_type_in
+			AND business_time    = p_trantime_in
+			AND delivery_channel = p_delivery_channel_in;
+			
+		ELSE
+		
+			UPDATE
+			  VMSCMS_HISTORY.TRANSACTIONLOG_HIST                       --Added for VMS-5735/FSP-991
+			SET
+			  ani = p_ani_in,
+			  dni = p_dni_in
+			WHERE
+			  rrn                = p_rrn_in
+			AND business_date    = p_trandate_in
+			AND txn_code         = p_txn_code_in
+			AND msgtype          = p_msg_type_in
+			AND business_time    = p_trantime_in
+			AND delivery_channel = p_delivery_channel_in;	
+		
+		END IF;
       EXCEPTION
       WHEN OTHERS THEN
         l_resp_cde := '69';
@@ -1033,18 +1097,39 @@ WHEN exp_reject_record THEN
   p_errmsg_out := l_err_msg;
   ROLLBACK TO l_auth_savepoint;
   BEGIN
-    UPDATE
-      transactionlog
-    SET
-      ani = p_ani_in,
-      dni =p_dni_in
-    WHERE
-      rrn                = p_rrn_in
-    AND business_date    = p_trandate_in
-    AND txn_code         = p_txn_code_in
-    AND msgtype          = p_msg_type_in
-    AND business_time    = p_trantime_in
-    AND delivery_channel = p_delivery_channel_in;
+    
+	IF (v_Retdate>v_Retperiod) THEN                                 --Added for VMS-5735/FSP-991
+	
+		UPDATE
+		  transactionlog
+		SET
+		  ani = p_ani_in,
+		  dni =p_dni_in
+		WHERE
+		  rrn                = p_rrn_in
+		AND business_date    = p_trandate_in
+		AND txn_code         = p_txn_code_in
+		AND msgtype          = p_msg_type_in
+		AND business_time    = p_trantime_in
+		AND delivery_channel = p_delivery_channel_in;
+	
+	ELSE
+	
+		UPDATE
+		  VMSCMS_HISTORY.TRANSACTIONLOG_HIST                   --Added for VMS-5733/FSP-991
+		SET
+		  ani = p_ani_in,
+		  dni =p_dni_in
+		WHERE
+		  rrn                = p_rrn_in
+		AND business_date    = p_trandate_in
+		AND txn_code         = p_txn_code_in
+		AND msgtype          = p_msg_type_in
+		AND business_time    = p_trantime_in
+		AND delivery_channel = p_delivery_channel_in;
+		
+	
+	END IF;
   EXCEPTION
   WHEN OTHERS THEN
     l_resp_cde := '69';

@@ -9,7 +9,7 @@ create or replace PROCEDURE      vmscms.SP_TOPUP_PAN_CMSAUTH  (
    p_amount             IN       NUMBER,
    p_currcode           IN       VARCHAR2,
    p_lupduser           IN       NUMBER,
-   p_msg                IN       VARCHAR2,
+   p_msg                IN       VARCHAR2, 
    p_txn_code           IN       VARCHAR2,
    p_txn_mode           IN       VARCHAR2,
    p_delivery_channel   IN       VARCHAR2,
@@ -214,6 +214,12 @@ AS
      * Purpose          : VMS-4392:Issue in second retry case for card reload
      * Reviewer         : SARAVANAKUMAR A
      * Release Number   : VMSGPRHOST_R47_B0001
+
+    * Modified By      : venkat Singamaneni
+    * Modified Date    : 5-02-2022
+    * Purpose          : Archival changes.
+    * Reviewer         : Karthick/Jay
+    * Release Number   : VMSGPRHOST60 for VMS-5735/FSP-991
    **************************************************************************************/
    v_cap_prod_catg          cms_appl_pan.cap_prod_catg%TYPE;
    v_cap_card_stat          cms_appl_pan.cap_card_stat%TYPE;
@@ -313,7 +319,8 @@ AS
    V_COUNT                NUMBER;
    V_INITIALLOAD_AMT      CMS_ACCT_MAST.CAM_INITIALLOAD_AMT%TYPE;
    v_reason_code          vms_reason_mast.VRM_ENUM_VAL%TYPE;
-
+   v_Retperiod  date;  --Added for VMS-5735/FSP-991
+   v_Retdate  date; --Added for VMS-5735/FSP-991
 BEGIN
    p_errmsg := 'OK';
    v_topupremrk := 'Online Card Topup';
@@ -1668,6 +1675,19 @@ BEGIN
    END IF;
 
    BEGIN
+
+--Added for VMS-5735/FSP-991
+ select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
+       INTO   v_Retperiod 
+       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
+       WHERE  OPERATION_TYPE='ARCHIVE' 
+       AND OBJECT_NAME='TRANSACTIONLOG_EBR';
+       
+       v_Retdate := TO_DATE(SUBSTR(TRIM(p_trandate), 1, 8), 'yyyymmdd');
+
+
+IF (v_Retdate>v_Retperiod)
+    THEN
       UPDATE transactionlog
          SET ani = p_ani,
              dni = p_dni,
@@ -1682,6 +1702,22 @@ BEGIN
          AND msgtype = p_msg
          AND business_time = p_trantime
          AND delivery_channel = p_delivery_channel;
+ ELSE
+       UPDATE VMSCMS_HISTORY.TRANSACTIONLOG_HIST --Added for VMS-5733/FSP-991
+         SET ani = p_ani,
+             dni = p_dni,
+             ipaddress = p_ipaddress,
+             customer_acct_no = v_acct_number,
+             trans_desc = v_trans_desc,   --Added for JH-10
+             --reason_code=v_reason_code,
+             orgnl_rrn=nvl(p_original_rrn,p_rrn)
+       WHERE rrn = p_rrn
+         AND business_date = p_trandate
+         AND txn_code = p_txn_code
+         AND msgtype = p_msg
+         AND business_time = p_trantime
+         AND delivery_channel = p_delivery_channel;
+  END IF;
 
          IF SQL%ROWCOUNT = 0  THEN
          V_RESPMSG  := 'ERROR WHILE UPDATING  TRANSACTION_LOG ';
@@ -1704,7 +1740,19 @@ BEGIN
     IF (v_reason_code IS NOT NULL)
     THEN
     BEGIN
-    UPDATE cms_statements_log
+--Added for VMS-5735/FSP-991
+ select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
+       INTO   v_Retperiod 
+       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
+       WHERE  OPERATION_TYPE='ARCHIVE' 
+       AND OBJECT_NAME='CMS_STATEMENTS_LOG_EBR';
+       
+       v_Retdate := TO_DATE(SUBSTR(TRIM(p_trandate), 1, 8), 'yyyymmdd');
+
+
+IF (v_Retdate>v_Retperiod)
+    THEN
+   UPDATE cms_statements_log
       SET CSL_TRANS_NARRRATION = replace (CSL_TRANS_NARRRATION,v_trans_desc_mast, v_trans_desc)
       WHERE CSL_PAN_NO = v_hash_pan
       AND CSL_RRN = p_rrn
@@ -1713,6 +1761,17 @@ BEGIN
       AND CSL_DELIVERY_CHANNEL = p_delivery_channel
       AND CSL_TXN_CODE =  p_txn_code
       AND CSL_AUTH_ID = v_topup_auth_id;
+ELSE
+    UPDATE VMSCMS_HISTORY.cms_statements_log_HIST --Added for VMS-5733/FSP-991
+      SET CSL_TRANS_NARRRATION = replace (CSL_TRANS_NARRRATION,v_trans_desc_mast, v_trans_desc)
+      WHERE CSL_PAN_NO = v_hash_pan
+      AND CSL_RRN = p_rrn
+      AND CSL_BUSINESS_DATE = p_trandate
+      AND CSL_BUSINESS_TIME = p_trantime
+      AND CSL_DELIVERY_CHANNEL = p_delivery_channel
+      AND CSL_TXN_CODE =  p_txn_code
+      AND CSL_AUTH_ID = v_topup_auth_id;
+END IF;
 
       IF SQL%ROWCOUNT = 0  THEN
          V_RESPMSG  := 'ERROR WHILE UPDATING cms_statements_log ';
@@ -1733,7 +1792,19 @@ BEGIN
 END IF;
 
 BEGIN
-      UPDATE cms_transaction_log_dtl
+--Added for VMS-5735/FSP-991
+ select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
+       INTO   v_Retperiod 
+       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
+       WHERE  OPERATION_TYPE='ARCHIVE' 
+       AND OBJECT_NAME='CMS_TRANSACTION_LOG_DTL_EBR';
+       
+       v_Retdate := TO_DATE(SUBSTR(TRIM(p_trandate), 1, 8), 'yyyymmdd');
+
+
+IF (v_Retdate>v_Retperiod)
+    THEN
+  UPDATE cms_transaction_log_dtl
         SET ctd_reason_code = v_reason_code,
         ctd_location_id=p_terminalid
       WHERE ctd_rrn = p_rrn
@@ -1742,6 +1813,17 @@ BEGIN
          AND ctd_msg_type = p_msg
          AND ctd_business_time = p_trantime
          AND ctd_delivery_channel = p_delivery_channel;
+ELSE
+      UPDATE VMSCMS_HISTORY.cms_transaction_log_dtl_HIST --Added for VMS-5733/FSP-991
+        SET ctd_reason_code = v_reason_code,
+        ctd_location_id=p_terminalid
+      WHERE ctd_rrn = p_rrn
+         AND ctd_business_date = p_trandate
+         AND ctd_txn_code = p_txn_code
+         AND ctd_msg_type = p_msg
+         AND ctd_business_time = p_trantime
+         AND ctd_delivery_channel = p_delivery_channel;
+END IF;
       IF SQL%ROWCOUNT = 0  THEN
          V_RESPMSG  := 'ERROR WHILE UPDATING CMS_TRANSACTION_LOG_DTL ';
          P_RESP_CODE := '69';
@@ -1877,6 +1959,18 @@ EXCEPTION
    BEGIN
     --IF (p_reason_code IS NOT NULL)
   --  THEN
+--Added for VMS-5735/FSP-991
+ select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
+       INTO   v_Retperiod 
+       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
+       WHERE  OPERATION_TYPE='ARCHIVE' 
+       AND OBJECT_NAME='CMS_TRANSACTION_LOG_DTL_EBR';
+	   
+	          v_Retdate := TO_DATE(SUBSTR(TRIM(p_trandate), 1, 8), 'yyyymmdd');
+
+      
+IF (v_Retdate>v_Retperiod)
+    THEN
       UPDATE cms_transaction_log_dtl
         SET ctd_reason_code = v_reason_code
         , ctd_location_id=p_terminalid
@@ -1886,6 +1980,17 @@ EXCEPTION
          AND ctd_msg_type = p_msg
          AND ctd_business_time = p_trantime
          AND ctd_delivery_channel = p_delivery_channel;
+ELSE
+      UPDATE VMSCMS_HISTORY.cms_transaction_log_dtl_HIST --Added for VMS-5733/FSP-991
+        SET ctd_reason_code = v_reason_code
+        , ctd_location_id=p_terminalid
+      WHERE ctd_rrn = p_rrn
+         AND ctd_business_date = p_trandate
+         AND ctd_txn_code = p_txn_code
+         AND ctd_msg_type = p_msg
+         AND ctd_business_time = p_trantime
+         AND ctd_delivery_channel = p_delivery_channel;
+END IF;
       IF SQL%ROWCOUNT = 0 THEN
          V_RESPMSG  := 'ERROR WHILE UPDATING CMS_TRANSACTION_LOG_DTL ';
          P_RESP_CODE := '69';
@@ -1905,6 +2010,18 @@ EXCEPTION
    BEGIN
     IF (v_reason_code IS NOT NULL)
     THEN
+--Added for VMS-5735/FSP-991
+ select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
+       INTO   v_Retperiod 
+       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
+       WHERE  OPERATION_TYPE='ARCHIVE' 
+       AND OBJECT_NAME='TRANSACTIONLOG_EBR';
+
+       v_Retdate := TO_DATE(SUBSTR(TRIM(p_trandate), 1, 8), 'yyyymmdd');
+
+
+IF (v_Retdate>v_Retperiod)
+    THEN
       UPDATE transactionlog
         SET  trans_desc = V_TRANS_DESC,
              --reason_code = v_reason_code,
@@ -1915,6 +2032,18 @@ EXCEPTION
          AND msgtype = p_msg
          AND business_time = p_trantime
          AND delivery_channel = p_delivery_channel;
+ELSE
+      UPDATE VMSCMS_HISTORY.TRANSACTIONLOG_HIST --Added for VMS-5733/FSP-991
+        SET  trans_desc = V_TRANS_DESC,
+             --reason_code = v_reason_code,
+             orgnl_rrn=nvl(p_original_rrn,p_rrn)
+      WHERE rrn = p_rrn
+         AND business_date = p_trandate
+         AND txn_code = p_txn_code
+         AND msgtype = p_msg
+         AND business_time = p_trantime
+         AND delivery_channel = p_delivery_channel;
+END IF;
       IF SQL%ROWCOUNT = 0 THEN
          V_RESPMSG  := 'ERROR WHILE UPDATING CMS_TRANSACTION_LOG_DTL ';
          P_RESP_CODE := '69';

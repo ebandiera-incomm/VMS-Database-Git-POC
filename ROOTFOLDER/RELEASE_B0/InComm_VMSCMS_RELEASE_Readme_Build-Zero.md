@@ -68,7 +68,7 @@ This document is prepared to describe the steps for implementation of **JAN\_VMS
 
    *If message in Log file is “**PLEASE EXECUTE THE RELEASE ROOTFOLDER/RELEASE\_B0**” then proceed further.*
 
-3. Run script to create new RELEASE\_R005 edition.
+3. Run script to create new RELEASE\_R91 edition.
 
    **@$VMS\_HOME/JAN\_VMSGPRHOST\_R91\_RELEASE/ROOTFOLDER/RELEASE\_B0/DDL/CREATE\_EDITION.sql** 
 

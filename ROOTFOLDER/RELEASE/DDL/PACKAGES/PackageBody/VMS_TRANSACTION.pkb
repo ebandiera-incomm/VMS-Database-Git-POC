@@ -1,17 +1,18 @@
-CREATE OR REPLACE PACKAGE BODY VMSCMS.VMS_TRANSACTION
+create or replace
+PACKAGE BODY     VMSCMS.VMS_TRANSACTION
 AS
    -- Private constant declarations
-
-   -- To Get Mail Id for Custom Transaction Description
+   
+   -- To Get Mail Id for Custom Transaction Description 
   FUNCTION get_email_id( p_inst_code 			IN    VARCHAR2,
                          p_customer_card_no_in  IN    VARCHAR2
                                 )
     RETURN VARCHAR2 IS
-    l_email_id cms_cust_mast.ccm_email_one%TYPE;
+    l_email_id cms_cust_mast.ccm_email_one%TYPE; 
 		BEGIN
-
+			
          SELECT
-            fn_dmaps_main(cam_email)
+            fn_dmaps_main(cam_email)  
         INTO l_email_id
         FROM
             cms_appl_pan,
@@ -21,17 +22,17 @@ AS
             AND cap_inst_code = cam_inst_code
             AND cap_pan_code = p_customer_card_no_in
             AND cam_inst_code = p_inst_code
-            AND cam_addr_flag = 'P';
+            AND cam_addr_flag = 'P';       
 
 		RETURN l_email_id;
 	EXCEPTION
 		WHEN OTHERS THEN
 			RETURN NULL;
 	END get_email_id;
-
-
-
-
+   
+   
+   
+   
    PROCEDURE get_transaction_history (
       p_inst_code_in           IN       VARCHAR2,
       p_del_channel_in         IN       VARCHAR2,
@@ -127,50 +128,56 @@ AS
       l_precheck_flag     pls_integer;
 /*************************************************
   * Modified By       : Sivakumar M
-  * Modified Date     : 07-Feb-2019
-  * Purpose           : VMS-780
+  * Modified Date     : 07-Feb-2019 
+  * Purpose           : VMS-780 
   * Reviewer          : Saravanakumar
   * Build Number      : VMSR12-B0003
-
-
+  
+  
   * Modified By      : Sivakumar M
   * Modified Date    : 23-May-2019
   * Purpose          : VMS-922
   * Reviewer         : Saravanan
   * Release Number   : VMSGPRHOST R16
-
+  
   	* Modified By      : Baskar Krishnan
     * Modified Date    : 08-Aug-2019
     * Purpose          : VMS-1022
     * Reviewer         : Saravanan
     * Release Number   : VMSGPRHOST R19
-
+    
   * Modified By      : Ubaidur Rahman H
   * Modified Date    : 05-May-2020
   * Purpose          : VMS-1021 FSAPI - Cuentas Banking Alternative Transaction Description
   * Reviewer         : Saravanan
   * Release Number   : VMSGPRHOST R30
-
+  
   * Modified By      : Ubaidur Rahman H
   * Modified Date    : 17-Jun-2020
-  * Purpose          : VMS-2675 - Wrong available balance is displaying in CSS Get Transaction History for A2A transaction.
+  * Purpose          : VMS-2675 - Wrong available balance is displaying in CSS Get Transaction History for A2A transaction. 
   * Reviewer         : Saravanan
   * Release Number   : VMSGPRHOST R32
-
+  
   * Modified by        : UBAIDUR RAHMAN H
   * Modified Date      : 22-Mar-2021.
   * Modified For       : VMS-3945.
   * Modified Reason    : GPR Statement Enhancement--Complete ATM Address--CHW and CCA
   * Reviewer           : Saravana Kumar
   * Build Number       : R44_B0001
-
+  
   * Modified by        : UBAIDUR RAHMAN H
   * Modified Date      : 29-Oct-2021.
   * Modified For       : VMS-4097
-  * Modified Reason    : Remove 'RECENT STATEMENT' Transaction logging from Transactionlog.
+  * Modified Reason    : Remove 'RECENT STATEMENT' Transaction logging from Transactionlog. 
   * Reviewer           : Saravana Kumar
   * Build Number       : R53_B0002
-
+  
+      * Modified By      : venkat Singamaneni
+    * Modified Date    : 5-11-2022
+    * Purpose          : Archival changes.
+    * Reviewer         : Karthick/Jay
+    * Release Number   : VMSGPRHOST60 for VMS-5735/FSP-991
+  
 *************************************************/
    BEGIN
       BEGIN
@@ -237,8 +244,8 @@ AS
 
 
 --- Added for VMS-4097 - Remove 'RECENT STATEMENT' Transaction logging from Transactionlog.
-         BEGIN
-
+         BEGIN  
+                    
                SELECT nvl(ctm_txn_log_flag,'T')
                  INTO l_audit_flag
                  FROM cms_transaction_mast
@@ -255,7 +262,7 @@ AS
                   RAISE exp_reject_record;
             END;
 
-
+        
 
          -- SN Get Transaction details
          BEGIN
@@ -292,10 +299,10 @@ AS
          END;
 
 -- EN Get Transaction details
-
-	--- Modified for VMS-4097 - Remove 'RECENT STATEMENT' Transaction logging from Transactionlog.
+ 	
+	--- Modified for VMS-4097 - Remove 'RECENT STATEMENT' Transaction logging from Transactionlog.	
          -- SN Validate date and RRN
-         IF l_dup_rrn_check = 'Y' AND l_audit_flag = 'T' THEN
+         IF l_dup_rrn_check = 'Y' AND l_audit_flag = 'T' THEN		
          BEGIN
             vmscommon.validate_date_rrn (p_inst_code_in,
                                          p_rrn_in,
@@ -587,12 +594,12 @@ BEGIN
 
          -- SN Generate common select query
           BEGIN
-
+          
             l_pending_select_query :=
                   ' select add_ins_date run_date,
                      time_stamp ts,
-                     rrn id,
-                     to_char(add_ins_date, ''YYYY-MM-DD HH24:MI:SS'') transactionDate,
+                     rrn id, 
+                     to_char(add_ins_date, ''YYYY-MM-DD HH24:MI:SS'') transactionDate, 
                      ''Debit'' crdrFlag,
                      upper(trim(NVL(trans_desc,CTM_TRAN_DESC)))  transactionDescription,
                      TRIM(TO_CHAR (cpt_totalhold_amt, ''99999999999999990.99'')) transactionAmount,
@@ -611,7 +618,7 @@ BEGIN
                      mccode MCCDescription,
                      merchant_id merchantID,
                      CASE
-                      WHEN  delivery_channel = ''11''
+                      WHEN  delivery_channel = ''11'' 
                       THEN  REGEXP_REPLACE(NVL((DECODE(NVL(COMPANYNAME,''''),'''','''',''/''
                         ||''From ''||COMPANYNAME)
                         || DECODE(NVL(COMPENTRYDESC,''''),'''','''',''/''
@@ -627,11 +634,11 @@ BEGIN
                      merchant_zip postalCode,
                      case when delivery_channel=''03'' and txn_code in(''13'',''14'') then null
                      else
-                     merchant_state
+                     merchant_state 
                      end state,
                      country_code country,
                      terminal_id terminalId ';
-
+                     
           EXCEPTION
           WHEN OTHERS
           THEN
@@ -639,22 +646,22 @@ BEGIN
              l_err_msg :=
                    'Error while executing l_pending_select_query '
                 || SUBSTR (SQLERRM, 1, 200);
-             RAISE exp_reject_record;
-
+             RAISE exp_reject_record;                           
+                     
           END;
-
+          
           BEGIN
-
-            l_pending_from_query :=
-                   ' from   transactionlog,
+          
+            l_pending_from_query := 
+                   ' from   VMSCMS.TRANSACTIONLOG_VW,               --Added for VMS-5735/FSP-991
                             cms_transaction_mast,
-                            cms_preauth_transaction,
+                            VMSCMS.CMS_PREAUTH_TRANSACTION_VW,       --Added for VMS-5735/FSP-991
                             CMS_DELCHANNEL_MAST
-                    where  customer_acct_no =:l_acct_no
+                    where  customer_acct_no =:l_acct_no 
                       and CDM_CHANNEL_CODE = DELIVERY_CHANNEL
                       AND CDM_INST_CODE = INSTCODE
-                      and  instcode = ctm_inst_code
-                      and  delivery_channel = ctm_delivery_channel
+                      and  instcode = ctm_inst_code 
+                      and  delivery_channel = ctm_delivery_channel 
                       and  txn_code = ctm_tran_code
                        and cpt_txn_code=txn_code
                      and cpt_delivery_channel=DELIVERY_CHANNEL
@@ -667,7 +674,7 @@ BEGIN
                       and cpt_expiry_flag       = ''N''
                       and cpt_preauth_validflag = ''Y''
                       and add_ins_date  between :l_start_date and :l_end_date ';
-
+                    
           EXCEPTION
           WHEN OTHERS
           THEN
@@ -675,19 +682,19 @@ BEGIN
              l_err_msg :=
                    'Error while executing l_pending_from_query '
                 || SUBSTR (SQLERRM, 1, 200);
-             RAISE exp_reject_record;
-
+             RAISE exp_reject_record;                       
+          
           END;
-
+          
           BEGIN
          -- Modified for vms-780 ,change is rrn to csl_rrn
-             l_posted_select_query :=
+             l_posted_select_query := 
                    ' select csl_ins_date run_date,
                     CSL_TIME_STAMP ts,
-                    csl_rrn id,
-                    to_char(csl_ins_date, ''YYYY-MM-DD HH24:MI:SS'') transactionDate,
+                    csl_rrn id,  
+                    to_char(csl_ins_date, ''YYYY-MM-DD HH24:MI:SS'') transactionDate, 
                     decode(upper(CSL_TRANS_TYPE),''CR'',''Credit'',''DR'',''Debit'') crdrFlag,
-                    CASE WHEN csl_delivery_channel IN (''01'',''02'') AND TXN_FEE_FLAG = ''N''
+                    CASE WHEN csl_delivery_channel IN (''01'',''02'') AND TXN_FEE_FLAG = ''N'' 
 			   THEN DECODE(nvl(regexp_instr(csl_trans_narrration,''RVSL-'',1,1,0,''i''),0),0,TRANS_DESC,
                           ''RVSL-''||TRANS_DESC)
 			  ||''/''||DECODE(nvl(merchant_name,CSL_MERCHANT_NAME), NULL, DECODE(delivery_channel, ''01'', ''ATM'', ''02'', ''Retail Merchant''), nvl(merchant_name,CSL_MERCHANT_NAME)
@@ -705,13 +712,13 @@ BEGIN
                                                                                                              ||business_date
                                                                                                              || ''/''
                                                                                                              ||auth_id)
-                     WHEN
+                     WHEN													     
 		    (select count(1) from VMS_PRODUCT_CUSTOM_TRANDESC where VPT_PROD_CODE = CSL_PROD_CODE
                                                                 AND VPT_CARD_TYPE = CSL_CARD_TYPE
                                                                 AND VPT_DELIVERY_CHANNEL = CSL_DELIVERY_CHANNEL
                                                                 AND VPT_TXN_CODE = CSL_TXN_CODE
                                                                 ) = 1 AND TXN_FEE_FLAG = ''N'' THEN
-                    (SELECT DECODE(NVL (REVERSAL_CODE,''0''),''0'',
+                    (SELECT DECODE(NVL (REVERSAL_CODE,''0''),''0'',   
                     REPLACE (REPLACE (VPT_TXNDESC_FORMAT,''email of sender'', vmscms.vms_transaction.get_email_id(''1'',CUSTOMER_CARD_NO)),
                                                 ''email of recipient'',vms_transaction.get_email_id(''1'',NVL(TOPUP_CARD_NO,CSL_PAN_NO))),
                         REPLACE (REPLACE (''RVSL - ''||VPT_TXNDESC_FORMAT,''email of sender'', vmscms.vms_transaction.get_email_id(''1'',CUSTOMER_CARD_NO)),
@@ -719,13 +726,13 @@ BEGIN
                                                                 AND VPT_CARD_TYPE = CSL_CARD_TYPE
                                                                 AND VPT_DELIVERY_CHANNEL = CSL_DELIVERY_CHANNEL
                                                                 AND VPT_TXN_CODE = CSL_TXN_CODE)
-                        ELSE
+                        ELSE                     
                         DECODE ( NVL (REVERSAL_CODE, ''0''), ''0'', DECODE ( TXN_FEE_FLAG, ''Y'',
-                                                  REPLACE(TRIM(UPPER(SUBSTR(CSL_TRANS_NARRRATION,0,DECODE(instr(CSL_TRANS_NARRRATION,'' - '',-1),0,LENGTH(CSL_TRANS_NARRRATION),instr(CSL_TRANS_NARRRATION,'' - '',-1))))),''CLAWBACK-'''',''),
+                                                  REPLACE(TRIM(UPPER(SUBSTR(CSL_TRANS_NARRRATION,0,DECODE(instr(CSL_TRANS_NARRRATION,'' - '',-1),0,LENGTH(CSL_TRANS_NARRRATION),instr(CSL_TRANS_NARRRATION,'' - '',-1))))),''CLAWBACK-'''',''), 
                                                   DECODE(upper(trim(NVL(trans_desc,CTM_TRAN_DESC))),upper(trim(CTM_TRAN_DESC)),ctm_display_txndesc,trans_desc))
                                                 , DECODE ( TXN_FEE_FLAG, ''Y'', REPLACE(TRIM(UPPER(SUBSTR(CSL_TRANS_NARRRATION,0,DECODE(instr(CSL_TRANS_NARRRATION,'' - '',-1),0,LENGTH(CSL_TRANS_NARRRATION),instr(CSL_TRANS_NARRRATION,'' - '',-1))))),''CLAWBACK-'',''''), ''RVSL-''
                                                   ||
-                                                  DECODE(upper(trim(NVL(trans_desc,CTM_TRAN_DESC))),upper(trim(CTM_TRAN_DESC)),ctm_display_txndesc,trans_desc)))
+                                                  DECODE(upper(trim(NVL(trans_desc,CTM_TRAN_DESC))),upper(trim(CTM_TRAN_DESC)),ctm_display_txndesc,trans_desc))) 
                                                   || (
                                                   CASE
                                                       WHEN clawback_indicator = ''Y''
@@ -738,7 +745,7 @@ BEGIN
                                                        WHERE CPC_PROD_CODE = PRODUCTID
                                                         AND CPC_CARD_TYPE= CATEGORYID
                                                         AND CPC_INST_CODE=INSTCODE
-                                                    )
+                                                    ) 
                                                   ELSE DECODE (TXN_FEE_FLAG, ''Y'', '' - FEE'')
                                                END) END  transactionDescription,
                     TRIM(TO_CHAR (nvl(csl_trans_amount,amount), ''99999999999999990.99'')) transactionAmount,
@@ -748,17 +755,17 @@ BEGIN
                     --ctd_check_acctno checkAccountNumber,
                     case when csl_delivery_channel = ''13'' then
                     (select ctd_check_desc||''~''||ctd_routing_number||''~''||ctd_check_acctno
-                    from   cms_transaction_log_dtl
-                    where   csl_rrn=ctd_rrn
+                    from   VMSCMS.CMS_TRANSACTION_LOG_DTL_VW      --Added for VMS-5735/FSP-991
+                    where   csl_rrn=ctd_rrn 
                     and csl_acct_no=ctd_cust_acct_number
                     and  csl_delivery_channel = ctd_delivery_channel
-                    and  csl_txn_code = ctd_txn_code
+                    and  csl_txn_code = ctd_txn_code 
                     and  csl_business_date = ctd_business_date
                     and  csl_business_time = ctd_business_time
                     and rownum=1) end check_detls,
                     ''POSTED'' transactionType,
                      TRIM(TO_CHAR (nvl(csl_closing_balance,DECODE (CSL_ACCT_NO,CUSTOMER_ACCT_NO,ledger_balance,TOPUP_LEDGER_BALANCE)), ''99999999999999990.99''))  ledgerBalance,
-                    TRIM(TO_CHAR (DECODE (CSL_ACCT_NO,CUSTOMER_ACCT_NO,acct_balance,TOPUP_ACCT_BALANCE), ''99999999999999990.99''))  availableBalance,
+                    TRIM(TO_CHAR (DECODE (CSL_ACCT_NO,CUSTOMER_ACCT_NO,acct_balance,TOPUP_ACCT_BALANCE), ''99999999999999990.99''))  availableBalance,   
                     csl_acct_no accountNumber,
                     csl_to_acctno toAccountNumber,
                     CSL_PANNO_LAST4DIGIT lastFourPAN,
@@ -766,7 +773,7 @@ BEGIN
                     mccode MCCDescription,
                     merchant_id merchantID,
                     CASE
-                      WHEN  csl_delivery_channel = ''11''
+                      WHEN  csl_delivery_channel = ''11'' 
                       THEN  REGEXP_REPLACE(NVL((DECODE(NVL(COMPANYNAME,''''),'''','''',''/''
                         ||''From ''||COMPANYNAME)
                         || DECODE(NVL(COMPENTRYDESC,''''),'''','''',''/''
@@ -775,18 +782,18 @@ BEGIN
                         ||INDIDNUM
                         ||'' to ''
                         ||INDNAME)),''Direct Deposit''),''/'','''',1,1)
-                      ELSE NVL ( CSL_MERCHANT_NAME, DECODE (TRIM (CDM_CHANNEL_DESC), ''ATM'', ''ATM'', ''POS'', ''Retail Merchant'', ''IVR'', ''IVR Transfer'', ''CHW'', ''Card Holder website'', ''ACH'', ''Direct Deposit'', ''MOB'', ''Mobile Transfer'', ''CSR'', ''Customer Service'', ''System''))
+                      ELSE NVL ( CSL_MERCHANT_NAME, DECODE (TRIM (CDM_CHANNEL_DESC), ''ATM'', ''ATM'', ''POS'', ''Retail Merchant'', ''IVR'', ''IVR Transfer'', ''CHW'', ''Card Holder website'', ''ACH'', ''Direct Deposit'', ''MOB'', ''Mobile Transfer'', ''CSR'', ''Customer Service'', ''System'')) 
                     END name,
                     merchant_street streetAddress,
                     merchant_city city,
                     merchant_zip postalCode,
                     case when delivery_channel=''03'' and txn_code in(''13'',''14'') then null
                      else
-                     merchant_state
+                     merchant_state 
                      end state,
                     country_code country,
                     terminal_id terminalId ';
-
+                    
           EXCEPTION
           WHEN OTHERS
           THEN
@@ -794,20 +801,20 @@ BEGIN
              l_err_msg :=
                    'Error while executing l_posted_select_query '
                 || SUBSTR (SQLERRM, 1, 200);
-             RAISE exp_reject_record;
-
+             RAISE exp_reject_record;                        
+          
           END;
-
+          
           BEGIN
-
-             l_posted_from_query :=
-                  ' from   transactionlog,
+          
+             l_posted_from_query := 
+                  ' from   VMSCMS.TRANSACTIONLOG_VW,  --Added for VMS-5735/FSP-991
                           -- cms_transaction_log_dtl,
                            cms_transaction_mast,
-                           cms_statements_log,
+                           VMSCMS.CMS_STATEMENTS_LOG_VW,  --Added for VMS-5735/FSP-991
                            CMS_DELCHANNEL_MAST
-                    where  csl_acct_no = :l_acct_no
-                    --  and  csl_rrn = ctd_rrn
+                    where  csl_acct_no = :l_acct_no  
+                    --  and  csl_rrn = ctd_rrn 
                     --  and  csl_delivery_channel = ctd_delivery_channel
                       and CDM_CHANNEL_CODE = CSL_DELIVERY_CHANNEL
                       AND CDM_INST_CODE = CSL_INST_CODE
@@ -815,18 +822,18 @@ BEGIN
                     --  and  csl_business_date = ctd_business_date
                     --  and  csl_business_time = ctd_business_time
                     --and  ctd_process_flag IN ( ''Y'' , ''C'') modified for vms-780:to include decline fee record
-                      and  csl_inst_code = ctm_inst_code
-                      and  csl_delivery_channel = ctm_delivery_channel
+                      and  csl_inst_code = ctm_inst_code 
+                      and  csl_delivery_channel = ctm_delivery_channel 
                       and  csl_txn_code = ctm_tran_code
                       and  (CSL_PAN_NO = customer_card_no or CSL_PAN_NO = topup_card_no )
                       and  csl_rrn = rrn
                       and  CSL_TXN_CODE = txn_code
-                      and  CSL_DELIVERY_CHANNEL= delivery_channel
-                      and  CSL_AUTH_ID= AUTH_ID
+                      and  CSL_DELIVERY_CHANNEL= delivery_channel 
+                      and  CSL_AUTH_ID= AUTH_ID 
                      --and  (response_code = ''00'' or response_code is null) modified for vms-780:to include decline fee record
                       and  csl_ins_date  between :l_start_date and :l_end_date ';
 
-
+                      
           EXCEPTION
           WHEN OTHERS
           THEN
@@ -834,8 +841,8 @@ BEGIN
              l_err_msg :=
                    'Error while executing l_posted_from_query '
                 || SUBSTR (SQLERRM, 1, 200);
-             RAISE exp_reject_record;
-
+             RAISE exp_reject_record;               
+          
           END;
  		  -- EN Generate common select query
 
@@ -843,22 +850,22 @@ BEGIN
          BEGIN
             IF l_no_of_records IS NOT NULL
             THEN
-                 IF l_tran_filter = 'PENDING'
+                 IF l_tran_filter = 'PENDING' 
                  THEN
-
+        
                        l_exec_query := l_pending_select_query||l_pending_from_query;
-
+        
                         BEGIN
-
+                        
                              l_exec_query := ' select * from(select b.*,rownum r from ( '
                                              || l_exec_query
                                              || ' order by run_date desc,  ts desc
                                                 )b) WHERE r<= :l_no_of_records ';
-
+                                              
                              OPEN p_transaction_out FOR l_exec_query
                              USING l_acct_no, l_start_date, l_end_date,l_no_of_records;
-
-
+                          
+                              
                          EXCEPTION
                             WHEN OTHERS
                             THEN
@@ -867,23 +874,23 @@ BEGIN
                                      'Error while executing l_exec_query '
                                   || SUBSTR (SQLERRM, 1, 200);
                                RAISE exp_reject_record;
-                         END;
-
+                         END;  
+        
                 ELSIF l_tran_filter = 'POSTED' THEN
-
+     
                        l_exec_query := l_posted_select_query || l_posted_from_query;
-
+                      
                        BEGIN
-
+                      
                            l_exec_query := ' select * from(select b.*,rownum r from ( '
                                            || l_exec_query
                                            || ' order by run_date desc,  ts desc
                                               )b) WHERE r<= :l_no_of_records ';
-
+                                              
                            OPEN p_transaction_out FOR l_exec_query
                            USING l_acct_no, l_start_date, l_end_date,l_no_of_records;
-
-
+                        
+                            
                        EXCEPTION
                           WHEN OTHERS
                           THEN
@@ -892,26 +899,26 @@ BEGIN
                                    'Error while executing l_exec_query '
                                 || SUBSTR (SQLERRM, 1, 200);
                              RAISE exp_reject_record;
-                       END;
-
-               ELSE
-
+                       END;  
+        
+               ELSE 
+             
                       l_exec_query :=  l_pending_select_query||l_pending_from_query
                                        || ' union '
                                        || l_posted_select_query||l_posted_from_query;
-
+                                       
                       BEGIN
-
+                      
                            l_exec_query := ' select * from(select b.*,rownum r from ( '
                                            || l_exec_query
                                            || ' order by run_date desc,  ts desc
                                               )b) WHERE r<= :l_no_of_records ';
-
+                                             
                            OPEN p_transaction_out FOR l_exec_query
                            USING l_acct_no, l_start_date, l_end_date,
                                  l_acct_no, l_start_date, l_end_date,l_no_of_records;
-
-
+                        
+                            
                        EXCEPTION
                           WHEN OTHERS
                           THEN
@@ -920,26 +927,26 @@ BEGIN
                                    'Error while executing l_exec_query '
                                 || SUBSTR (SQLERRM, 1, 200);
                              RAISE exp_reject_record;
-                       END;
-
-                END IF;
+                       END;                 
+                                 
+                END IF;   
 
             ELSE
-                 IF l_tran_filter = 'PENDING'
+                 IF l_tran_filter = 'PENDING' 
                  THEN
-
+        
                        l_exec_query := l_pending_select_query||l_pending_from_query;
-
+        
                         BEGIN
-
+                        
                              l_exec_query := ' select * from( '
                                              || l_exec_query
                                              || ' )order by run_date desc,  ts desc ';
-
+                                                
                              OPEN p_transaction_out FOR l_exec_query
                              USING l_acct_no, l_start_date, l_end_date;
-
-
+                          
+                              
                          EXCEPTION
                             WHEN OTHERS
                             THEN
@@ -948,22 +955,22 @@ BEGIN
                                      'Error while executing l_exec_query '
                                   || SUBSTR (SQLERRM, 1, 200);
                                RAISE exp_reject_record;
-                         END;
-
+                         END;  
+        
                 ELSIF l_tran_filter = 'POSTED' THEN
-
+     
                        l_exec_query := l_posted_select_query || l_posted_from_query;
-
+                      
                        BEGIN
-
+                      
                            l_exec_query := ' select * from( '
                                            || l_exec_query
                                            || ' )order by run_date desc,  ts desc ';
-
+                                             
                            OPEN p_transaction_out FOR l_exec_query
                            USING l_acct_no, l_start_date, l_end_date;
-
-
+                        
+                            
                        EXCEPTION
                           WHEN OTHERS
                           THEN
@@ -972,25 +979,25 @@ BEGIN
                                    'Error while executing l_exec_query '
                                 || SUBSTR (SQLERRM, 1, 200);
                              RAISE exp_reject_record;
-                       END;
-
-               ELSE
-
+                       END;  
+        
+               ELSE 
+             
                       l_exec_query :=  l_pending_select_query||l_pending_from_query
                                        || ' union '
                                        || l_posted_select_query||l_posted_from_query;
-
+                                       
                       BEGIN
-
+                      
                            l_exec_query := ' select * from( '
                                            || l_exec_query
                                            || ' )order by run_date desc,  ts desc ';
-
+                                              
                            OPEN p_transaction_out FOR l_exec_query
                            USING l_acct_no, l_start_date, l_end_date,
                                  l_acct_no, l_start_date, l_end_date;
-
-
+                        
+                            
                        EXCEPTION
                           WHEN OTHERS
                           THEN
@@ -999,11 +1006,11 @@ BEGIN
                                    'Error while executing l_exec_query '
                                 || SUBSTR (SQLERRM, 1, 200);
                              RAISE exp_reject_record;
-                       END;
-
-                END IF;
+                       END;                 
+                                 
+                END IF;   
             END IF;
-
+           
          EXCEPTION
             WHEN OTHERS
             THEN
@@ -1015,7 +1022,7 @@ BEGIN
          END;
 
 -- EN Open cursor to execute query
-
+   
 
           p_resp_code_out := '1';
 
@@ -1024,13 +1031,13 @@ BEGIN
          WHEN exp_reject_record
          THEN
                p_resp_msg_out := l_err_msg;
-
+ 
          WHEN OTHERS
          THEN
             p_resp_msg_out := 'Other Excp-' || SUBSTR (SQLERRM, 1, 300);
             p_resp_code_out := '89';
       END;
-
+      
         BEGIN
             SELECT cms_iso_respcde
               INTO p_resp_code_out
@@ -1048,7 +1055,7 @@ BEGIN
                   || SUBSTR (SQLERRM, 1, 300);
                p_resp_code_out := '69';
          END;
-
+         
       BEGIN
          l_hashkey_id :=
             gethash (   p_del_channel_in
@@ -1067,15 +1074,15 @@ BEGIN
                   'Error while generating hashkey_id- '
                || SUBSTR (SQLERRM, 1, 200);
       END;
-
+      
       BEGIN
-
+          
           SELECT CAM_ACCT_BAL,CAM_LEDGER_BAL,CAM_TYPE_CODE
           INTO   l_acct_bal,l_ledger_bal,l_acct_type
           FROM   CMS_ACCT_MAST
           WHERE  CAM_INST_CODE = p_inst_code_in
           AND    CAM_ACCT_NO = l_acct_no;
-
+      
       EXCEPTION
             WHEN NO_DATA_FOUND    THEN
                p_resp_code_out := '21';
@@ -1088,7 +1095,7 @@ BEGIN
       END;
 
     IF l_audit_flag = 'T'         --- Modified for VMS-4097 - Remove 'RECENT STATEMENT' Transaction logging from Transactionlog.
-	  THEN
+	  THEN 
 -- SN Log into transaction log and cms_transaction_log_dtl
       BEGIN
          vms_log.log_transactionlog (p_inst_code_in,
@@ -1097,7 +1104,7 @@ BEGIN
                                      p_del_channel_in,
                                      p_txn_code_in,
                                      l_txn_type,
-                                     '0',
+                                     '0',                          
                                      p_business_date_in,
                                      p_business_time_in,
                                      '00',
@@ -1157,18 +1164,18 @@ BEGIN
 
         ELSIF l_audit_flag = 'A'
           THEN
-
-            BEGIN
-
-
+      
+            BEGIN 
+      
+         
             VMSCMS.VMS_LOG.LOG_TRANSACTIONLOG_AUDIT(p_msg_type_in,
 												 p_rrn_in,
 												 p_del_channel_in,
-												 p_txn_code_in,
-												 '0',
-												 p_business_date_in,
-												 p_business_time_in,
-												 '00',
+												 p_txn_code_in,                                     
+												 '0',   
+												 p_business_date_in,    
+												 p_business_time_in,   
+												 '00',  
 												 p_pan_code_in,
 												 l_err_msg,
 												 0,
@@ -1176,7 +1183,7 @@ BEGIN
 												 CASE WHEN p_resp_code_out = '00' THEN  '1' ELSE p_resp_code_out END,
 												 p_curr_code_in,
 												 p_partner_id_in,
-												 NULL,
+												 NULL,   
 												 l_err_msg,
                                                  NULL,
                                                  p_ip_addr_in,
@@ -1184,8 +1191,8 @@ BEGIN
                                                  CASE WHEN p_resp_code_out = '00' THEN  'C' ELSE 'F' END,
                                                  P_ANI_IN,
                                                  P_DNI_IN
-                                                 );
-
+                                                 ); 
+		
               EXCEPTION
                  WHEN OTHERS
                  THEN
@@ -1193,8 +1200,8 @@ BEGIN
                     l_err_msg :=
                           'Erorr while inserting to transaction log AUDIT'
                        || SUBSTR (SQLERRM, 1, 300);
-              END;
-
+              END; 
+          
           END IF;
 
    EXCEPTION
@@ -1204,6 +1211,7 @@ BEGIN
          p_resp_code_out := '89';
          p_resp_msg_out := 'Main Excp- ' || SUBSTR (SQLERRM, 1, 300);
    END get_transaction_history;
+   
    PROCEDURE get_transaction_history_v2 (
        p_inst_code_in               IN   VARCHAR2,
        p_del_channel_in             IN   VARCHAR2,
@@ -1266,7 +1274,7 @@ BEGIN
       l_total_posted_count        NUMBER;
       l_total_pending_amount      NUMBER;
       l_total_credit_amount       NUMBER;
-      l_total_declined_count      NUMBER;   ---Added for VMS_7816
+	   l_total_declined_count      NUMBER;   ---Added for VMS_7816
       l_total_debit_amount        NUMBER;
       l_total_select_query        VARCHAR2 (10000);
       l_pending_select_query      VARCHAR2 (10000);
@@ -1275,7 +1283,7 @@ BEGIN
       l_posted_from_query         VARCHAR2 (10000);
       l_pending_total_query       VARCHAR2 (10000);
       l_posted_total_query        VARCHAR2 (10000);
-	   l_reload_total_query        VARCHAR2 (10000);
+	  l_reload_total_query        VARCHAR2 (10000);
       l_exec_query                VARCHAR2 (30000);
       l_tot_pend_exec_query       VARCHAR2 (10000);
       l_tot_post_exec_query       VARCHAR2 (10000);
@@ -1283,7 +1291,7 @@ BEGIN
       l_txn_type                  VARCHAR2 (2);
       l_hash_pan          cms_appl_pan.cap_pan_code%TYPE;
       l_encr_pan          cms_appl_pan.cap_pan_code_encr%TYPE;
-      l_chargeback_val    VMSCMS.CMS_INST_PARAM.CIP_PARAM_VALUE%TYPE;      
+	   l_chargeback_val    VMSCMS.CMS_INST_PARAM.CIP_PARAM_VALUE%TYPE;      
       l_acct_no           cms_appl_pan.cap_acct_no%TYPE;
       l_card_stat         cms_appl_pan.cap_card_stat%TYPE;
       l_prod_code         cms_appl_pan.cap_prod_code%TYPE;
@@ -1317,71 +1325,78 @@ BEGIN
       l_audit_flag		    cms_transaction_mast.ctm_txn_log_flag%TYPE;
       l_status_chk        PLS_INTEGER;
       l_precheck_flag     PLS_INTEGER;
-      l_declined_select_query VARCHAR2(10000);  	---Added for VMS_7816
+	  l_declined_select_query VARCHAR2(10000);  	---Added for VMS_7816
       l_declined_from_query   VARCHAR2 (10000);  	---Added for VMS_7816
       l_declined_total_query   VARCHAR2 (10000); 	---Added for VMS_7816
       l_tot_dec_exec_query   VARCHAR2 (10000);  	---Added for VMS_7816
 /*************************************************
   * Modified By       : Sivakumar M
-  * Modified Date     : 08-Feb-2019
-  * Purpose           : VMS-780
+  * Modified Date     : 08-Feb-2019 
+  * Purpose           : VMS-780 
   * Reviewer          : Saravanakumar
   * Build Number      : VMSR12-B0003
-
+  
   * Modified By      : Sivakumar M
   * Modified Date    : 23-May-2019
   * Purpose          : VMS-922
   * Reviewer         : Saravanan
   * Release Number   : VMSGPRHOST R16
-
+  
   * Modified By      : Ubaidur Rahman H
   * Modified Date    : 05-May-2020
   * Purpose          : VMS-1021 FSAPI - Cuentas Banking Alternative Transaction Description
   * Reviewer         : Saravanan
   * Release Number   : VMSGPRHOST R30
-
+  
   * Modified By      : Ubaidur Rahman H
   * Modified Date    : 17-Jun-2020
-  * Purpose          : VMS-2675 - Wrong available balance is displaying in CSS Get Transaction History for A2A transaction.
+  * Purpose          : VMS-2675 - Wrong available balance is displaying in CSS Get Transaction History for A2A transaction. 
   * Reviewer         : Saravanan
   * Release Number   : VMSGPRHOST R32
-
+  
   * Modified By      : SanthoshKumar Chigullapally
   * Modified Date    : 22-March-2021
   * Purpose          : VMS-3819 - Transaction History--B2B Spec Consolidation
   * Reviewer         : Ubaidur
   * Release Number   : VMSGPRHOST R44
-
+  
   * Modified by        : UBAIDUR RAHMAN H
   * Modified Date      : 22-Mar-2021.
   * Modified For       : VMS-3945.
   * Modified Reason    : GPR Statement Enhancement--Complete ATM Address--CHW and CCA
   * Reviewer           : Saravana Kumar
   * Build Number       : R44_B0001
-
+  
   * Modified by        : SanthoshKumar Chigullapally
   * Modified Date      : 22-April-2021.
   * Modified For       : VMS-4022.
   * Modified Reason    : Get B2B Transaction History is missing new Tag totalReloadAmount
   * Reviewer           : Ubaidur, Aparna
-  * Build Number       : R45_B0002
-
+  * Build Number       : R45_B0002  
+  
   * Modified by        : UBAIDUR RAHMAN H
   * Modified Date      : 29-Oct-2021.
   * Modified For       : VMS-4097
-  * Modified Reason    : Remove 'RECENT STATEMENT' Transaction logging from Transactionlog.
+  * Modified Reason    : Remove 'RECENT STATEMENT' Transaction logging from Transactionlog. 
   * Reviewer           : Saravana Kumar
   * Build Number       : R53_B0002
-
+  
   * Modified by        : Marcelo S
   * Modified Date      : 16-Oct-2023
   * Modified For       : VMS-7900
   * Modified Reason    : Add isDisputable and inDispute flags to Transaction History
   * Reviewer           : 
   * Build Number       : R87_B0002
+  
+      * Modified By      : venkat Singamaneni
+    * Modified Date    : 5-11-2022
+    * Purpose          : Archival changes.
+    * Reviewer         : Karthick/Jay
+    * Release Number   : VMSGPRHOST60 for VMS-5735/FSP-991
 *************************************************/
    BEGIN
-      -- Added for VMS-7900 Getting Chargeback Timeframe
+   
+   -- Added for VMS-7900 Getting Chargeback Timeframe
       BEGIN
          SELECT CIP_PARAM_VALUE
          INTO l_chargeback_val
@@ -1392,6 +1407,7 @@ BEGIN
          WHEN OTHERS THEN
                   l_chargeback_val := 0;
       END;
+	  
       BEGIN
       p_resp_msg_out :='success';
 
@@ -1423,7 +1439,7 @@ BEGIN
                   || SUBSTR (SQLERRM, 1, 200);
                RAISE exp_reject_record;
          END;
-
+          
 -- EN Get PAN Details
 
 
@@ -1454,10 +1470,10 @@ BEGIN
  END IF;
 --En Validating Account type
 
-
+    
         --- Added for VMS-4097 - Remove 'RECENT STATEMENT' Transaction logging from Transactionlog.
-         BEGIN
-
+         BEGIN  
+                    
                SELECT nvl(ctm_txn_log_flag,'T')
                  INTO l_audit_flag
                  FROM cms_transaction_mast
@@ -1474,7 +1490,7 @@ BEGIN
                   RAISE exp_reject_record;
             END;
 
-
+        
 
 
          -- SN Get Transaction details
@@ -1515,8 +1531,8 @@ BEGIN
 
          -- SN Validate date and RRN
 	  --- Modified for VMS-4097 - Remove 'RECENT STATEMENT' Transaction logging from Transactionlog.
-
-         IF l_dup_rrn_check = 'Y' AND l_audit_flag = 'T'
+	  
+         IF l_dup_rrn_check = 'Y' AND l_audit_flag = 'T'        
          THEN
          BEGIN
             vmscommon.validate_date_rrn (p_inst_code_in,
@@ -1552,11 +1568,11 @@ BEGIN
 -- SN Get start and end date
          BEGIN
        IF  (p_no_of_records_in IS NOT NULL AND p_pagenumber_in IS NOT NULL) AND ( p_start_date_in IS NULL AND p_end_date_in IS NULL) THEN
-
+       
          l_start_date :=null;
          l_end_date :=null;
         ELSE
-
+         
             IF p_start_date_in IS NULL
             THEN
                IF p_end_date_in IS NULL
@@ -1604,7 +1620,7 @@ BEGIN
                              );
                END IF;
             END IF;
-
+            
         END IF;
          EXCEPTION
             WHEN OTHERS
@@ -1625,16 +1641,16 @@ BEGIN
         END IF;
 
 --EN Validating Date
-
-
+         
+         
        	BEGIN
-              IF ((p_no_of_records_in IS NOT NULL AND p_pagenumber_in IS NULL) OR
+              IF ((p_no_of_records_in IS NOT NULL AND p_pagenumber_in IS NULL) OR 
                  (p_no_of_records_in IS NULL AND p_pagenumber_in IS NOT NULL)  OR (p_no_of_records_in='0' or p_pagenumber_in='0' ))
-              THEN
+              THEN 
                  p_resp_code_out := '313';
                  l_err_msg :='No of records / page number should not be null';
                  RAISE exp_reject_record;
-          	END IF;
+          	END IF;		 
         	EXCEPTION WHEN exp_reject_record then
                raise;
               WHEN OTHERS
@@ -1644,8 +1660,8 @@ BEGIN
                        'Error while checking records and pagenumber validation '
                     || SUBSTR (SQLERRM, 1, 200);
                  RAISE exp_reject_record;
-       END;
-
+       END;	 
+       
 -- EN Get start and end date
         l_no_of_records  := nvl(p_no_of_records_in,
                                 1000);
@@ -1653,8 +1669,8 @@ BEGIN
                                 1);
         l_rec_end_no     := l_no_of_records * l_pagenumber;
         l_rec_start_no   := (l_rec_end_no - l_no_of_records) + 1;
-
-
+        
+  
 
          -- SN Validate account type and transaction filter
          BEGIN
@@ -1787,7 +1803,7 @@ BEGIN
          END;
       END IF;
    END IF;
-
+   
    /*
          BEGIN
             vmscommon.authorize_nonfinancial_txn (p_inst_code_in,
@@ -1844,19 +1860,19 @@ BEGIN
                   || SUBSTR (SQLERRM, 1, 200);
                RAISE exp_reject_record;
          END;
-
-
+         
+         
 */
 --EN Perform common validations
 
         -- SN Generate common select query
           BEGIN
-
+          
             l_pending_select_query :=
                    ' select add_ins_date run_date,
                      time_stamp ts,
-                     rrn id,
-                     to_char(add_ins_date, ''YYYY-MM-DD HH24:MI:SS'') transactionDate,
+                     rrn id, 
+                     to_char(add_ins_date, ''YYYY-MM-DD HH24:MI:SS'') transactionDate, 
                      ''Debit'' crdrFlag,
                      upper(trim(NVL(trans_desc,CTM_TRAN_DESC)))  transactionDescription,
                      TRIM(TO_CHAR (cpt_totalhold_amt, ''99999999999999990.99'')) transactionAmount,
@@ -1875,7 +1891,7 @@ BEGIN
                      mccode MCCDescription,
                      merchant_id merchantID,
                      CASE
-                      WHEN  delivery_channel = ''11''
+                      WHEN  delivery_channel = ''11'' 
                       THEN  REGEXP_REPLACE(NVL((DECODE(NVL(COMPANYNAME,''''),'''','''',''/''
                         ||''From ''||COMPANYNAME)
                         || DECODE(NVL(COMPENTRYDESC,''''),'''','''',''/''
@@ -1891,16 +1907,16 @@ BEGIN
                      merchant_zip postalCode,
                      case when delivery_channel=''03'' and txn_code in(''13'',''14'') then null
                      else
-                     merchant_state
+                     merchant_state 
                      end state,
                      country_code country,
-                     terminal_id terminalId,
-                     null RULEGROUP,        --Added for VMS_7816
+                    terminal_id terminalId,
+                      null RULEGROUP,        --Added for VMS_7816
                      null RULEMESSAGE, 
                      null isDisputable,  -- Added for VMS-7900
                      null inDispute,
                      ''False'' isFee ';  --isFee added for VMS-8002
-
+                     
           EXCEPTION
           WHEN OTHERS
           THEN
@@ -1908,22 +1924,22 @@ BEGIN
              l_err_msg :=
                    'Error while executing l_pending_select_query '
                 || SUBSTR (SQLERRM, 1, 200);
-             RAISE exp_reject_record;
-
+             RAISE exp_reject_record;                           
+                     
           END;
-
+          
           BEGIN
-
-            l_pending_from_query :=
-                   ' from   transactionlog,
+          
+            l_pending_from_query := 
+                   ' from   VMSCMS.TRANSACTIONLOG_VW,           --Added for VMS-5735/FSP-991
                             cms_transaction_mast,
-                            cms_preauth_transaction,
+                            VMSCMS.CMS_PREAUTH_TRANSACTION_VW,  --Added for VMS-5735/FSP-991
                             CMS_DELCHANNEL_MAST
-                    where  customer_acct_no =:l_acct_no
+                    where  customer_acct_no =:l_acct_no 
                       and CDM_CHANNEL_CODE = DELIVERY_CHANNEL
                       AND CDM_INST_CODE = INSTCODE
-                      and  instcode = ctm_inst_code
-                      and  delivery_channel = ctm_delivery_channel
+                      and  instcode = ctm_inst_code 
+                      and  delivery_channel = ctm_delivery_channel 
                       and  txn_code = ctm_tran_code
                        and cpt_txn_code=txn_code
                      and cpt_delivery_channel=DELIVERY_CHANNEL
@@ -1935,11 +1951,11 @@ BEGIN
                       and CPT_TOTALHOLD_AMT       > 0
                       and cpt_expiry_flag       = ''N''
                       and cpt_preauth_validflag = ''Y'' ';
-
+                      
                       IF l_start_date is not null and  l_end_date is not null then
                       l_pending_from_query:= l_pending_from_query||' and add_ins_date  between :l_start_date and :l_end_date ';
                       end if;
-
+                    
           EXCEPTION
           WHEN OTHERS
           THEN
@@ -1947,21 +1963,21 @@ BEGIN
              l_err_msg :=
                    'Error while executing l_pending_from_query '
                 || SUBSTR (SQLERRM, 1, 200);
-             RAISE exp_reject_record;
-
+             RAISE exp_reject_record;                       
+          
           END;
-
-
-
+          
+          
+          
           BEGIN
           -- Modified for vms-780 ,change is rrn to csl_rrn
-             l_posted_select_query :=
+             l_posted_select_query := 
                   ' select csl_ins_date run_date,
                     CSL_TIME_STAMP ts,
-                    csl_rrn id,
-                    to_char(csl_ins_date, ''YYYY-MM-DD HH24:MI:SS'') transactionDate,
+                    csl_rrn id, 
+                    to_char(csl_ins_date, ''YYYY-MM-DD HH24:MI:SS'') transactionDate, 
                     decode(upper(CSL_TRANS_TYPE),''CR'',''Credit'',''DR'',''Debit'') crdrFlag,
-                    CASE WHEN csl_delivery_channel IN (''01'',''02'') AND TXN_FEE_FLAG = ''N''
+                    CASE WHEN csl_delivery_channel IN (''01'',''02'') AND TXN_FEE_FLAG = ''N'' 
 			   THEN DECODE(nvl(regexp_instr(csl_trans_narrration,''RVSL-'',1,1,0,''i''),0),0,TRANS_DESC,
                           ''RVSL-''||TRANS_DESC)
 			  ||''/''||DECODE(nvl(merchant_name,CSL_MERCHANT_NAME), NULL, DECODE(delivery_channel, ''01'', ''ATM'', ''02'', ''Retail Merchant''), nvl(merchant_name,CSL_MERCHANT_NAME)
@@ -1978,13 +1994,13 @@ BEGIN
                                                                                                              || ''/''
                                                                                                              ||business_date
                                                                                                              || ''/''
-                                                                                                             ||auth_id)
+                                                                                                             ||auth_id)                     													     
 		  WHEN (select count(1) from VMS_PRODUCT_CUSTOM_TRANDESC where VPT_PROD_CODE = CSL_PROD_CODE
                                                                 AND VPT_CARD_TYPE = CSL_CARD_TYPE
                                                                 AND VPT_DELIVERY_CHANNEL = CSL_DELIVERY_CHANNEL
                                                                 AND VPT_TXN_CODE = CSL_TXN_CODE
                                                                 ) = 1 AND TXN_FEE_FLAG = ''N'' THEN
-                    (SELECT DECODE(NVL (REVERSAL_CODE,''0''),''0'',
+                    (SELECT DECODE(NVL (REVERSAL_CODE,''0''),''0'',   
                     REPLACE (REPLACE (VPT_TXNDESC_FORMAT,''email of sender'',vmscms.vms_transaction.get_email_id(''1'',CUSTOMER_CARD_NO)),
                                                 ''email of recipient'',vms_transaction.get_email_id(''1'',NVL(TOPUP_CARD_NO,CSL_PAN_NO))),
                         REPLACE (REPLACE (''RVSL - ''||VPT_TXNDESC_FORMAT,''email of sender'',vmscms.vms_transaction.get_email_id(''1'',CUSTOMER_CARD_NO)),
@@ -1992,13 +2008,13 @@ BEGIN
                                                                 AND VPT_CARD_TYPE = CSL_CARD_TYPE
                                                                 AND VPT_DELIVERY_CHANNEL = CSL_DELIVERY_CHANNEL
                                                                 AND VPT_TXN_CODE = CSL_TXN_CODE)
-                        ELSE
+                        ELSE                     
                         DECODE ( NVL (REVERSAL_CODE, ''0''), ''0'', DECODE ( TXN_FEE_FLAG, ''Y'',
-                                                  REPLACE(TRIM(UPPER(SUBSTR(CSL_TRANS_NARRRATION,0,DECODE(instr(CSL_TRANS_NARRRATION,'' - '',-1),0,LENGTH(CSL_TRANS_NARRRATION),instr(CSL_TRANS_NARRRATION,'' - '',-1))))),''CLAWBACK-'''',''),
+                                                  REPLACE(TRIM(UPPER(SUBSTR(CSL_TRANS_NARRRATION,0,DECODE(instr(CSL_TRANS_NARRRATION,'' - '',-1),0,LENGTH(CSL_TRANS_NARRRATION),instr(CSL_TRANS_NARRRATION,'' - '',-1))))),''CLAWBACK-'''',''), 
                                                   DECODE(upper(trim(NVL(trans_desc,CTM_TRAN_DESC))),upper(trim(CTM_TRAN_DESC)),ctm_display_txndesc,trans_desc))
                                                 , DECODE ( TXN_FEE_FLAG, ''Y'', REPLACE(TRIM(UPPER(SUBSTR(CSL_TRANS_NARRRATION,0,DECODE(instr(CSL_TRANS_NARRRATION,'' - '',-1),0,LENGTH(CSL_TRANS_NARRRATION),instr(CSL_TRANS_NARRRATION,'' - '',-1))))),''CLAWBACK-'',''''), ''RVSL-''
                                                   ||
-                                                  DECODE(upper(trim(NVL(trans_desc,CTM_TRAN_DESC))),upper(trim(CTM_TRAN_DESC)),ctm_display_txndesc,trans_desc)))
+                                                  DECODE(upper(trim(NVL(trans_desc,CTM_TRAN_DESC))),upper(trim(CTM_TRAN_DESC)),ctm_display_txndesc,trans_desc))) 
                                                   || (
                                                   CASE
                                                       WHEN clawback_indicator = ''Y''
@@ -2011,7 +2027,7 @@ BEGIN
                                                        WHERE CPC_PROD_CODE = PRODUCTID
                                                         AND CPC_CARD_TYPE= CATEGORYID
                                                         AND CPC_INST_CODE=INSTCODE
-                                                    )
+                                                    ) 
                                                   ELSE DECODE (TXN_FEE_FLAG, ''Y'', '' - FEE'')
                                                END) END  transactionDescription,
                     TRIM(TO_CHAR (nvl(csl_trans_amount,amount), ''99999999999999990.99'')) transactionAmount,
@@ -2021,17 +2037,17 @@ BEGIN
                     --ctd_check_acctno checkAccountNumber,
                     case when csl_delivery_channel = ''13'' then
                     (select ctd_check_desc||''~''||ctd_routing_number||''~''||ctd_check_acctno
-                    from   cms_transaction_log_dtl
-                    where   csl_rrn=ctd_rrn
+                    from   VMSCMS.CMS_TRANSACTION_LOG_DTL_VW   --Added for VMS-5735/FSP-991
+                    where   csl_rrn=ctd_rrn 
                     and csl_acct_no=ctd_cust_acct_number
                     and  csl_delivery_channel = ctd_delivery_channel
-                    and  csl_txn_code = ctd_txn_code
+                    and  csl_txn_code = ctd_txn_code 
                     and  csl_business_date = ctd_business_date
                     and  csl_business_time = ctd_business_time
                     and rownum=1) end check_detls,
                     ''POSTED'' transactionType,
                      TRIM(TO_CHAR (nvl(csl_closing_balance,DECODE (CSL_ACCT_NO,CUSTOMER_ACCT_NO,ledger_balance,TOPUP_LEDGER_BALANCE)), ''99999999999999990.99''))  ledgerBalance,
-                    TRIM(TO_CHAR (DECODE (CSL_ACCT_NO,CUSTOMER_ACCT_NO,acct_balance,TOPUP_ACCT_BALANCE), ''99999999999999990.99''))  availableBalance,
+                    TRIM(TO_CHAR (DECODE (CSL_ACCT_NO,CUSTOMER_ACCT_NO,acct_balance,TOPUP_ACCT_BALANCE), ''99999999999999990.99''))  availableBalance,   
                     csl_acct_no accountNumber,
                     csl_to_acctno toAccountNumber,
                     CSL_PANNO_LAST4DIGIT lastFourPAN,
@@ -2039,7 +2055,7 @@ BEGIN
                     mccode MCCDescription,
                     merchant_id merchantID,
                     CASE
-                      WHEN  csl_delivery_channel = ''11''
+                      WHEN  csl_delivery_channel = ''11'' 
                       THEN  REGEXP_REPLACE(NVL((DECODE(NVL(COMPANYNAME,''''),'''','''',''/''
                         ||''From ''||COMPANYNAME)
                         || DECODE(NVL(COMPENTRYDESC,''''),'''','''',''/''
@@ -2048,17 +2064,17 @@ BEGIN
                         ||INDIDNUM
                         ||'' to ''
                         ||INDNAME)),''Direct Deposit''),''/'','''',1,1)
-                      ELSE NVL ( CSL_MERCHANT_NAME, DECODE (TRIM (CDM_CHANNEL_DESC), ''ATM'', ''ATM'', ''POS'', ''Retail Merchant'', ''IVR'', ''IVR Transfer'', ''CHW'', ''Card Holder website'', ''ACH'', ''Direct Deposit'', ''MOB'', ''Mobile Transfer'', ''CSR'', ''Customer Service'', ''System''))
+                      ELSE NVL ( CSL_MERCHANT_NAME, DECODE (TRIM (CDM_CHANNEL_DESC), ''ATM'', ''ATM'', ''POS'', ''Retail Merchant'', ''IVR'', ''IVR Transfer'', ''CHW'', ''Card Holder website'', ''ACH'', ''Direct Deposit'', ''MOB'', ''Mobile Transfer'', ''CSR'', ''Customer Service'', ''System'')) 
                     END name,
                     merchant_street streetAddress,
                     merchant_city city,
                     merchant_zip postalCode,
                     case when delivery_channel=''03'' and txn_code in(''13'',''14'') then null
                      else
-                     merchant_state
+                     merchant_state 
                      end state,
                     country_code country,
-                    terminal_id terminalId,
+                     terminal_id terminalId,
                     null RULEGROUP,
                     null RULEMESSAGE,
                     CASE --dispute  -- Added for VMS-7900
@@ -2087,6 +2103,7 @@ BEGIN
                               END AS inDispute,
                               CASE txn_fee_flag WHEN ''Y'' THEN ''True'' ELSE ''False'' END isFee '; --isFee added for VMS-8002
 
+                    
           EXCEPTION
           WHEN OTHERS
           THEN
@@ -2094,20 +2111,20 @@ BEGIN
              l_err_msg :=
                    'Error while executing l_posted_select_query '
                 || SUBSTR (SQLERRM, 1, 200);
-             RAISE exp_reject_record;
-
+             RAISE exp_reject_record;                        
+          
           END;
-
+          
           BEGIN
-
-             l_posted_from_query :=
-                  ' from   transactionlog,
+          
+             l_posted_from_query := 
+                  ' from   VMSCMS.TRANSACTIONLOG_VW,       --Added for VMS-5735/FSP-991
                            --cms_transaction_log_dtl,
                            cms_transaction_mast,
-                           cms_statements_log,
+                           VMSCMS.CMS_STATEMENTS_LOG_VW,   --Added for VMS-5735/FSP-991
                            CMS_DELCHANNEL_MAST
-                    where  csl_acct_no = :l_acct_no
-                     -- and  csl_rrn = ctd_rrn
+                    where  csl_acct_no = :l_acct_no  
+                     -- and  csl_rrn = ctd_rrn 
                      -- and  csl_delivery_channel = ctd_delivery_channel
                       and CDM_CHANNEL_CODE = CSL_DELIVERY_CHANNEL
                       AND CDM_INST_CODE = CSL_INST_CODE
@@ -2115,21 +2132,21 @@ BEGIN
                      -- and  csl_business_date = ctd_business_date
                      -- and  csl_business_time = ctd_business_time
                      -- and  ctd_process_flag IN ( ''Y'' , ''C'') modified for vms-780:to include decline fee record
-                      and  csl_inst_code = ctm_inst_code
-                      and  csl_delivery_channel = ctm_delivery_channel
+                      and  csl_inst_code = ctm_inst_code 
+                      and  csl_delivery_channel = ctm_delivery_channel 
                       and  csl_txn_code = ctm_tran_code
                       and ((:l_tran_filter = ''RELOAD'' AND ctm_load_type =  ''LOAD'') OR (:l_tran_filter <> ''RELOAD''))
                       and  (CSL_PAN_NO = customer_card_no or CSL_PAN_NO = topup_card_no )
-                      and  csl_rrn = rrn
-                      and  CSL_TXN_CODE = txn_code
+                      and  csl_rrn = rrn 
+                      and  CSL_TXN_CODE = txn_code 
                       and  CSL_DELIVERY_CHANNEL= delivery_channel
                       and  CSL_AUTH_ID= AUTH_ID ';
                      -- and  (response_code = ''00'' or response_code is null) '; modified for vms-780:to include decline fee record
-
+                      
                     IF l_start_date is not null and  l_end_date is not null then
                       l_posted_from_query := l_posted_from_query||'and  csl_ins_date  between :l_start_date and :l_end_date ';
                     end if;
-
+                      
           EXCEPTION
           WHEN OTHERS
           THEN
@@ -2137,11 +2154,10 @@ BEGIN
              l_err_msg :=
                    'Error while executing l_posted_from_query '
                 || SUBSTR (SQLERRM, 1, 200);
-             RAISE exp_reject_record;
-
+             RAISE exp_reject_record;               
+          
           END;
-
-          --SN Added for VMS_7816
+		   --SN Added for VMS_7816
            BEGIN
             l_declined_select_query := 'select add_ins_date run_date,
                              time_stamp ts,
@@ -2190,7 +2206,7 @@ BEGIN
                              rules) RULEGROUP,
                              decode (rules ,(select vom_rulegroup_id from vmscms.vms_olsrulegroup_mast
                              where vom_rulegroup_id = rules  and vom_selfservice_eligibility =''Y''),
-                             (select vom_service_message from vmscms.vms_olsrulegroup_mast where vom_rulegroup_id = rules)) RULEMESSAGE,
+                              (select vom_service_message from vmscms.vms_olsrulegroup_mast where vom_rulegroup_id = rules)) RULEMESSAGE,
                              null isDisputable,  -- Added for VMS-7900
                              null inDispute,
                              ''False'' isFee '; --isFee added for VMS-8002
@@ -2238,30 +2254,30 @@ BEGIN
           END;
           --EN --Added for VMS_7816
  		  -- EN Generate common select query
-
+      
 		  -- SN Generate total select query
          BEGIN
             l_pending_total_query :=
                         '  select count(1) total_pending_count,
                                   sum(cpt_totalhold_amt) total_pending_amnt ';
-
-            l_posted_total_query :=
+                                  
+            l_posted_total_query := 
                         ' select COUNT(1) total_posted_count,
-                                 SUM(CASE when upper(CSL_TRANS_TYPE)=''CR''
+                                 SUM(CASE when upper(CSL_TRANS_TYPE)=''CR'' 
                                           then nvl(csl_trans_amount,amount)
-                                                  else 0
+                                                  else 0 
                                           END)total_credit_amnt,
-                                  SUM(CASE when upper(CSL_TRANS_TYPE)=''DR''
+                                  SUM(CASE when upper(CSL_TRANS_TYPE)=''DR'' 
                                           then nvl(csl_trans_amount,amount)
-                                                  else 0
+                                                  else 0 
                                           END)total_debit_amnt ';
 
 
-            l_reload_total_query :=
+            l_reload_total_query := 
                         ' select SUM(nvl(csl_trans_amount,amount)) total_reload_amnt ';
 
-			l_declined_total_query :=
-                        ' select count(1) declined_total_count ';--Added for VMS_7816
+	l_declined_total_query :=
+                        ' select count(1) declined_total_count ';--Added for VMS_7816			
           EXCEPTION
           WHEN OTHERS
           THEN
@@ -2269,22 +2285,22 @@ BEGIN
              l_err_msg :=
                    'Error while executing total query '
                 || SUBSTR (SQLERRM, 1, 200);
-             RAISE exp_reject_record;
+             RAISE exp_reject_record;                                 
          END;
 
      -- EN Generate total select query
-
+     
      IF l_tran_filter = 'PENDING' THEN
-
+        
         l_exec_query := l_pending_select_query||l_pending_from_query;
-
+        
         BEGIN
-
+        
              l_exec_query := ' select * from(select b.*,rownum r from ( '
                              || l_exec_query
                              || ' order by run_date desc,  ts desc
                                 )b) WHERE r BETWEEN :l_rec_start_no AND :l_rec_end_no ';
-
+                                
            IF l_start_date is not null and  l_end_date is not null then
              OPEN p_transaction_out FOR l_exec_query
              USING l_acct_no, l_start_date, l_end_date,
@@ -2293,8 +2309,8 @@ BEGIN
             OPEN p_transaction_out FOR l_exec_query
              USING l_acct_no, l_rec_start_no, l_rec_end_no;
           end if;
-
-
+          
+              
          EXCEPTION
             WHEN OTHERS
             THEN
@@ -2303,20 +2319,20 @@ BEGIN
                      'Error while executing l_exec_query '
                   || SUBSTR (SQLERRM, 1, 200);
                RAISE exp_reject_record;
-         END;
-
+         END;  
+        
      ELSIF l_tran_filter IN ('POSTED','RELOAD') THEN
-
+     
         l_exec_query := l_posted_select_query || l_posted_from_query;
-
+        
          BEGIN
-
+        
              l_exec_query := ' select * from(select b.*,rownum r from ( '
                              || l_exec_query
                              || ' order by run_date desc,  ts desc
                                 )b) WHERE r BETWEEN :l_rec_start_no AND :l_rec_end_no ';
-
-
+                                
+        
          IF l_start_date is not null and  l_end_date is not null then
              OPEN p_transaction_out FOR l_exec_query
              USING l_chargeback_val,l_chargeback_val,l_acct_no,l_tran_filter,l_tran_filter, l_start_date, l_end_date,  -- Added for VMS-7900
@@ -2326,7 +2342,7 @@ BEGIN
              USING l_chargeback_val,l_chargeback_val,l_acct_no,l_tran_filter,l_tran_filter, l_rec_start_no, l_rec_end_no;  -- Added for VMS-7900
 
         end if;
-
+              
          EXCEPTION
             WHEN OTHERS
             THEN
@@ -2335,9 +2351,8 @@ BEGIN
                      'Error while executing l_exec_query '
                   || SUBSTR (SQLERRM, 1, 200);
                RAISE exp_reject_record;
-         END;
-
-        --Sn added for VMS_7816
+         END;  
+  --Sn added for VMS_7816
 
         ELSIF l_tran_filter = 'DECLINED' THEN
 
@@ -2371,23 +2386,24 @@ BEGIN
          END;
 
 
-        --EN added for VMS_7816
-     ELSE
-
+        --EN added for VMS_7816         
+         
+     ELSE 
+     
         l_exec_query :=  l_pending_select_query||l_pending_from_query
                          || ' union '
                          || l_posted_select_query||l_posted_from_query
                          || ' union '
                          || l_declined_select_query || l_declined_from_query;---Added for VMS_7816
-
+                         
         BEGIN
-
+        
              l_exec_query := ' select * from(select b.*,rownum r from ( '
                              || l_exec_query
                              || ' order by run_date desc,  ts desc
                                 )b) WHERE r BETWEEN :l_rec_start_no AND :l_rec_end_no ';
-
-
+          
+          
              IF l_start_date is not null and  l_end_date is not null then
              OPEN p_transaction_out FOR l_exec_query
              USING l_acct_no, l_start_date, l_end_date,
@@ -2401,7 +2417,7 @@ BEGIN
                    l_acct_no,
                    l_rec_start_no, l_rec_end_no;
               END IF;
-
+              
          EXCEPTION
             WHEN OTHERS
             THEN
@@ -2410,68 +2426,67 @@ BEGIN
                      'Error while executing l_exec_query'
                   || SUBSTR (SQLERRM, 1, 200);
                RAISE exp_reject_record;
-         END;
-
-     END IF;
-
+         END;                 
+                         
+     END IF;   
+     
 	   -- SN Open cursor to execute total query
          BEGIN
-
+         
            IF l_tran_filter IN ( 'PENDING' , 'ALL' )  THEN
-
-                l_tot_pend_exec_query :=
+              
+                l_tot_pend_exec_query := 
                                          l_pending_total_query || l_pending_from_query;
-
-           IF l_start_date is not null and  l_end_date is not null then
-                    EXECUTE IMMEDIATE l_tot_pend_exec_query
-                    INTO l_total_pending_count,l_total_pending_amount
-                    USING l_acct_no, l_start_date, l_end_date;
-            else
-             EXECUTE IMMEDIATE l_tot_pend_exec_query
-                    INTO l_total_pending_count,l_total_pending_amount
-                    USING l_acct_no;
-            end if;
-
+      
+       IF l_start_date is not null and  l_end_date is not null then  
+                EXECUTE IMMEDIATE l_tot_pend_exec_query
+                INTO l_total_pending_count,l_total_pending_amount
+                USING l_acct_no, l_start_date, l_end_date;
+        else 
+         EXECUTE IMMEDIATE l_tot_pend_exec_query
+                INTO l_total_pending_count,l_total_pending_amount
+                USING l_acct_no;
+        end if;
+            
             END IF;
 
             IF  l_tran_filter IN ( 'POSTED' , 'RELOAD','ALL' )  THEN
 
-                l_tot_post_exec_query :=
+                l_tot_post_exec_query := 
                         l_posted_total_query || l_posted_from_query;
-
-            IF l_start_date is not null and  l_end_date is not null then
+        
+            IF l_start_date is not null and  l_end_date is not null then  
                 EXECUTE IMMEDIATE l_tot_post_exec_query
                 INTO l_total_posted_count, l_total_credit_amount, l_total_debit_amount
                 USING l_acct_no,l_tran_filter,l_tran_filter, l_start_date, l_end_date;
 
-            else
+            else 
              EXECUTE IMMEDIATE l_tot_post_exec_query
                 INTO l_total_posted_count, l_total_credit_amount, l_total_debit_amount
                 USING l_acct_no,l_tran_filter,l_tran_filter;
             end if;
-
+            
             END IF;
-
+			
             IF  l_tran_filter IN ('RELOAD','ALL' )  THEN
 
-                l_tot_post_exec_query :=
+                l_tot_post_exec_query := 
                         l_reload_total_query || l_posted_from_query;
-
-            IF l_start_date is not null and  l_end_date is not null then
+        
+            IF l_start_date is not null and  l_end_date is not null then  
                 EXECUTE IMMEDIATE l_tot_post_exec_query
                 INTO p_total_reload_amount_out
                 USING l_acct_no,'RELOAD','RELOAD', l_start_date, l_end_date;
 
-            else
+            else 
              EXECUTE IMMEDIATE l_tot_post_exec_query
                 INTO p_total_reload_amount_out
                 USING l_acct_no,'RELOAD','RELOAD';
             end if;
-
-
-            END IF;
-
-            IF l_tran_filter IN ( 'DECLINED' , 'ALL' )  THEN
+					
+            
+            END IF;			
+ IF l_tran_filter IN ( 'DECLINED' , 'ALL' )  THEN
 
                 l_tot_dec_exec_query :=
                                          l_declined_total_query || l_declined_from_query;
@@ -2487,7 +2502,7 @@ BEGIN
             end if;
 
             END IF;
-
+		
 
             p_total_pending_amount_out :=  CASE WHEN l_tran_filter IN ('RELOAD','POSTED')
                                            THEN
@@ -2507,29 +2522,29 @@ BEGIN
                                            ELSE
                                              nvl(l_total_debit_amount,0)
                                            END;
-
+           
             p_total_records_out        :=  CASE WHEN l_tran_filter = 'ALL'
                                            THEN
-                                              nvl(l_total_posted_count,0) + nvl(l_total_pending_count,0) + nvl(l_total_declined_count,0)
+                                               nvl(l_total_posted_count,0) + nvl(l_total_pending_count,0) + nvl(l_total_declined_count,0)
                                            WHEN l_tran_filter IN  ('RELOAD','POSTED')
                                            THEN
                                               nvl(l_total_posted_count,0)
                                            WHEN l_tran_filter ='PENDING'
                                            THEN
                                               nvl(l_total_pending_count,0)
-                                           WHEN l_tran_filter ='DECLINED'
+											   WHEN l_tran_filter ='DECLINED'
                                            THEN
                                               nvl(l_total_declined_count,0)
-                                           ELSE
+                                           ELSE 
                                               0
                                            END;
-
+          
           p_total_pending_amount_out := trim(to_char(p_total_pending_amount_out,'99999999999999990.99'));
           p_total_credit_amount_out  := trim(to_char(p_total_credit_amount_out,'99999999999999990.99'));
           p_total_debit_amount_out   := trim(to_char(p_total_debit_amount_out,'99999999999999990.99'));
 		  p_total_reload_amount_out   := trim(to_char(nvl(p_total_reload_amount_out,0),'99999999999999990.99'));
-
-
+            
+                          
            EXCEPTION
               WHEN OTHERS
               THEN
@@ -2539,10 +2554,10 @@ BEGIN
                     || SUBSTR (SQLERRM, 1, 200);
                  RAISE exp_reject_record;
            END;
-
+             
 -- EN Open cursor to execute query
 
-
+         
 
           p_resp_code_out := '1';
 
@@ -2551,13 +2566,13 @@ BEGIN
          WHEN exp_reject_record
          THEN
                p_resp_msg_out := l_err_msg;
-
+ 
          WHEN OTHERS
          THEN
             p_resp_msg_out := 'Other Excp-' || SUBSTR (SQLERRM, 1, 300);
             p_resp_code_out := '89';
       END;
-
+      
         BEGIN
             SELECT cms_iso_respcde
               INTO p_resp_code_out
@@ -2575,7 +2590,7 @@ BEGIN
                   || SUBSTR (SQLERRM, 1, 300);
                p_resp_code_out := '69';
          END;
-
+         
       BEGIN
          l_hashkey_id :=
             gethash (   p_del_channel_in
@@ -2594,15 +2609,15 @@ BEGIN
                   'Error while generating hashkey_id- '
                || SUBSTR (SQLERRM, 1, 200);
       END;
-
+      
       BEGIN
-
+          
           SELECT CAM_ACCT_BAL,CAM_LEDGER_BAL,CAM_TYPE_CODE
           INTO   l_acct_bal,l_ledger_bal,l_acct_type
           FROM   CMS_ACCT_MAST
           WHERE  CAM_INST_CODE = p_inst_code_in
           AND    CAM_ACCT_NO = l_acct_no;
-
+      
       EXCEPTION
             WHEN NO_DATA_FOUND    THEN
                p_resp_code_out := '21';
@@ -2615,7 +2630,7 @@ BEGIN
       END;
 
       IF l_audit_flag = 'T'         --- Modified for VMS-4097 - Remove 'RECENT STATEMENT' Transaction logging from Transactionlog.
-	  THEN
+	  THEN 
 -- SN Log into transaction log and cms_transaction_log_dtl
       BEGIN
          vms_log.log_transactionlog (p_inst_code_in,
@@ -2624,7 +2639,7 @@ BEGIN
                                      p_del_channel_in,
                                      p_txn_code_in,
                                      l_txn_type,
-                                     '0',
+                                     '0',                          
                                      p_business_date_in,
                                      p_business_time_in,
                                      '00',
@@ -2684,18 +2699,18 @@ BEGIN
 
      ELSIF l_audit_flag = 'A'
           THEN
-
-            BEGIN
-
-
+      
+            BEGIN 
+      
+         
             VMSCMS.VMS_LOG.LOG_TRANSACTIONLOG_AUDIT(p_msg_type_in,
 												 p_rrn_in,
 												 p_del_channel_in,
-												 p_txn_code_in,
-												 '0',
-												 p_business_date_in,
-												 p_business_time_in,
-												 '00',
+												 p_txn_code_in,                                     
+												 '0',   
+												 p_business_date_in,    
+												 p_business_time_in,   
+												 '00',  
 												 p_pan_code_in,
 												 l_err_msg,
 												 0,
@@ -2703,7 +2718,7 @@ BEGIN
 												 CASE WHEN p_resp_code_out = '00' THEN  '1' ELSE p_resp_code_out END,
 												 p_curr_code_in,
 												 p_partner_id_in,
-												 NULL,
+												 NULL,   
 												 l_err_msg,
                                                  NULL,
                                                  p_ip_addr_in,
@@ -2711,8 +2726,8 @@ BEGIN
                                                  CASE WHEN p_resp_code_out = '00' THEN  'C' ELSE 'F' END,
                                                  P_ANI_IN,
                                                  P_DNI_IN
-                                                 );
-
+                                                 ); 
+		
               EXCEPTION
                  WHEN OTHERS
                  THEN
@@ -2720,8 +2735,8 @@ BEGIN
                     l_err_msg :=
                           'Erorr while inserting to transaction log AUDIT'
                        || SUBSTR (SQLERRM, 1, 300);
-              END;
-
+              END; 
+          
           END IF;
    EXCEPTION
       WHEN OTHERS
@@ -2729,8 +2744,8 @@ BEGIN
          ROLLBACK;
          p_resp_code_out := '89';
          p_resp_msg_out := 'Main Excp- ' || SUBSTR (SQLERRM, 1, 300);
-   END get_transaction_history_v2;
-
+   END get_transaction_history_v2; 
+   
 END vms_transaction;
 /
-SHOW ERROR
+show error

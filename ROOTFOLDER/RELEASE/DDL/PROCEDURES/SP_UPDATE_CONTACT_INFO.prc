@@ -1,3 +1,4 @@
+SET DEFINE OFF;
 create or replace
 PROCEDURE VMSCMS.SP_UPDATE_CONTACT_INFO(P_INSTCODE         IN NUMBER,
                                          P_RRN              IN VARCHAR2,
@@ -168,6 +169,12 @@ PROCEDURE VMSCMS.SP_UPDATE_CONTACT_INFO(P_INSTCODE         IN NUMBER,
      * Purpose          : VMS-5378 : Need to update ccm_system_generate_profile flag in Retail / Card stock flow.
      * Reviewer         : Venkat. S
      * Release Number   : VMSGPRHOST_R56 Build 2.
+   
+    * Modified By      : venkat Singamaneni
+    * Modified Date    : 5-02-2022
+    * Purpose          : Archival changes.
+    * Reviewer         : Karthick/Jay
+    * Release Number   : VMSGPRHOST60 for VMS-5735/FSP-991
 
  *************************************************/
   V_CAP_PROD_CATG           CMS_APPL_PAN.CAP_PROD_CATG%TYPE;
@@ -261,6 +268,9 @@ PROCEDURE VMSCMS.SP_UPDATE_CONTACT_INFO(P_INSTCODE         IN NUMBER,
    EXP_REJECT_RECORD        EXCEPTION;
    EXP_MAIN_REJECT_RECORD   EXCEPTION;
    EXP_AUTH_REJECT_RECORD   EXCEPTION;
+v_Retperiod  date;  --Added for VMS-5735/FSP-991
+v_Retdate  date; --Added for VMS-5735/FSP-991
+
 BEGIN
   P_ERRMSG := 'OK';
   p_optin_flag_out :='N';
@@ -1141,12 +1151,32 @@ BEGIN
   -- Sivapragasam M end to update Contact Info on June 14 2012
   
     BEGIN
+--Added for VMS-5735/FSP-991
+ select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
+       INTO   v_Retperiod 
+       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
+       WHERE  OPERATION_TYPE='ARCHIVE' 
+       AND OBJECT_NAME='TRANSACTIONLOG_EBR';
+       
+       v_Retdate := TO_DATE(SUBSTR(TRIM(p_trandate), 1, 8), 'yyyymmdd');
+
+
+IF (v_Retdate>v_Retperiod)
+    THEN
      UPDATE TRANSACTIONLOG
         SET IPADDRESS = P_IPADDRESS
       WHERE RRN = P_RRN AND BUSINESS_DATE = P_TRANDATE AND
            TXN_CODE = P_TXN_CODE AND MSGTYPE = P_MSG_TYPE AND
            BUSINESS_TIME = P_TRANTIME AND
            DELIVERY_CHANNEL = P_DELIVERY_CHANNEL;
+ELSE
+UPDATE VMSCMS_HISTORY.TRANSACTIONLOG_HIST --Added for VMS-5733/FSP-991
+        SET IPADDRESS = P_IPADDRESS
+      WHERE RRN = P_RRN AND BUSINESS_DATE = P_TRANDATE AND
+           TXN_CODE = P_TXN_CODE AND MSGTYPE = P_MSG_TYPE AND
+           BUSINESS_TIME = P_TRANTIME AND
+           DELIVERY_CHANNEL = P_DELIVERY_CHANNEL;
+END IF;
            
            IF SQL%ROWCOUNT = 0 THEN
                v_errmsg :=
@@ -1174,7 +1204,19 @@ BEGIN
 --Added on 18-02-2014: MVCSD-4121 & FWR starts
 BEGIN
   IF V_RESPCODE ='00' AND V_RESPMSG ='OK' THEN
-   
+ 
+--Added for VMS-5735/FSP-991
+ select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
+       INTO   v_Retperiod 
+       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
+       WHERE  OPERATION_TYPE='ARCHIVE' 
+       AND OBJECT_NAME='CMS_TRANSACTION_LOG_DTL_EBR';
+       
+       v_Retdate := TO_DATE(SUBSTR(TRIM(p_trandate), 1, 8), 'yyyymmdd');
+
+
+IF (v_Retdate>v_Retperiod)
+    THEN
     UPDATE CMS_TRANSACTION_LOG_DTL
     SET CTD_CHW_COMMENT      = P_COMMENT , CTD_ADDRVERIFY_FLAG = P_ADDRESS_VERIFIED_FLAG , CTD_DEVICE_ID=P_DEVICE_ID , CTD_MOBILE_NUMBER=P_OTHERPHONE
     WHERE CTD_INST_CODE      = P_INSTCODE
@@ -1185,6 +1227,18 @@ BEGIN
     AND CTD_DELIVERY_CHANNEL =P_DELIVERY_CHANNEL
     AND CTD_TXN_CODE = P_TXN_CODE 
     AND CTD_MSG_TYPE = P_MSG_TYPE;
+ELSE
+    UPDATE VMSCMS_HISTORY.CMS_TRANSACTION_LOG_DTL_HIST --Added for VMS-5733/FSP-991
+    SET CTD_CHW_COMMENT      = P_COMMENT , CTD_ADDRVERIFY_FLAG = P_ADDRESS_VERIFIED_FLAG , CTD_DEVICE_ID=P_DEVICE_ID , CTD_MOBILE_NUMBER=P_OTHERPHONE
+    WHERE CTD_INST_CODE      = P_INSTCODE
+    AND CTD_CUSTOMER_CARD_NO = V_HASH_PAN
+    AND CTD_RRN              = P_RRN
+    AND CTD_BUSINESS_DATE    = P_TRANDATE
+    AND CTD_BUSINESS_TIME    = P_TRANTIME
+    AND CTD_DELIVERY_CHANNEL =P_DELIVERY_CHANNEL
+    AND CTD_TXN_CODE = P_TXN_CODE 
+    AND CTD_MSG_TYPE = P_MSG_TYPE;
+END IF;
     
     IF SQL%ROWCOUNT         <> 1 THEN
       V_RESPMSG             := 'Problem while updating into CMS_TRANSACTION_LOG_DTL';

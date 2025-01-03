@@ -204,13 +204,14 @@ IS
    
    l_reason_desc       cms_spprt_reasons.CSR_REASONDESC%TYPE;
    l_resp_desc         cms_response_mast.cms_resp_desc%TYPE;
-   
+   v_Retperiod  date;  --Added for VMS-5739/FSP-991
+v_Retdate  date; --Added for VMS-5739/FSP-991
 
    CURSOR l_cur_stmnts_log
    IS
       SELECT csl_trans_narrration, csl_merchant_name, csl_merchant_city,
              csl_merchant_state, csl_trans_amount
-        FROM cms_statements_log
+        FROM VMSCMS.CMS_STATEMENTS_LOG_VW 		--Added for VMS-5733/FSP-991
        WHERE csl_business_date = p_orgnl_tran_date_in
          AND csl_rrn = p_orgnl_rrn_in
          AND csl_delivery_channel = p_orgnl_delivery_chnl_in
@@ -366,6 +367,18 @@ BEGIN
       END;
 
       BEGIN
+	  --Added for VMS-5739/FSP-991
+ select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
+       INTO   v_Retperiod 
+       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
+       WHERE  OPERATION_TYPE='ARCHIVE' 
+       AND OBJECT_NAME='TRANSACTIONLOG_EBR';
+       
+       v_Retdate := TO_DATE(SUBSTR(TRIM(p_tran_date_in), 1, 8), 'yyyymmdd');
+
+
+IF (v_Retdate>v_Retperiod)
+    THEN
          SELECT COUNT (1)
            INTO l_rrn_count
            FROM transactionlog
@@ -376,6 +389,18 @@ BEGIN
             AND txn_code = p_txn_code_in
             AND business_date = p_tran_date_in
             AND business_time = p_tran_time_in;
+ELSE
+		SELECT COUNT (1)
+           INTO l_rrn_count
+           FROM VMSCMS_HISTORY.TRANSACTIONLOG_HIST --Added for VMS-5733/FSP-991
+          WHERE instcode = p_inst_code_in
+            AND customer_card_no = l_hash_pan
+            AND rrn = p_rrn_in
+            AND delivery_channel = p_delivery_chnl_in
+            AND txn_code = p_txn_code_in
+            AND business_date = p_tran_date_in
+            AND business_time = p_tran_time_in;
+END IF;			
 
          IF l_rrn_count > 0
          THEN
@@ -386,6 +411,18 @@ BEGIN
       END;
 
       BEGIN
+	  --Added for VMS-5739/FSP-991
+ select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
+       INTO   v_Retperiod 
+       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
+       WHERE  OPERATION_TYPE='ARCHIVE' 
+       AND OBJECT_NAME='TRANSACTIONLOG_EBR';
+       
+       v_Retdate := TO_DATE(SUBSTR(TRIM(p_orgnl_tran_date_in), 1, 8), 'yyyymmdd');
+
+
+IF (v_Retdate>v_Retperiod)
+    THEN
          SELECT proxy_number, msgtype, rrn,
                 delivery_channel, txn_code,
                 txn_mode, response_code,
@@ -434,6 +471,56 @@ BEGIN
             AND delivery_channel = p_orgnl_delivery_chnl_in
             AND response_code = '00';
       -- AND csr_achactiontaken = 'A';
+ELSE
+		SELECT proxy_number, msgtype, rrn,
+                delivery_channel, txn_code,
+                txn_mode, response_code,
+                business_date, business_time,
+                NVL (TO_CHAR (total_amount, '999999999990.00'), '0.00')
+                                                                 total_amount,
+                NVL (TO_CHAR (amount, '999999999990.00'), '0.00') amount,
+                instcode, fn_dmaps_main (customer_card_no_encr) AS cardnum,
+                reversal_code, customer_acct_no,
+                achfilename, rdfi, seccodes,
+                impdate, processdate, effectivedate,
+                tracenumber, incoming_crfileid,
+                auth_id, achtrantype_id, indidnum,
+                indname, companyname, companyid,
+                ach_id, compentrydesc, response_id,
+                customerlastname, odfi,
+                currencycode, terminal_id, addcharge,
+                tranfee_amt, feecode,
+                add_ins_date, fee_plan,remark
+           INTO l_proxy_number, l_orgnl_msgtype, l_orgnl_rrn,
+                l_orgnl_delivery_channel, l_orgnl_txn_code,
+                l_orgnl_txn_mode, l_orgnl_response_code,
+                l_orgnl_business_date, l_orgnl_business_time,
+                l_orgnl_total_amount,
+                l_orgnl_amount,
+                l_orgnl_instcode, l_orgnl_cardnum,
+                l_orgnl_reversal_code, l_orgnl_customer_acct_no,
+                l_orgnl_achfilename, l_orgnl_rdfi, l_orgnl_seccodes,
+                l_orgnl_impdate, l_orgnl_processdate, l_orgnl_effectivedate,
+                l_orgnl_tracenumber, l_orgnl_incoming_crfileid,
+                l_orgnl_auth_id, l_orgnl_achtrantype_id, l_orgnl_indidnum,
+                l_orgnl_indname, l_orgnl_companyname, l_orgnl_companyid,
+                l_orgnl_ach_id, l_orgnl_compentrydesc, l_orgnl_response_id,
+                l_orgnl_customerlastname, l_orgnl_odfi,
+                l_orgnl_currencycode, l_orgnl_terminal_id, l_addcharge,
+                l_orgnl_txn_totalfee_amt, l_orgnl_txn_feecode,
+                l_add_ins_date, l_orgnl_txn_fee_plan,l_remarks
+           FROM VMSCMS_HISTORY.TRANSACTIONLOG_HIST --Added for VMS-5733/FSP-991
+          WHERE instcode = p_inst_code_in
+            AND rrn = p_orgnl_rrn_in
+            AND business_date = p_orgnl_tran_date_in
+            AND business_time = p_orgnl_tran_time_in
+            AND customer_card_no = l_hash_pan
+            AND (auth_id IS NULL OR auth_id = p_orgnl_auth_id_in)
+            AND txn_code = p_orgnl_txn_code_in
+            AND delivery_channel = p_orgnl_delivery_chnl_in
+            AND response_code = '00';
+      -- AND csr_achactiontaken = 'A';
+END IF;	  
       EXCEPTION
          WHEN NO_DATA_FOUND
          THEN
@@ -500,6 +587,18 @@ BEGIN
       END;
 
       BEGIN
+	  --Added for VMS-5739/FSP-991
+ select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
+       INTO   v_Retperiod 
+       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
+       WHERE  OPERATION_TYPE='ARCHIVE' 
+       AND OBJECT_NAME='CMS_STATEMENTS_LOG_EBR';
+       
+       v_Retdate := TO_DATE(SUBSTR(TRIM(l_orgnl_business_date), 1, 8), 'yyyymmdd');
+
+
+IF (v_Retdate>v_Retperiod)
+    THEN
          SELECT csl_trans_narrration, csl_merchant_name, csl_merchant_city,
                 csl_merchant_state
            INTO l_txn_narration, l_txn_merchname, l_txn_merchcity,
@@ -513,6 +612,21 @@ BEGIN
             AND csl_pan_no = p_orgnl_card_no_in
             AND csl_inst_code = p_inst_code_in
             AND txn_fee_flag = 'N';
+ELSE
+		SELECT csl_trans_narrration, csl_merchant_name, csl_merchant_city,
+                csl_merchant_state
+           INTO l_txn_narration, l_txn_merchname, l_txn_merchcity,
+                l_txn_merchstate
+           FROM VMSCMS_HISTORY.CMS_STATEMENTS_LOG_HIST --Added for VMS-5733/FSP-991
+          WHERE csl_business_date = l_orgnl_business_date
+            AND csl_business_time = l_orgnl_business_time
+            AND csl_rrn = l_orgnl_rrn
+            AND csl_delivery_channel = l_orgnl_delivery_channel
+            AND csl_txn_code = l_orgnl_txn_code
+            AND csl_pan_no = p_orgnl_card_no_in
+            AND csl_inst_code = p_inst_code_in
+            AND txn_fee_flag = 'N';
+END IF;			
       EXCEPTION
          WHEN NO_DATA_FOUND
          THEN
@@ -803,6 +917,18 @@ BEGIN
       l_resp_cde := '1';
 
       BEGIN
+	  --Added for VMS-5739/FSP-991
+ select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
+       INTO   v_Retperiod 
+       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
+       WHERE  OPERATION_TYPE='ARCHIVE' 
+       AND OBJECT_NAME='CMS_STATEMENTS_LOG_EBR';
+       
+       v_Retdate := TO_DATE(SUBSTR(TRIM(p_tran_date_in), 1, 8), 'yyyymmdd');
+
+
+IF (v_Retdate>v_Retperiod)
+    THEN
          UPDATE cms_statements_log
             SET csl_prod_code = l_prod_code,
                 csl_card_type=l_card_type,
@@ -815,6 +941,20 @@ BEGIN
             AND csl_delivery_channel = p_delivery_chnl_in
             AND csl_business_date = p_tran_date_in
             AND csl_business_time = p_tran_time_in;
+ELSE
+		UPDATE VMSCMS_HISTORY.CMS_STATEMENTS_LOG_HIST --Added for VMS-5733/FSP-991
+            SET csl_prod_code = l_prod_code,
+                csl_card_type=l_card_type,
+                csl_acct_type = l_acct_type,
+                csl_time_stamp = l_timestamp
+          WHERE csl_inst_code = p_inst_code_in
+            AND csl_pan_no = l_hash_pan
+            AND csl_rrn = p_rrn_in
+            AND csl_txn_code = p_txn_code_in
+            AND csl_delivery_channel = p_delivery_chnl_in
+            AND csl_business_date = p_tran_date_in
+            AND csl_business_time = p_tran_time_in;
+END IF;			
 
          IF SQL%ROWCOUNT = 0
          THEN
@@ -885,6 +1025,18 @@ BEGIN
          AND cms_delivery_channel = '11'
          AND cms_response_id = 266;
       END IF;
+	  --Added for VMS-5739/FSP-991
+ select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
+       INTO   v_Retperiod 
+       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
+       WHERE  OPERATION_TYPE='ARCHIVE' 
+       AND OBJECT_NAME='TRANSACTIONLOG_EBR';
+       
+       v_Retdate := TO_DATE(SUBSTR(TRIM(p_orgnl_tran_date_in), 1, 8), 'yyyymmdd');
+
+
+IF (v_Retdate>v_Retperiod)
+    THEN
          UPDATE transactionlog
             SET csr_achactiontaken = 'R',
                 processtype = 'N',
@@ -901,6 +1053,24 @@ BEGIN
             AND (auth_id IS NULL OR auth_id = p_orgnl_auth_id_in)
             AND txn_code = p_orgnl_txn_code_in
             AND delivery_channel = p_orgnl_delivery_chnl_in;
+ELSE
+		   UPDATE VMSCMS_HISTORY.TRANSACTIONLOG_HIST --Added for VMS-5733/FSP-991
+            SET csr_achactiontaken = 'R',
+                processtype = 'N',
+                remark = p_remark_in,
+                response_code=decode(p_r17_response_in,'Y','R17','224'),
+                response_id=decode(p_r17_response_in,'Y','266','224'),
+                gl_eod_flag='V',
+                error_msg = DECODE(p_r17_response_in,'Y',l_resp_desc,error_msg) 
+          WHERE instcode = p_inst_code_in
+            AND rrn = p_orgnl_rrn_in
+            AND business_date = p_orgnl_tran_date_in
+            AND business_time = p_orgnl_tran_time_in
+            AND customer_card_no = l_hash_pan
+            AND (auth_id IS NULL OR auth_id = p_orgnl_auth_id_in)
+            AND txn_code = p_orgnl_txn_code_in
+            AND delivery_channel = p_orgnl_delivery_chnl_in;
+END IF;			
 
          IF SQL%ROWCOUNT = 0
          THEN
@@ -911,6 +1081,18 @@ BEGIN
          
          IF p_r17_response_in = 'Y' --- Added for VMS-3412
          THEN
+		 --Added for VMS-5739/FSP-991
+ select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
+       INTO   v_Retperiod 
+       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
+       WHERE  OPERATION_TYPE='ARCHIVE' 
+       AND OBJECT_NAME='CMS_TRANSACTION_LOG_DTL_EBR';
+       
+       v_Retdate := TO_DATE(SUBSTR(TRIM(p_orgnl_tran_date_in), 1, 8), 'yyyymmdd');
+
+
+IF (v_Retdate>v_Retperiod)
+    THEN
             UPDATE CMS_TRANSACTION_LOG_DTL 
                SET ctd_process_msg = l_resp_desc
              WHERE ctd_inst_code = p_inst_code_in
@@ -920,6 +1102,17 @@ BEGIN
                AND ctd_customer_card_no = l_hash_pan
                AND ctd_txn_code = p_orgnl_txn_code_in
                AND ctd_delivery_channel = p_orgnl_delivery_chnl_in;
+ELSE
+			UPDATE VMSCMS_HISTORY.CMS_TRANSACTION_LOG_DTL_HIST  --Added for VMS-5733/FSP-991 
+               SET ctd_process_msg = l_resp_desc
+             WHERE ctd_inst_code = p_inst_code_in
+               AND ctd_rrn = p_orgnl_rrn_in 
+               AND ctd_business_date = p_orgnl_tran_date_in
+               AND ctd_business_time = p_orgnl_tran_time_in
+               AND ctd_customer_card_no = l_hash_pan
+               AND ctd_txn_code = p_orgnl_txn_code_in
+               AND ctd_delivery_channel = p_orgnl_delivery_chnl_in;
+END IF;			   
            END IF;
       EXCEPTION
          WHEN l_exp_reject_record
@@ -1148,7 +1341,5 @@ END;
     
   
 END VMSUSACH;
-
 /
-
-show error
+show error;

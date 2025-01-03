@@ -221,6 +221,8 @@ AS
    v_enable_flag                VARCHAR2 (20)                          := 'Y';
    v_initialload_amt         cms_acct_mast.cam_new_initialload_amt%type;
                                              --added by Pankaj S. for FSS-390
+	v_Retperiod  date;  --Added for VMS-5739/FSP-991
+	v_Retdate  date; --Added for VMS-5739/FSP-991										 
 BEGIN
    --<<MAIN BEGIN >>
    prm_errmsg := 'OK ';
@@ -314,12 +316,32 @@ IF prm_authid IS NULL THEN
    BEGIN
       IF prm_processtype <> 'N'
       THEN
-         SELECT COUNT (1)
-           INTO v_rrn_count
-           FROM transactionlog
-          WHERE rrn = prm_rrn
-            AND business_date = prm_trandate
-            AND delivery_channel = prm_delivery_channel;
+	  --Added for VMS-5739/FSP-991
+	 select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
+		   INTO   v_Retperiod 
+		   FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
+		   WHERE  OPERATION_TYPE='ARCHIVE' 
+		   AND OBJECT_NAME='TRANSACTIONLOG_EBR';
+		   
+		   v_Retdate := TO_DATE(SUBSTR(TRIM(prm_trandate), 1, 8), 'yyyymmdd');
+
+
+	IF (v_Retdate>v_Retperiod)
+		THEN
+			 SELECT COUNT (1)
+			   INTO v_rrn_count
+			   FROM transactionlog
+			  WHERE rrn = prm_rrn
+				AND business_date = prm_trandate
+				AND delivery_channel = prm_delivery_channel;
+	ELSE
+			 SELECT COUNT (1)
+			   INTO v_rrn_count
+			   FROM VMSCMS_HISTORY.TRANSACTIONLOG_HIST --Added for VMS-5733/FSP-991
+			  WHERE rrn = prm_rrn
+				AND business_date = prm_trandate
+				AND delivery_channel = prm_delivery_channel;
+	END IF;		
       END IF;
 
       IF v_rrn_count > 0
@@ -386,12 +408,32 @@ IF prm_authid IS NULL THEN
        BEGIN
           IF prm_processtype <> 'N'
           THEN
-             SELECT COUNT (1)
-               INTO v_rrn_count
-               FROM transactionlog
-              WHERE rrn = prm_rrn
-                AND business_date = prm_trandate
-                AND delivery_channel = prm_delivery_channel;
+		  --Added for VMS-5739/FSP-991
+	 select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
+		   INTO   v_Retperiod 
+		   FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
+		   WHERE  OPERATION_TYPE='ARCHIVE' 
+		   AND OBJECT_NAME='TRANSACTIONLOG_EBR';
+		   
+		   v_Retdate := TO_DATE(SUBSTR(TRIM(prm_trandate), 1, 8), 'yyyymmdd');
+
+
+	IF (v_Retdate>v_Retperiod)
+		THEN
+				 SELECT COUNT (1)
+				   INTO v_rrn_count
+				   FROM transactionlog
+				  WHERE rrn = prm_rrn
+					AND business_date = prm_trandate
+					AND delivery_channel = prm_delivery_channel;
+	ELSE
+				SELECT COUNT (1)
+				   INTO v_rrn_count
+				   FROM VMSCMS_HISTORY.TRANSACTIONLOG_HIST --Added for VMS-5733/FSP-991
+				  WHERE rrn = prm_rrn
+					AND business_date = prm_trandate
+					AND delivery_channel = prm_delivery_channel;
+	END IF;				
           END IF;
 
           IF v_rrn_count > 0
@@ -1691,21 +1733,51 @@ IF prm_authid IS NULL THEN
    END;
 
    BEGIN
-      UPDATE transactionlog
-         SET csr_achactiontaken = 'A',
-             reason = prm_reason_desc,
-             remark = prm_remark,
-             response_code = prm_resp_code    -- added by sagar on 01-MAR-2012
-             ,gl_eod_flag=prm_reason_code,
-             txn_status='C',
-             error_msg='OK'
-       WHERE rrn = prm_rrn
-         AND business_date = prm_trandate
-         AND txn_code = prm_txn_code
-         AND instcode = prm_instcode
-         --AND business_date = prm_trandate
-         AND business_time = prm_trantime
-         AND customer_card_no_encr = v_encr_pan;
+   --Added for VMS-5739/FSP-991
+	 select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
+		   INTO   v_Retperiod 
+		   FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
+		   WHERE  OPERATION_TYPE='ARCHIVE' 
+		   AND OBJECT_NAME='TRANSACTIONLOG_EBR';
+		   
+		   v_Retdate := TO_DATE(SUBSTR(TRIM(prm_trandate), 1, 8), 'yyyymmdd');
+
+
+	IF (v_Retdate>v_Retperiod)
+
+		THEN
+		  UPDATE transactionlog
+			 SET csr_achactiontaken = 'A',
+				 reason = prm_reason_desc,
+				 remark = prm_remark,
+				 response_code = prm_resp_code    -- added by sagar on 01-MAR-2012
+				 ,gl_eod_flag=prm_reason_code,
+				 txn_status='C',
+				 error_msg='OK'
+		   WHERE rrn = prm_rrn
+			 AND business_date = prm_trandate
+			 AND txn_code = prm_txn_code
+			 AND instcode = prm_instcode
+			 --AND business_date = prm_trandate
+			 AND business_time = prm_trantime
+			 AND customer_card_no_encr = v_encr_pan;
+	ELSE	
+			UPDATE VMSCMS_HISTORY.TRANSACTIONLOG_HIST --Added for VMS-5733/FSP-991
+			 SET csr_achactiontaken = 'A',
+				 reason = prm_reason_desc,
+				 remark = prm_remark,
+				 response_code = prm_resp_code    -- added by sagar on 01-MAR-2012
+				 ,gl_eod_flag=prm_reason_code,
+				 txn_status='C',
+				 error_msg='OK'
+		   WHERE rrn = prm_rrn
+			 AND business_date = prm_trandate
+			 AND txn_code = prm_txn_code
+			 AND instcode = prm_instcode
+			 --AND business_date = prm_trandate
+			 AND business_time = prm_trantime
+			 AND customer_card_no_encr = v_encr_pan;
+	END IF;		 
 
       IF SQL%ROWCOUNT = 0
       THEN
@@ -1911,21 +1983,52 @@ EXCEPTION
       IF prm_processtype = 'N'
       THEN
          BEGIN
-            UPDATE transactionlog
-               SET processtype = prm_processtype,
-                   response_code = prm_resp_code,
-                   --auth_id = prm_auth_id,    --commented by sagar on 01-MAR-2012
-                   csr_achactiontaken = 'A',
-                             --changed from 'R' to 'A' by sagar on 01-MAR-2012
-                   reason = prm_reason_desc,
-                   remark = prm_remark
-                    ,gl_eod_flag=prm_reason_code
-             WHERE rrn = prm_rrn
-               AND business_time = prm_trantime
-               AND business_date = prm_trandate
-               AND customer_card_no_encr = v_encr_pan
-               AND txn_code = prm_txn_code
-               AND instcode = prm_instcode;
+		 --Added for VMS-5739/FSP-991
+	 select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
+		   INTO   v_Retperiod 
+		   FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
+		   WHERE  OPERATION_TYPE='ARCHIVE' 
+		   AND OBJECT_NAME='TRANSACTIONLOG_EBR';
+		   
+		   v_Retdate := TO_DATE(SUBSTR(TRIM(prm_trandate), 1, 8), 'yyyymmdd');
+
+
+	IF (v_Retdate>v_Retperiod)
+
+		THEN
+				UPDATE transactionlog
+				   SET processtype = prm_processtype,
+					   response_code = prm_resp_code,
+					   --auth_id = prm_auth_id,    --commented by sagar on 01-MAR-2012
+					   csr_achactiontaken = 'A',
+								 --changed from 'R' to 'A' by sagar on 01-MAR-2012
+					   reason = prm_reason_desc,
+					   remark = prm_remark
+						,gl_eod_flag=prm_reason_code
+				 WHERE rrn = prm_rrn
+				   AND business_time = prm_trantime
+				   AND business_date = prm_trandate
+				   AND customer_card_no_encr = v_encr_pan
+				   AND txn_code = prm_txn_code
+				   AND instcode = prm_instcode;
+	ELSE
+				UPDATE VMSCMS_HISTORY.TRANSACTIONLOG_HIST --Added for VMS-5733/FSP-991
+				   SET processtype = prm_processtype,
+					   response_code = prm_resp_code,
+					   --auth_id = prm_auth_id,    --commented by sagar on 01-MAR-2012
+					   csr_achactiontaken = 'A',
+								 --changed from 'R' to 'A' by sagar on 01-MAR-2012
+					   reason = prm_reason_desc,
+					   remark = prm_remark
+						,gl_eod_flag=prm_reason_code
+				 WHERE rrn = prm_rrn
+				   AND business_time = prm_trantime
+				   AND business_date = prm_trandate
+				   AND customer_card_no_encr = v_encr_pan
+				   AND txn_code = prm_txn_code
+				   AND instcode = prm_instcode;
+	END IF;
+			   
          EXCEPTION
             WHEN OTHERS
             THEN
@@ -2168,12 +2271,27 @@ EXCEPTION
                          prm_endaccountbalance, prm_endledgerbal,
                          prm_auth_id, prm_startledgerbal,
                          prm_startaccountbalance
-                    FROM transactionlog a,
+                    FROM VMSCMS.TRANSACTIONLOG a,			 --Added for VMS-5733/FSP-991
                          (SELECT MIN (add_ins_date) mindate
-                            FROM transactionlog
+                            FROM VMSCMS.TRANSACTIONLOG			 --Added for VMS-5733/FSP-991
                            WHERE rrn = prm_rrn) b
                    WHERE a.add_ins_date = mindate AND rrn = prm_rrn;
                --prm_resp_code := v_respcode;
+			   IF SQL%ROWCOUNT = 0 THEN 
+			    SELECT                                     --response_code,
+                         acct_balance, ledger_balance,
+                         auth_id, befretran_ledgerbal,
+                         befretran_availbalance
+                    INTO                                         --v_respcode,
+                         prm_endaccountbalance, prm_endledgerbal,
+                         prm_auth_id, prm_startledgerbal,
+                         prm_startaccountbalance
+                    FROM VMSCMS_HISTORY.TRANSACTIONLOG_HIST a,			 --Added for VMS-5733/FSP-991
+                         (SELECT MIN (add_ins_date) mindate
+                            FROM VMSCMS_HISTORY.TRANSACTIONLOG_HIST			 --Added for VMS-5733/FSP-991
+                           WHERE rrn = prm_rrn) b
+                   WHERE a.add_ins_date = mindate AND rrn = prm_rrn;
+			   END IF;
                EXCEPTION
                   WHEN OTHERS
                   THEN
@@ -2268,21 +2386,52 @@ EXCEPTION
          IF prm_processtype = 'N'
          THEN
             BEGIN
-               UPDATE transactionlog
-                  SET processtype = prm_processtype,
-                      response_code = prm_resp_code,
-                      csr_achactiontaken = 'A',
-                                 --changed from R to A on 01-mar-2012 by sagar
-                      reason = prm_reason_desc,
-                      remark = prm_remark
-                       ,gl_eod_flag=prm_reason_code
-                WHERE rrn = prm_rrn
-                  and BUSINESS_DATE = PRM_TRANDATE
-                  --AND business_date = prm_trandate
-                  AND business_time = prm_trantime
-                  AND customer_card_no_encr = v_encr_pan
-                  AND txn_code = prm_txn_code
-                  AND instcode = prm_instcode;
+			
+				--Added for VMS-5739/FSP-991
+	 select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
+		   INTO   v_Retperiod 
+		   FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
+		   WHERE  OPERATION_TYPE='ARCHIVE' 
+		   AND OBJECT_NAME='TRANSACTIONLOG_EBR';
+		   
+		   v_Retdate := TO_DATE(SUBSTR(TRIM(PRM_TRANDATE), 1, 8), 'yyyymmdd');
+
+
+	IF (v_Retdate>v_Retperiod)
+
+		THEN
+				   UPDATE transactionlog
+					  SET processtype = prm_processtype,
+						  response_code = prm_resp_code,
+						  csr_achactiontaken = 'A',
+									 --changed from R to A on 01-mar-2012 by sagar
+						  reason = prm_reason_desc,
+						  remark = prm_remark
+						   ,gl_eod_flag=prm_reason_code
+					WHERE rrn = prm_rrn
+					  and BUSINESS_DATE = PRM_TRANDATE
+					  --AND business_date = prm_trandate
+					  AND business_time = prm_trantime
+					  AND customer_card_no_encr = v_encr_pan
+					  AND txn_code = prm_txn_code
+					  AND instcode = prm_instcode;
+	ELSE
+					UPDATE VMSCMS_HISTORY.TRANSACTIONLOG_HIST --Added for VMS-5733/FSP-991
+					  SET processtype = prm_processtype,
+						  response_code = prm_resp_code,
+						  csr_achactiontaken = 'A',
+									 --changed from R to A on 01-mar-2012 by sagar
+						  reason = prm_reason_desc,
+						  remark = prm_remark
+						   ,gl_eod_flag=prm_reason_code
+					WHERE rrn = prm_rrn
+					  and BUSINESS_DATE = PRM_TRANDATE
+					  --AND business_date = prm_trandate
+					  AND business_time = prm_trantime
+					  AND customer_card_no_encr = v_encr_pan
+					  AND txn_code = prm_txn_code
+					  AND instcode = prm_instcode;
+	END IF;				  
             EXCEPTION
                WHEN OTHERS
                THEN
@@ -2342,4 +2491,4 @@ EXCEPTION
       prm_errmsg := ' Error from main ' || SUBSTR (SQLERRM, 1, 200);
 END;
 /
-show error
+show error;

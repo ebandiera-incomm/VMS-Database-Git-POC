@@ -214,6 +214,9 @@ CREATE OR REPLACE PROCEDURE VMSCMS.SP_AUTHORIZE_TXN_CSR_AUTH_ACH (
   v_timestamp       timestamp;                         -- Added on 17-Apr-2013 for defect ?
    
   v_fee_desc        cms_fee_mast.cfm_fee_desc%TYPE;  -- Added for MVCSD-4471
+  v_Retperiod  date;  --Added for VMS-5739/FSP-991
+  v_Retdate  date; --Added for VMS-5739/FSP-991
+
 
  BEGIN
   SAVEPOINT V_AUTH_SAVEPOINT;
@@ -1599,6 +1602,18 @@ CREATE OR REPLACE PROCEDURE VMSCMS.SP_AUTHORIZE_TXN_CSR_AUTH_ACH (
     --En create entries for FEES attached
     
     BEGIN
+	--Added for VMS-5739/FSP-991
+ select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
+       INTO   v_Retperiod 
+       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
+       WHERE  OPERATION_TYPE='ARCHIVE' 
+       AND OBJECT_NAME='CMS_TRANSACTION_LOG_DTL_EBR';
+       
+       v_Retdate := TO_DATE(SUBSTR(TRIM(p_TRAN_DATE), 1, 8), 'yyyymmdd');
+
+
+IF (v_Retdate>v_Retperiod)
+    THEN
            update cms_transaction_log_dtl 
             set CTD_BILL_AMOUNT=V_TOTAL_AMT,
             CTD_PROCESS_FLAG='Y',
@@ -1610,8 +1625,22 @@ CREATE OR REPLACE PROCEDURE VMSCMS.SP_AUTHORIZE_TXN_CSR_AUTH_ACH (
             and ctd_business_time=p_TRAN_TIME
             and CTD_DELIVERY_CHANNEL=p_DELIVERY_CHANNEL
             and  ctd_txn_code=p_TXN_CODE;
+ELSE
+			update VMSCMS_HISTORY.CMS_TRANSACTION_LOG_DTL_HIST 			--Added for VMS-5739/FSP-991
+            set CTD_BILL_AMOUNT=V_TOTAL_AMT,
+            CTD_PROCESS_FLAG='Y',
+            CTD_PROCESS_MSG='Successful'
+            where ctd_rrn=p_RRN 
+            and CTD_PROCESS_FLAG='E'
+            and ctd_customer_card_no=V_HASH_PAN
+            and ctd_business_date=p_TRAN_DATE
+            and ctd_business_time=p_TRAN_TIME
+            and CTD_DELIVERY_CHANNEL=p_DELIVERY_CHANNEL
+            and  ctd_txn_code=p_TXN_CODE;
+END IF;			
       EXCEPTION 
         WHEN OTHERS THEN
+		
       V_ERR_MSG  := 'Problem while updating transactionlog dtl ' ||
                   SUBSTR(SQLERRM, 1, 300);
        V_RESP_CDE := '21';
@@ -2267,6 +2296,19 @@ CREATE OR REPLACE PROCEDURE VMSCMS.SP_AUTHORIZE_TXN_CSR_AUTH_ACH (
   --If transaction is approved from csr or Host application p_PROCESSTYPE is n will update and the same record moved to history
   if p_PROCESSTYPE = 'N' THEN
   BEGIN
+  --Added for VMS-5739/FSP-991
+ select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
+       INTO   v_Retperiod 
+       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
+       WHERE  OPERATION_TYPE='ARCHIVE' 
+       AND OBJECT_NAME='TRANSACTIONLOG_EBR';
+       
+       v_Retdate := TO_DATE(SUBSTR(TRIM(p_TRAN_DATE), 1, 8), 'yyyymmdd');
+
+
+IF (v_Retdate>v_Retperiod)
+
+    THEN
   update transactionlog set PROCESSTYPE= p_PROCESSTYPE,response_code=p_RESP_CODE
   ,tranfee_amt=V_FLAT_FEES,ACCT_BALANCE=V_ACCT_BALANCE,LEDGER_BALANCE=v_ledger_bal,tranfee_cr_acctno=V_FEE_CRACCT_NO, tranfee_dr_acctno=V_FEE_DRACCT_NO,
                       total_amount=V_TOTAL_AMT,
@@ -2277,6 +2319,19 @@ CREATE OR REPLACE PROCEDURE VMSCMS.SP_AUTHORIZE_TXN_CSR_AUTH_ACH (
                        ,ADD_INS_DATE=sysdate--en Added by Dnyaneshwar J on 27 May 2013 for DFCCSD 68
 WHERE RRN = p_RRN AND BUSINESS_DATE = p_TRAN_DATE AND
          TXN_CODE = p_TXN_CODE AND INSTCODE = p_INST_CODE ;
+ELSE
+	 update VMSCMS_HISTORY.TRANSACTIONLOG_HIST --Added for VMS-5733/FSP-991
+	 set PROCESSTYPE= p_PROCESSTYPE,response_code=p_RESP_CODE
+  ,tranfee_amt=V_FLAT_FEES,ACCT_BALANCE=V_ACCT_BALANCE,LEDGER_BALANCE=v_ledger_bal,tranfee_cr_acctno=V_FEE_CRACCT_NO, tranfee_dr_acctno=V_FEE_DRACCT_NO,
+                      total_amount=V_TOTAL_AMT,
+                      cr_dr_flag=V_DR_CR_FLAG,
+                      tran_reverse_flag='N',
+                      add_lupd_date=sysdate,
+                      reversal_code='00'
+                       ,ADD_INS_DATE=sysdate--en Added by Dnyaneshwar J on 27 May 2013 for DFCCSD 68
+WHERE RRN = p_RRN AND BUSINESS_DATE = p_TRAN_DATE AND
+         TXN_CODE = p_TXN_CODE AND INSTCODE = p_INST_CODE ;
+END IF;		 
 
     EXCEPTION
       WHEN OTHERS THEN
@@ -2302,4 +2357,4 @@ END;
 
 /
 
-show error
+show error;

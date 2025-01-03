@@ -6,7 +6,7 @@ BEGIN
 	FOR I IN (SELECT * FROM all_objects 
 				WHERE owner ='VMSCMS'
 				AND ( object_NAME LIKE '%_R81B%'
-						OR object_NAME LIKE '%_R91B%') 
+						OR object_NAME LIKE '%_R92B%') 
 				AND OBJECT_TYPE ='TABLE') LOOP 
     
     EXECUTE IMMEDIATE 'DROP '|| i.object_TYPE || ' ' ||I.owner||'.'||I.OBJECT_NAME;

@@ -1,3 +1,4 @@
+SET DEFINE OFF;
 CREATE OR REPLACE PROCEDURE VMSCMS.SP_USER_NEW_PASSWORD_MOB(
                           P_INST_CODE         IN   NUMBER ,                          
                           P_PAN_CODE          IN   VARCHAR2,
@@ -38,7 +39,13 @@ AS
      * Modified Date    : 01-JAN-2019
      * Purpose          : VMS-809 (Decline Request for Web-account Username if Username is Already Taken)
      * Reviewer         : Saravanakumar A
-     * Release Number   : VMSGPRHOST_R13_B0002     
+     * Release Number   : VMSGPRHOST_R13_B0002   
+
+    * Modified By      : venkat Singamaneni
+    * Modified Date    : 5-02-2022
+    * Purpose          : Archival changes.
+    * Reviewer         : Karthick/Jay
+    * Release Number   : VMSGPRHOST60 for VMS-5735/FSP-991  
  
 *************************************************/
 
@@ -66,6 +73,8 @@ V_tran_desc             CMS_TRANSACTION_MAST.CTM_TRAN_DESC%TYPE;
 v_prod_code             cms_prod_cattype.cpc_prod_code%type;
 v_card_type             cms_prod_cattype.cpc_card_type%type; 
 EXP_REJECT_RECORD       EXCEPTION;
+v_Retperiod  date;  --Added for VMS-5735/FSP-991
+v_Retdate  date; --Added for VMS-5735/FSP-991
 
 BEGIN
    V_TXN_TYPE := '1';
@@ -124,12 +133,33 @@ BEGIN
 
        --Sn Duplicate RRN Check
         BEGIN
+
+--Added for VMS-5735/FSP-991
+ select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
+       INTO   v_Retperiod 
+       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
+       WHERE  OPERATION_TYPE='ARCHIVE' 
+       AND OBJECT_NAME='TRANSACTIONLOG_EBR';
+       
+       v_Retdate := TO_DATE(SUBSTR(TRIM(p_tran_date), 1, 8), 'yyyymmdd');
+
+
+IF (v_Retdate>v_Retperiod)
+    THEN
           SELECT COUNT(1)
           INTO V_RRN_COUNT
           FROM TRANSACTIONLOG
           WHERE RRN         = P_RRN
           AND BUSINESS_DATE = P_TRAN_DATE AND INSTCODE=P_INST_CODE                
           and DELIVERY_CHANNEL = P_DELIVERY_CHANNEL;
+ ELSE
+ SELECT COUNT(1)
+          INTO V_RRN_COUNT
+          FROM VMSCMS_HISTORY.TRANSACTIONLOG_HIST --Added for VMS-5733/FSP-991
+          WHERE RRN         = P_RRN
+          AND BUSINESS_DATE = P_TRAN_DATE AND INSTCODE=P_INST_CODE                
+          and DELIVERY_CHANNEL = P_DELIVERY_CHANNEL;
+END IF;
 
           IF V_RRN_COUNT    > 0 THEN
             P_RESP_CODE     := '22';
@@ -302,6 +332,11 @@ BEGIN
        --Sn update topup card number details in translog
         BEGIN
 
+--Added for VMS-5735/FSP-991
+
+
+IF (v_Retdate>v_Retperiod)
+    THEN
           UPDATE TRANSACTIONLOG
           SET  RESPONSE_ID=P_RESP_CODE,
                ADD_LUPD_DATE=SYSDATE, ADD_LUPD_USER=1,
@@ -310,6 +345,16 @@ BEGIN
            TXN_CODE = P_TXN_CODE AND BUSINESS_DATE = P_TRAN_DATE AND
            BUSINESS_TIME = P_TRAN_TIME AND  MSGTYPE = P_MSG AND
            CUSTOMER_CARD_NO = V_HASH_PAN AND INSTCODE=P_INST_CODE;
+ELSE
+          UPDATE VMSCMS_HISTORY.TRANSACTIONLOG_HIST --Added for VMS-5733/FSP-991
+          SET  RESPONSE_ID=P_RESP_CODE,
+               ADD_LUPD_DATE=SYSDATE, ADD_LUPD_USER=1,
+               ERROR_MSG = V_ERRMSG
+          WHERE RRN = P_RRN AND DELIVERY_CHANNEL = P_DELIVERY_CHANNEL AND
+           TXN_CODE = P_TXN_CODE AND BUSINESS_DATE = P_TRAN_DATE AND
+           BUSINESS_TIME = P_TRAN_TIME AND  MSGTYPE = P_MSG AND
+           CUSTOMER_CARD_NO = V_HASH_PAN AND INSTCODE=P_INST_CODE;
+END IF;
 
           IF SQL%ROWCOUNT <> 1 THEN
            P_RESP_CODE := '21';

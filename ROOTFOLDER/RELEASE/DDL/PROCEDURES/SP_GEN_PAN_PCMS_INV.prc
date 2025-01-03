@@ -8,6 +8,16 @@ PROCEDURE        vmscms.SP_GEN_PAN_PCMS_INV (
    prm_errmsg            OUT      VARCHAR2
 )
 AS
+
+/************************************
+     * Modified By      : Shanmugavel
+     * Modified Date    : 23/01/2024
+     * Purpose          : VMS-8219-Remove the Default Status in the Product Category Profile Screen on the Host UI
+     * Reviewer         : Venkat/John/Pankaj
+     * Release Number   : VMSGPRHOSTR92
+
+****************************************/
+
    v_inst_code              cms_appl_mast.cam_inst_code%TYPE;
    v_asso_code              cms_appl_mast.cam_asso_code%TYPE;
    v_inst_type              cms_appl_mast.cam_inst_type%TYPE;
@@ -675,32 +685,33 @@ BEGIN
       v_mbrlink := '000';
    END IF;
 
-   BEGIN
-      SELECT cbp_param_value
-        INTO v_card_stat
-        FROM cms_bin_param
-       WHERE cbp_profile_code = v_profile_code AND cbp_param_name = 'Status';
-
-      IF v_card_stat IS NULL
-      THEN
-         v_errmsg := 'Status is null for profile code ' || v_profile_code;
-         RAISE exp_reject_record;
-      END IF;
-   EXCEPTION
-      WHEN exp_reject_record
-      THEN
-         RAISE;
-      WHEN NO_DATA_FOUND
-      THEN
-         v_errmsg :=
-                  'Status is not defined for profile code ' || v_profile_code;
-         RAISE exp_reject_record;
-      WHEN OTHERS
-      THEN
-         v_errmsg :=
-             'Error while selecting card status ' || SUBSTR (SQLERRM, 1, 200);
-         RAISE exp_reject_record;
-   END;
+v_card_stat := '0';  -- VMS-8219
+--   BEGIN
+--      SELECT cbp_param_value
+--        INTO v_card_stat
+--        FROM cms_bin_param
+--       WHERE cbp_profile_code = v_profile_code AND cbp_param_name = 'Status';
+--
+--      IF v_card_stat IS NULL
+--      THEN
+--         v_errmsg := 'Status is null for profile code ' || v_profile_code;
+--         RAISE exp_reject_record;
+--      END IF;
+--   EXCEPTION
+--      WHEN exp_reject_record
+--      THEN
+--         RAISE;
+--      WHEN NO_DATA_FOUND
+--      THEN
+--         v_errmsg :=
+--                  'Status is not defined for profile code ' || v_profile_code;
+--         RAISE exp_reject_record;
+--      WHEN OTHERS
+--      THEN
+--         v_errmsg :=
+--             'Error while selecting card status ' || SUBSTR (SQLERRM, 1, 200);
+--         RAISE exp_reject_record;
+--   END;
 
    BEGIN
       SELECT cbp_param_value

@@ -1,3 +1,4 @@
+SET DEFINE OFF;
 create or replace PROCEDURE    VMSCMS.SP_IVR_CARDSTAT_VALIDATE(P_INSTCODE         IN NUMBER,
                                           P_CARDNUM          IN VARCHAR2,
                                           P_RRN              IN VARCHAR2,
@@ -80,6 +81,12 @@ create or replace PROCEDURE    VMSCMS.SP_IVR_CARDSTAT_VALIDATE(P_INSTCODE       
     * Purpose          : CURRENCY CODE CHANGES FROM INST LEVEL TO BIN LEVEL.
     * Reviewer         : Vini
     * Release Number   : VMSGPRHOST18.1
+ 
+       * Modified By      : venkat Singamaneni
+    * Modified Date    : 4-25-2022
+    * Purpose          : Archival changes.
+    * Reviewer         : Jyothi G
+    * Release Number   : VMSGPRHOST60 for VMS-5735/FSP-991
       
   *************************************************/
 
@@ -112,7 +119,10 @@ create or replace PROCEDURE    VMSCMS.SP_IVR_CARDSTAT_VALIDATE(P_INSTCODE       
     v_acct_type   cms_acct_mast.cam_type_code%type;   
     v_timestamp   timestamp(3);
     --EN : Added for 13160  
-    v_cardactive_dt     cms_appl_pan.cap_active_date%TYPE;           
+    v_cardactive_dt     cms_appl_pan.cap_active_date%TYPE;    
+v_Retperiod  date;  --Added for VMS-5735/FSP-991
+v_Retdate  date; --Added for VMS-5735/FSP-991
+       
 
 BEGIN
     P_ERRMSG   := 'OK';
@@ -190,12 +200,33 @@ BEGIN
 
     --Sn Duplicate RRN Check.IF duplicate RRN log the txn and return
     BEGIN
+--Added for VMS-5735/FSP-991
+ select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
+       INTO   v_Retperiod 
+       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
+       WHERE  OPERATION_TYPE='ARCHIVE' 
+       AND OBJECT_NAME='TRANSACTIONLOG_EBR';
+       
+       v_Retdate := TO_DATE(SUBSTR(TRIM(p_trandate), 1, 8), 'yyyymmdd');
+
+
+IF (v_Retdate>v_Retperiod)
+    THEN
+
         SELECT COUNT(1)
         INTO V_RRN_COUNT
         FROM TRANSACTIONLOG
         WHERE INSTCODE = P_INSTCODE AND RRN = P_RRN AND
         BUSINESS_DATE = P_TRANDATE AND
         DELIVERY_CHANNEL = P_DELIVERY_CHANNEL; 
+ELSE
+       SELECT COUNT(1)
+        INTO V_RRN_COUNT
+        FROM VMSCMS_HISTORY.TRANSACTIONLOG_HIST --Added for VMS-5733/FSP-991
+        WHERE INSTCODE = P_INSTCODE AND RRN = P_RRN AND
+        BUSINESS_DATE = P_TRANDATE AND
+        DELIVERY_CHANNEL = P_DELIVERY_CHANNEL; 
+END IF;
 
         IF V_RRN_COUNT > 0 THEN
             V_RESPCODE := '22';
@@ -417,7 +448,7 @@ BEGIN
         ELSE
             BEGIN
                 SELECT TXN_CODE     INTO V_TXNCODE FROM 
-                (SELECT TXN_CODE  FROM TRANSACTIONLOG
+                (SELECT TXN_CODE  FROM VMSCMS.TRANSACTIONLOG_VW --Added for VMS-5735/FSP-991
                 WHERE RESPONSE_CODE = '00' AND
                 ((TXN_CODE = '69' AND DELIVERY_CHANNEL = '04') OR
                 (TXN_CODE = '05' AND
@@ -498,6 +529,10 @@ BEGIN
     
     --sn Added for mantis id 0012275(FSS-1144)
      BEGIN
+
+
+IF (v_Retdate>v_Retperiod)
+    THEN
       UPDATE transactionlog
          SET 
              ANI=P_ANI, 
@@ -510,6 +545,22 @@ BEGIN
          AND msgtype = P_MSG_TYPE
          AND customer_card_no = v_hash_pan
          AND instcode = P_INSTCODE;
+ELSE 
+   
+      UPDATE VMSCMS_HISTORY.TRANSACTIONLOG_HIST --Added for VMS-5733/FSP-991
+         SET 
+             ANI=P_ANI, 
+             DNI=P_DNI 
+       WHERE rrn = p_rrn
+         AND delivery_channel = p_delivery_channel
+         AND txn_code = p_txn_code
+         AND business_date = p_trandate
+         AND business_time = P_TRANTIME
+         AND msgtype = P_MSG_TYPE
+         AND customer_card_no = v_hash_pan
+         AND instcode = P_INSTCODE;
+END IF;
+
 
       
       IF SQL%ROWCOUNT = 0

@@ -1,4 +1,4 @@
-create or replace PROCEDURE                      vmscms.SP_STR_TO_GPR_CARDGEN_R307(
+create or replace PROCEDURE                             VMSCMS.SP_STR_TO_GPR_CARDGEN_R307(
     p_instcode           IN  NUMBER,
     P_CARDNUM            IN  VARCHAR2,
     P_RRN                IN  VARCHAR2,
@@ -21,7 +21,7 @@ AS
     * Release Number   : VMSGPRHOST_R30.7
 	*************************************************/
   v_cap_card_stat          cms_appl_pan.cap_card_stat%TYPE;
-  
+
   v_errmsg                 transactionlog.error_msg%TYPE;
   v_currcode               transactionlog.currencycode%TYPE;
   v_appl_code              cms_appl_mast.cam_appl_code%TYPE;
@@ -36,19 +36,19 @@ AS
   v_tran_amt               cms_acct_mast.cam_acct_bal%type;
   v_business_date          transactionlog.date_time%type;
   V_CUST_CODE              CMS_CUST_MAST.CCM_CUST_CODE%type;
-  
+
   v_acct_balance           cms_acct_mast.cam_acct_bal%TYPE;
   v_prod_code              cms_prod_mast.cpm_prod_code%TYPE;
   V_PROD_CATTYPE           CMS_PROD_CATTYPE.CPC_CARD_TYPE%type;
   V_LEDGER_BALANCE         cms_acct_mast.cam_ledger_bal%type;
   v_dr_cr_flag             cms_transaction_mast.ctm_credit_debit_flag%type;
-  
-  
-  
+
+
+
   v_acct_number            cms_appl_pan.cap_acct_no%TYPE;
-  
-  
-  
+
+
+
   V_TRANS_DESC             CMS_TRANSACTION_MAST.CTM_TRAN_DESC%type;
   v_acct_type              cms_acct_mast.cam_type_code%type;
   v_timestamp              TIMESTAMP(3);
@@ -61,8 +61,9 @@ AS
   V_RESP_CODE              transactionlog.response_id%TYPE;
   V_GPRHASHPAN             cms_appl_pan.cap_pan_code%TYPE; --Added for JH-3043
   v_upgrade_eligible_flag  cms_prod_cattype.CPC_UPGRADE_ELIGIBLE_FLAG%TYPE;
-  
-  
+
+v_Retperiod  date;  --Added for VMS-5739/FSP-991
+v_Retdate  date; --Added for VMS-5739/FSP-991
   EXP_MAIN_REJECT_RECORD   EXCEPTION;
   EXP_AUTH_REJECT_RECORD   exception;
 
@@ -71,7 +72,7 @@ BEGIN
   v_errmsg           := 'OK';
   V_RESPCODE         := '1';
   v_timestamp        := SYSTIMESTAMP;
-  
+
   --SN CREATE HASH PAN
   BEGIN
     v_hash_pan :=  gethash (p_cardnum);
@@ -104,10 +105,10 @@ BEGIN
   --Sn find debit and credit flag
   BEGIN
     SELECT ctm_credit_debit_flag,
-      TO_NUMBER (DECODE (ctm_tran_type, 'N', '0', 'F', '1')),      
+      TO_NUMBER (DECODE (ctm_tran_type, 'N', '0', 'F', '1')),
       ctm_tran_desc
-    INTO v_dr_cr_flag,      
-      v_txn_type,      
+    INTO v_dr_cr_flag,
+      v_txn_type,
       v_trans_desc
     FROM cms_transaction_mast
     WHERE ctm_tran_code      = p_txn_code
@@ -115,11 +116,11 @@ BEGIN
     AND ctm_inst_code        = p_instcode;
   EXCEPTION
   WHEN NO_DATA_FOUND THEN
-    v_respcode := '12'; 
+    v_respcode := '12';
     v_errmsg   := 'Transflag  not defined for txn code ' || p_txn_code || ' and delivery channel ' || p_delivery_channel;
     RAISE exp_main_reject_record;
   WHEN OTHERS THEN
-    v_respcode := '21'; 
+    v_respcode := '21';
     v_errmsg := 'Error while selecting transaction details';
     RAISE exp_main_reject_record;
   end;
@@ -129,34 +130,34 @@ BEGIN
     v_tran_date := TO_DATE ( SUBSTR (TRIM (p_trandate), 1, 8) || ' ' || SUBSTR (TRIM (p_trantime), 1, 10), 'yyyymmdd hh24:mi:ss' );
   EXCEPTION
   WHEN OTHERS THEN
-    v_respcode := '32'; 
+    v_respcode := '32';
     v_errmsg   := 'Problem while converting transaction Time ' || SUBSTR (SQLERRM, 1, 200);
     RAISE exp_main_reject_record;
   END;
   --En Transaction Time Check
   v_currcode := '124';
- 
+
   --Sn find card detail
   BEGIN
     SELECT CAP_PROD_CODE,
       CAP_CARD_TYPE,
-      CAP_CARD_STAT,      
+      CAP_CARD_STAT,
       CAP_APPL_CODE,
-      CAP_CUST_CODE,      
+      CAP_CUST_CODE,
       cap_acct_no
     INTO V_PROD_CODE,
       V_PROD_CATTYPE,
-      V_CAP_CARD_STAT,      
+      V_CAP_CARD_STAT,
       V_APPL_CODE,
-      V_CUST_CODE,            
+      V_CUST_CODE,
       v_acct_number
     FROM cms_appl_pan
     WHERE cap_inst_code = p_instcode
     AND cap_pan_code    = v_hash_pan;
   EXCEPTION
   WHEN NO_DATA_FOUND THEN
-    V_RESPCODE := '16'; 
-    v_errmsg   := 'Card number not found'; 
+    V_RESPCODE := '16';
+    v_errmsg   := 'Card number not found';
     RAISE exp_main_reject_record;
   WHEN OTHERS THEN
     v_respcode := '12';
@@ -164,9 +165,9 @@ BEGIN
     RAISE exp_main_reject_record;
   END;
 
-    
 
-  BEGIN  
+
+  BEGIN
 
         SELECT NVL(CPC_UPGRADE_ELIGIBLE_FLAG,'N')
         INTO v_upgrade_eligible_flag
@@ -175,7 +176,7 @@ BEGIN
         AND CPC_CARD_TYPE   = V_PROD_CATTYPE
         AND CPC_INST_CODE   = p_instcode;
 
-    EXCEPTION   
+    EXCEPTION
     WHEN OTHERS  THEN
          v_respcode := '21';
          v_errmsg := 'Error while selecting product detls ' || v_prod_code;
@@ -184,13 +185,13 @@ BEGIN
     END;
 
 
-       BEGIN  
-       if v_UPGRADE_ELIGIBLE_FLAG<>'Y' then       
+       BEGIN
+       if v_UPGRADE_ELIGIBLE_FLAG<>'Y' then
           v_respcode := '270';
           V_ERRMSG := 'Upgrade flag disabled in Product Category Configuration';
           RAISE exp_main_reject_record;
-       END IF;        
-       EXCEPTION   
+       END IF;
+       EXCEPTION
        WHEN exp_main_reject_record
         then
           RAISE;
@@ -199,46 +200,46 @@ BEGIN
          v_errmsg := 'Error while selecting details from product : ' || v_prod_code ||' and Product Category :'||V_PROD_CATTYPE;
          RAISE exp_main_reject_record;
     end;
-  
+
 
      --Sn call to authorize txn
     BEGIN
-       sp_authorize_txn_cms_auth (p_instcode, 
+       sp_authorize_txn_cms_auth (p_instcode,
                                   '0200',
                                   p_rrn,
-                                  p_delivery_channel, 
+                                  p_delivery_channel,
                                   '0',
                                   p_txn_code,
-                                  0, 
-                                  p_trandate, 
-                                  p_trantime, 
-                                  p_cardnum, 
+                                  0,
+                                  p_trandate,
+                                  p_trantime,
+                                  p_cardnum,
                                   NULL,
                                   0,
                                   NULL,
-                                  NULL, 
-                                  NULL, 
-                                  v_currcode, 
-                                  NULL, 
-                                  NULL, 
-                                  NULL, 
-                                  NULL, 
-                                  NULL, 
-                                  NULL, 
-                                  NULL, 
-                                  NULL,
-                                  NULL, 
-                                  NULL, 
-                                  NULL, 
                                   NULL,
                                   NULL,
-                                  '0', 
-                                  '000',         
+                                  v_currcode,
+                                  NULL,
+                                  NULL,
+                                  NULL,
+                                  NULL,
+                                  NULL,
+                                  NULL,
+                                  NULL,
+                                  NULL,
+                                  NULL,
+                                  NULL,
+                                  NULL,
+                                  NULL,
+                                  NULL,
+                                  '0',
+                                  '000',
                                   '00',
-                                  0, 
+                                  0,
                                   V_INIL_AUTHID,
                                   v_resp_code,
-                                  v_respmsg, 
+                                  v_respmsg,
                                   v_capture_date,
                                   'N' );
 
@@ -268,7 +269,7 @@ BEGIN
           FROM CMS_APPL_PAN
           WHERE cap_acct_no       = v_acct_number
           AND CAP_STARTERCARD_FLAG='N'
-		  AND CAP_APPL_CODE=v_appl_code 
+		  AND CAP_APPL_CODE=v_appl_code
           AND CAP_CARD_STAT <> '9'
           AND CAP_INST_CODE       = P_INSTCODE;
         EXCEPTION
@@ -280,7 +281,7 @@ BEGIN
         IF (V_GPR_CARDCNT=0) THEN
           BEGIN
             UPDATE CMS_APPL_MAST
-            SET CAM_APPL_STAT   = 'A' , CAM_STARTER_CARD= 'N' 
+            SET CAM_APPL_STAT   = 'A' , CAM_STARTER_CARD= 'N'
             WHERE CAM_APPL_CODE = v_appl_code
             AND CAM_INST_CODE   = P_INSTCODE;
             IF SQL%ROWCOUNT     = 0 THEN
@@ -339,9 +340,9 @@ BEGIN
             SELECT fn_dmaps_main (pan.cap_pan_code_encr),
                    pan.cap_pan_code,
                    pan.cap_prod_catg
-            INTO p_pan_number,              
+            INTO p_pan_number,
               V_GPRHASHPAN,
-              P_PROD_CATG  
+              P_PROD_CATG
             FROM cms_appl_pan pan,
               cms_cust_mast cust
             WHERE pan.cap_appl_code  = v_appl_code
@@ -356,10 +357,10 @@ BEGIN
             v_errmsg   := 'Error while selecting (gpr card)details from appl_pan :' || SUBSTR (SQLERRM, 1, 200);
             RAISE EXP_MAIN_REJECT_RECORD;
           END;
-       
-          
 
-          BEGIN      
+
+
+          BEGIN
             update  cms_appl_pan set cap_repl_flag=6
             where cap_pan_code=V_GPRHASHPAN and cap_inst_code=p_instcode;
 
@@ -377,8 +378,8 @@ BEGIN
               RAISE EXP_MAIN_REJECT_RECORD;
           END;
 
-  
- 
+
+
 
         --AVQ Added for FSS-1961(Melissa)
         BEGIN
@@ -395,7 +396,7 @@ BEGIN
             IF v_errmsg <> 'OK' THEN
                v_errmsg  := 'Exception while calling LOGAVQSTATUS-- ' || v_errmsg;
                v_respcode := '21';
-              RAISE EXP_MAIN_REJECT_RECORD;         
+              RAISE EXP_MAIN_REJECT_RECORD;
              END IF;
         EXCEPTION WHEN EXP_MAIN_REJECT_RECORD
         THEN  RAISE;
@@ -403,13 +404,13 @@ BEGIN
            v_errmsg  := 'Exception in LOGAVQSTATUS-- '  || SUBSTR (SQLERRM, 1, 200);
            v_respcode := '21';
            RAISE EXP_MAIN_REJECT_RECORD;
-        END;  
+        END;
         --End  Added for FSS-1961(Melissa)
         ELSE
           V_RESPCODE := '21';
           V_ERRMSG   := 'GPR Card Already Generated';
           RAISE EXP_MAIN_REJECT_RECORD;
-        END IF; 
+        END IF;
 
     EXCEPTION
     WHEN exp_main_reject_record THEN
@@ -420,7 +421,7 @@ BEGIN
       RAISE exp_main_reject_record;
     END;
     --En call to authorize txn
-  END IF;  
+  END IF;
 
 
   BEGIN
@@ -445,15 +446,27 @@ BEGIN
                   'Problem while selecting data from response master '
                || v_respcode
                || SUBSTR (SQLERRM, 1, 300);
-            v_resp_code := '89';          
-            RAISE exp_main_reject_record;  
+            v_resp_code := '89';
+            RAISE exp_main_reject_record;
     ---ISO MESSAGE FOR DATABASE ERROR Server Declined
   END;
   p_errmsg := v_errmsg;
   --En select response code and insert record into txn log dtl
-  
+
     BEGIN
-      UPDATE CMS_TRANSACTION_LOG_DTL
+	--Added for VMS-5739/FSP-991
+ select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
+       INTO   v_Retperiod 
+       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
+       WHERE  OPERATION_TYPE='ARCHIVE' 
+       AND OBJECT_NAME='CMS_TRANSACTION_LOG_DTL_EBR';
+       
+       v_Retdate := TO_DATE(SUBSTR(TRIM(p_trandate), 1, 8), 'yyyymmdd');
+
+
+IF (v_Retdate>v_Retperiod)
+    THEN
+      UPDATE VMSCMS.CMS_TRANSACTION_LOG_DTL
       SET CTD_PROCESS_MSG      = V_ERRMSG
       WHERE CTD_RRN            = P_RRN
       AND CTD_DELIVERY_CHANNEL = P_DELIVERY_CHANNEL
@@ -463,6 +476,19 @@ BEGIN
       AND CTD_MSG_TYPE         = '0200'
       AND CTD_CUSTOMER_CARD_NO = V_HASH_PAN
       AND CTD_INST_CODE        =p_instcode;
+ELSE
+	  UPDATE VMSCMS_HISTORY.CMS_TRANSACTION_LOG_DTL_HIST
+      SET CTD_PROCESS_MSG      = V_ERRMSG
+      WHERE CTD_RRN            = P_RRN
+      AND CTD_DELIVERY_CHANNEL = P_DELIVERY_CHANNEL
+      AND CTD_TXN_CODE         = P_TXN_CODE
+      AND CTD_BUSINESS_DATE    = p_trandate
+      AND CTD_BUSINESS_TIME    = p_trantime
+      AND CTD_MSG_TYPE         = '0200'
+      AND CTD_CUSTOMER_CARD_NO = V_HASH_PAN
+      AND CTD_INST_CODE        =p_instcode;
+
+END IF;	  
       IF SQL%ROWCOUNT         <> 1 THEN
         V_RESP_CODE           := '21';
         V_ERRMSG              := 'Error while updating transactionlog_detl ';
@@ -477,7 +503,7 @@ BEGIN
       RAISE exp_main_reject_record;
     END;
 
- 
+
     BEGIN
        INSERT INTO CMS_CARD_EXCPFEE
                                  (CCE_INST_CODE,
@@ -495,7 +521,7 @@ BEGIN
                                   CCE_ST_CALC_FLAG,
                                   CCE_CESS_CALC_FLAG,
                                   CCE_DRGL_CATG)
-                                 (SELECT 
+                                 (SELECT
                                   CCE_INST_CODE,
                                   V_GPRHASHPAN,
                                   SYSDATE,
@@ -511,16 +537,16 @@ BEGIN
                                   CCE_ST_CALC_FLAG,
                                   CCE_CESS_CALC_FLAG,
                                   CCE_DRGL_CATG
-                                 FROM CMS_CARD_EXCPFEE 
+                                 FROM CMS_CARD_EXCPFEE
                                  WHERE CCE_INST_CODE = p_instcode
-                                 AND CCE_PAN_CODE = v_hash_pan 
-                                 AND ((cce_valid_to IS NOT NULL AND (TRUNC(sysdate) BETWEEN cce_valid_from AND cce_valid_to)) 
+                                 AND CCE_PAN_CODE = v_hash_pan
+                                 AND ((cce_valid_to IS NOT NULL AND (TRUNC(sysdate) BETWEEN cce_valid_from AND cce_valid_to))
                                   OR (cce_valid_to IS NULL AND TRUNC(sysdate) >= cce_valid_from)));
     EXCEPTION
     WHEN OTHERS THEN
       V_RESP_CODE := '21';
       V_ERRMSG    := 'Error while inserting into cms_card_excpfee ' || SUBSTR(SQLERRM, 1, 200);
-      RAISE exp_main_reject_record;    
+      RAISE exp_main_reject_record;
     END;
 
  EXCEPTION
@@ -638,7 +664,7 @@ WHEN exp_main_reject_record THEN
         ERROR_MSG,
         RESPONSE_ID,
         CARDSTATUS,
-        TRANS_DESC, 
+        TRANS_DESC,
         acct_type,
         cr_dr_flag,
         time_stamp

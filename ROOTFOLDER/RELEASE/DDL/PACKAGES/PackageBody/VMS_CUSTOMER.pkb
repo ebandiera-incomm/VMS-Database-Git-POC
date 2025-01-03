@@ -1,6 +1,8 @@
-create or replace PACKAGE BODY                                   VMSCMS.VMS_CUSTOMER AS
+set define off;
+create or replace
+PACKAGE BODY       VMSCMS.VMS_CUSTOMER AS
 
-   -- Private constant declarations
+   -- Private constant declarations 
    PROCEDURE get_cust_acct_details (
       p_inst_code_in               IN   VARCHAR2,
       p_del_channel_in             IN   VARCHAR2,
@@ -88,6 +90,12 @@ create or replace PACKAGE BODY                                   VMSCMS.VMS_CUST
    * Modified For     : VMS-4098
    * Reviewer         : Saravanakumar
    * Build Number     : VMSR54_B0002 
+   
+   * Modified By      : venkat Singamaneni
+    * Modified Date    : 05-11-2022
+    * Purpose          : Archival changes.
+    * Reviewer         : Karthick/Jay
+    * Release Number   : VMSGPRHOST60 for VMS-5735/FSP-991
    ***********************************************************************************************************
    */
       l_err_msg             transactionlog.error_msg%TYPE;
@@ -130,13 +138,15 @@ create or replace PACKAGE BODY                                   VMSCMS.VMS_CUST
       l_timestamp           transactionlog.time_stamp%TYPE;
 	  l_audit_flag		    cms_transaction_mast.ctm_txn_log_flag%TYPE;
       exp_reject_record     EXCEPTION;
-      l_DENOMINATION       vms_order_lineitem.vol_denomination%TYPE;
+	  l_DENOMINATION       vms_order_lineitem.vol_denomination%TYPE;
       l_PRODUCT_FUNDING    vms_order_lineitem.vol_product_funding%TYPE;
       l_FUND_AMOUNT        vms_order_lineitem.vol_FUND_AMOUNT%TYPE;
       l_b2b_flag           cms_prod_cattype.cpc_b2b_flag%TYPE;
       l_pan_inventory_flag cms_prod_cattype.cpc_pan_inventory_flag%TYPE;
       l_repl_flag           cms_appl_pan.cap_repl_flag%TYPE;
       l_pan_code            cms_appl_pan.cap_pan_code%type;
+	  v_Retperiod  date;  --Added for VMS-5739/FSP-991
+v_Retdate  date; --Added for VMS-5739/FSP-991
    BEGIN
       BEGIN
         p_resp_msg_out :='success';
@@ -163,7 +173,7 @@ create or replace PACKAGE BODY                                   VMSCMS.VMS_CUST
                    p_last_used_date_out, l_appl_code, p_shipped_date_out,
                    p_prod_desc_out, p_prod_catg_desc_out, p_spend_rout_no_out,
                    p_spend_transit_no_out, p_cvvplus_eligibile_out,
-                   l_cust_code, p_name_on_card_out,l_b2b_flag,l_pan_inventory_flag, l_repl_flag
+                    l_cust_code, p_name_on_card_out,l_b2b_flag,l_pan_inventory_flag, l_repl_flag
               FROM cms_appl_pan pan, cms_cardissuance_status cardissu,
                    cms_prod_mast prod, cms_prod_cattype cattype,
                    cms_cust_mast cust
@@ -443,15 +453,39 @@ create or replace PACKAGE BODY                                   VMSCMS.VMS_CUST
 -- SN Calculate Fees Accrued for current month
 
         BEGIN
+		--Added for VMS-5739/FSP-991
+ select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
+       INTO   v_Retperiod 
+       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
+       WHERE  OPERATION_TYPE='ARCHIVE' 
+       AND OBJECT_NAME='CMS_STATEMENTS_LOG_EBR';
+       
+       v_Retdate := SUBSTR(TRIM(l_tran_date), 1, 9);
+
+
+IF (v_Retdate>v_Retperiod)
+    THEN
+
             SELECT TO_CHAR (NVL (SUM (DECODE (csl_trans_type,
                             'DR', csl_trans_amount,
                             'CR', -csl_trans_amount)),
                             0), '99999999999999990.99')
               INTO p_spend_fee_accrued_out
-              FROM cms_statements_log
+              FROM VMSCMS.CMS_STATEMENTS_LOG          --Added for VMS-5735/FSP-991
              WHERE csl_pan_no = l_hash_pan
                AND TXN_FEE_FLAG ='Y'
                AND csl_ins_date between trunc(l_tran_date,'MM') and l_tran_date;
+	ELSE
+			            SELECT TO_CHAR (NVL (SUM (DECODE (csl_trans_type,
+                            'DR', csl_trans_amount,
+                            'CR', -csl_trans_amount)),
+                            0), '99999999999999990.99')
+              INTO p_spend_fee_accrued_out
+              FROM VMSCMS_HISTORY.CMS_STATEMENTS_LOG_HIST          --Added for VMS-5735/FSP-991
+             WHERE csl_pan_no = l_hash_pan
+               AND TXN_FEE_FLAG ='Y'
+               AND csl_ins_date between trunc(l_tran_date,'MM') and l_tran_date;
+END IF;	
             EXCEPTION
                WHEN NO_DATA_FOUND
                THEN
@@ -685,7 +719,7 @@ IF l_audit_flag = 'T' THEN
 
             SELECT to_char(max(add_ins_date), 'YYYY-MM-DD')
               INTO p_last_txn_date_out
-              FROM transactionlog
+              FROM VMSCMS.TRANSACTIONLOG_VW                   --Added for VMS-5735/FSP-991
              WHERE customer_card_no = l_hash_pan
                AND customer_acct_no = p_sav_acct_no_out;
             EXCEPTION
@@ -773,19 +807,19 @@ END IF;
       BEGIN
 
       SELECT  TRIM(TO_CHAR (cam_acct_bal, '99999999999999990.99')),
-      TRIM(TO_CHAR (cam_ledger_bal, '99999999999999990.99')),
-      CAM_TYPE_CODE,DECODE(NVL(cam_initialload_amt,0),0,'Not Available',TRIM(TO_CHAR(cam_initialload_amt,'99999999999999990.99')))
+                   TRIM(TO_CHAR (cam_ledger_bal, '99999999999999990.99')),
+                    CAM_TYPE_CODE,DECODE(NVL(cam_initialload_amt,0),0,'Not Available',TRIM(TO_CHAR(cam_initialload_amt,'99999999999999990.99')))
       INTO   p_spend_avail_bal_out, p_spend_ledger_bal_out,l_acct_type,p_initial_load_out
-      FROM   CMS_ACCT_MAST
-      WHERE  CAM_INST_CODE = p_inst_code_in
-      AND    CAM_ACCT_NO = p_spend_acct_no_out;
+          FROM   CMS_ACCT_MAST
+          WHERE  CAM_INST_CODE = p_inst_code_in
+          AND    CAM_ACCT_NO = p_spend_acct_no_out;
 
-    if l_repl_flag != 0 and  p_initial_load_out = 'Not Available' then
-        select * into l_pan_code from ( select fn_dmaps_main(CAP_PAN_CODE_ENCR) 
+ if l_repl_flag != 0 and  p_initial_load_out = 'Not Available' then
+        select * into l_pan_code from ( select fn_dmaps_main(CAP_PAN_CODE_ENCR)
         from cms_appl_pan
         where cap_inst_code=1 and cap_repl_flag=0
-        and CAP_ACCT_NO = p_spend_acct_no_out  
-        order by CAP_INS_DATE) where rownum=1;  
+        and CAP_ACCT_NO = p_spend_acct_no_out
+        order by CAP_INS_DATE) where rownum=1;
     else
         l_pan_code := p_pan_code_in;
     end if;
@@ -807,8 +841,7 @@ END IF;
               p_initial_load_out := l_DENOMINATION;
           end if;
       END IF;
-      
-
+	  
       EXCEPTION
            WHEN NO_DATA_FOUND
                      THEN
@@ -4725,7 +4758,7 @@ AS
     * Modified By      : UBAIDUR RAHMAN.H
     * Modified Date    : 09-JUL-2019
     * Purpose          : VMS 960/962 - Enhance Website/middleware to 
-                                support cardholder data search â€“ phase 2.
+                                support cardholder data search – phase 2.
     * Reviewer         : Saravana Kumar.A
     * Release Number   : VMSGPRHOST_R18
   *************************************************/
@@ -7212,7 +7245,7 @@ PROCEDURE update_zip(p_inst_code_in           IN     NUMBER,
     * Modified By      : UBAIDUR RAHMAN.H
     * Modified Date    : 09-JUL-2019
     * Purpose          : VMS 960/962 - Enhance Website/middleware to 
-                                support cardholder data search â€“ phase 2.
+                                support cardholder data search – phase 2.
     * Reviewer         : Saravana Kumar.A
     * Release Number   : VMSGPRHOST_R18
   *************************************************/
@@ -8252,7 +8285,7 @@ PROCEDURE  CREATE_USER_ACCOUNT(
                                        p_delivery_chnl_in        IN       VARCHAR2,
                                        p_txn_code_in             IN       VARCHAR2,
                                        p_rrn_in                  IN       VARCHAR2,
-                                       p_cust_id_in              IN       VARCHAR2,
+                                         p_cust_id_in              IN       VARCHAR2,
                                        p_appl_id_in              IN       VARCHAR2,
                                        p_appl_flag_in            IN       VARCHAR2,
                                        p_partner_id_in           IN       VARCHAR2,
@@ -8303,9 +8336,16 @@ PROCEDURE  CREATE_USER_ACCOUNT(
     * Modified By      : UBAIDUR RAHMAN.H
     * Modified Date    : 09-JUL-2019
     * Purpose          : VMS 960/962 - Enhance Website/middleware to 
-                                support cardholder data search â€“ phase 2.
+                                support cardholder data search – phase 2.
     * Reviewer         : Saravana Kumar.A
     * Release Number   : VMSGPRHOST_R18
+	
+	* Modified By      : venkat Singamaneni
+    * Modified Date    : 05-11-2022
+    * Purpose          : Archival changes.
+    * Reviewer         : Karthick/Jay
+    * Release Number   : VMSGPRHOST60 for VMS-5735/FSP-991
+
   
 ********************************************************************************************/				    
 
@@ -8350,14 +8390,14 @@ PROCEDURE  CREATE_USER_ACCOUNT(
    l_count1            NUMBER;
    l_encrypt_enable    cms_prod_cattype.cpc_encrypt_enable%type;
    l_user_name         cms_cust_mast.ccm_user_name%type;
-   l_cust_id           cms_cust_mast.ccm_cust_id%type;
+    l_cust_id           cms_cust_mast.ccm_cust_id%type;
    exp_reject_record   EXCEPTION;
 
 BEGIN
    BEGIN
 
     p_resp_msg_out := 'success';
-    l_cust_id := to_number(p_cust_id_in);   
+	 l_cust_id := to_number(p_cust_id_in);
       BEGIN
          vmscommon.get_transaction_details (p_inst_code_in,
                                             p_delivery_chnl_in,
@@ -8528,7 +8568,7 @@ BEGIN
 
            SELECT nvl(decode(l_encrypt_enable,'Y',fn_dmaps_main(ccm_user_name),ccm_user_name),0) INTO l_cust_name
            FROM CMS_CUST_MAST
-           WHERE CCM_CUST_ID= l_cust_id AND CCM_INST_CODE=p_inst_code_in ;
+             WHERE CCM_CUST_ID= l_cust_id AND CCM_INST_CODE=p_inst_code_in ;
 
 
            IF l_cust_name <> '0' THEN
@@ -8638,7 +8678,7 @@ BEGIN
                ccm_lupd_date=sysdate, ccm_lupd_user=1 ,
                CCM_APPL_ID =p_appl_id_in,
 			   CCM_USER_NAME_ENCR = fn_emaps_main(UPPER(trim(p_username_in)))
-         WHERE CCM_INST_CODE=p_inst_code_in AND CCM_CUST_ID=l_cust_id;
+          WHERE CCM_INST_CODE=p_inst_code_in AND CCM_CUST_ID=l_cust_id;
 
         IF SQL%ROWCOUNT = 0 THEN
            p_resp_code_out := '21';
@@ -8828,12 +8868,15 @@ BEGIN
                                   l_errmsg
                                  );
 
-          update cms_transaction_log_dtl
+          update VMSCMS.CMS_TRANSACTION_LOG_DTL                --Added for VMS-5735/FSP-991
           set CTD_DEVICE_ID= p_device_id_in,
           CTD_USER_NAME= p_username_in,
           CTD_MOBILE_NUMBER=p_device_mobno_in
           where CTD_HASHKEY_ID=l_hashkey_id;
-
+		  
+		 
+		  
+		 
       IF l_errmsg <> 'OK'
       THEN
          RAISE exp_reject_record;
@@ -8894,6 +8937,14 @@ PROCEDURE        update_password (
    p_resp_code_out           OUT      VARCHAR2,
    p_resp_msg_out            OUT      VARCHAR2
 )
+
+/*****************************************************************************************************
+    * Modified By      : venkat Singamaneni
+    * Modified Date    : 05-11-2022
+    * Purpose          : Archival changes.
+    * Reviewer         : Karthick/Jay
+    * Release Number   : VMSGPRHOST60 for VMS-5735/FSP-991
+*****************************************************************************************************/
 AS
    l_hash_pan          cms_appl_pan.cap_pan_code%TYPE;
    l_encr_pan          cms_appl_pan.cap_pan_code_encr%TYPE;
@@ -8938,6 +8989,8 @@ AS
    l_OLDPWDHASH            cms_cust_mast.CCM_PASSWORD_HASH%type;
    l_TRAN_REVERSE_FLAG     TRANSACTIONLOG.TRAN_REVERSE_FLAG%type;
    exp_reject_record       EXCEPTION;
+   v_Retperiod  date;  --Added for VMS-5739/FSP-991
+v_Retdate  date; --Added for VMS-5739/FSP-991
 BEGIN
    BEGIN
    p_resp_msg_out := 'success';
@@ -9055,14 +9108,28 @@ BEGIN
 	  -- original transaction details
 	  if  p_orgRRN_in IS NOT NULL and p_msg_type_in ='0400' then
 	   BEGIN
+	   
+
 			SELECT TRAN_REVERSE_FLAG
 			  INTO  l_TRAN_REVERSE_FLAG
-			 FROM TRANSACTIONLOG
+			 FROM VMSCMS.TRANSACTIONLOG                       --Added for VMS-5735/FSP-991
 			WHERE RRN = p_orgRRN_in  --AND BUSINESS_DATE = p_tran_date_in
          --AND BUSINESS_TIME = p_tran_time_in
          AND CUSTOMER_CARD_NO = gethash (p_pan_code_in)
 				 AND DELIVERY_CHANNEL = p_delivery_chnl_in
 				 AND INSTCODE = P_INST_CODE_in AND RESPONSE_CODE = '00';
+	
+	if SQL%ROWCOUNT=0
+	then 
+			SELECT TRAN_REVERSE_FLAG
+			  INTO  l_TRAN_REVERSE_FLAG
+			 FROM VMSCMS_HISTORY.TRANSACTIONLOG_HIST                       --Added for VMS-5735/FSP-991
+			WHERE RRN = p_orgRRN_in  --AND BUSINESS_DATE = p_tran_date_in
+         --AND BUSINESS_TIME = p_tran_time_in
+         AND CUSTOMER_CARD_NO = gethash (p_pan_code_in)
+				 AND DELIVERY_CHANNEL = p_delivery_chnl_in
+				 AND INSTCODE = P_INST_CODE_in AND RESPONSE_CODE = '00';
+	END IF;	
 
 	  IF l_TRAN_REVERSE_FLAG = 'Y' THEN
 		 p_resp_code_out := '52';
@@ -9359,17 +9426,26 @@ IF p_msg_type_in ='0200' THEN
   if  p_orgRRN_in IS NOT NULL and p_msg_type_in ='0400' and  p_resp_code_out='00' then
 
       BEGIN
-            update TRANSACTIONLOG set TRAN_REVERSE_FLAG='Y'
+            update VMSCMS.TRANSACTIONLOG set TRAN_REVERSE_FLAG='Y'        --Added for VMS-5735/FSP-991   
                 WHERE RRN = p_orgRRN_in  AND
                CUSTOMER_CARD_NO = gethash (p_pan_code_in)
                AND DELIVERY_CHANNEL = p_delivery_chnl_in
                AND INSTCODE = P_INST_CODE_in AND RESPONSE_CODE = '00';
-
+			   
+			   		IF SQL%ROWCOUNT = 0 THEN
+			UPDATE VMSCMS_HISTORY.TRANSACTIONLOG_HIST		
+			set TRAN_REVERSE_FLAG='Y'        --Added for VMS-5735/FSP-991   
+                WHERE RRN = p_orgRRN_in  AND
+               CUSTOMER_CARD_NO = gethash (p_pan_code_in)
+               AND DELIVERY_CHANNEL = p_delivery_chnl_in
+               AND INSTCODE = P_INST_CODE_in AND RESPONSE_CODE = '00';
+			   
           IF SQL%ROWCOUNT = 0 THEN
               p_resp_code_out := '21';
              l_errmsg  := 'Reversal flag updation fails';
               RAISE exp_reject_record;
           END IF;
+	END IF;  
      EXCEPTION
           WHEN exp_reject_record THEN
             RAISE;
@@ -9787,10 +9863,9 @@ PROCEDURE customer_locator (p_inst_code_in            IN     NUMBER,
 
           ELSIF p_returned_type_in=2 THEN
              p_return_locator_out := L_CUSTOMER_ID;
-          
-          ELSIF p_returned_type_in=3 THEN
+
+ ELSIF p_returned_type_in=3 THEN
             p_return_locator_out := l_acct_no;
-            
           ELSE
           p_return_locator_out := NULL;
           l_errmsg := 'Invalid Returned Locator Type';
@@ -11436,6 +11511,14 @@ PROCEDURE  peer_to_peer_transfer_rvsl (
                                     p_o_balance            OUT      VARCHAR2
    )
    
+   /******************************************************************************************
+     * Modified By      : venkat Singamaneni
+    * Modified Date    : 5-11-2022
+    * Purpose          : Archival changes.
+    * Reviewer         : Karthick/Jey
+    * Release Number   : VMSGPRHOST60 for VMS-5735/FSP-991
+   *******************************************************************************************/
+   
    IS
     
       v_var_err_msg                   transactionlog.error_msg%TYPE;
@@ -11499,12 +11582,16 @@ PROCEDURE  peer_to_peer_transfer_rvsl (
       v_timestamp_time_stamp          cms_statements_log.csl_time_stamp%TYPE;
       v_var_feecap_flag               cms_fee_mast.cfm_feecap_flag%type;
       exp_rvsl_reject_record          EXCEPTION;
+	  
+	  v_Retperiod  date;  --Added for VMS-5735/FSP-991
+      v_Retdate  date; --Added for VMS-5735/FSP-991
+
        
       CURSOR v_cur_stmnts_log
       IS
          SELECT csl_trans_narrration, csl_merchant_name, csl_merchant_city,
                 csl_merchant_state, csl_trans_amount
-           FROM cms_statements_log
+           FROM VMSCMS.CMS_STATEMENTS_LOG_VW                       --Added for VMS-5735/FSP-991
           WHERE csl_business_date = v_date_orgnl_business_date
             AND csl_rrn = p_i_rrn
             AND csl_delivery_channel = v_var_orgnl_del_chnl
@@ -11675,7 +11762,7 @@ PROCEDURE  peer_to_peer_transfer_rvsl (
                    v_var_orgnl_st_dr_acctno, v_var_orgnl_cess_cractno,
                    v_var_orgnl_cess_dractno, v_var_tran_reverse_flag,
                    v_var_gl_upd_flag, v_date_add_ins_date,v_var_original_amnt
-              FROM transactionlog
+              FROM VMSCMS.TRANSACTIONLOG_VW                              --Added for VMS-5735/FSP-991
              WHERE rrn = p_i_original_rrn
              --  AND AMOUNT = v_num_tran_amt
                AND customer_card_no = p_i_hash_pan_code
@@ -11721,7 +11808,7 @@ PROCEDURE  peer_to_peer_transfer_rvsl (
                BEGIN
                   SELECT SUM (tranfee_amt), SUM (amount)
                     INTO v_var_tot_fee_amount, v_var_tot_amount
-                    FROM transactionlog
+                    FROM VMSCMS.TRANSACTIONLOG_VW                  --Added for VMS-5735/FSP-991
                    WHERE rrn = p_i_original_rrn
                      AND customer_card_no = p_i_hash_pan_code
                      AND instcode = p_i_inst_code
@@ -11770,8 +11857,10 @@ PROCEDURE  peer_to_peer_transfer_rvsl (
                             v_var_orgnl_st_dr_acctno, v_var_orgnl_cess_cractno,
                             v_var_orgnl_cess_dractno, v_var_tran_reverse_flag,
                             v_var_gl_upd_flag, v_date_add_ins_date,v_var_original_amnt
-                       FROM transactionlog
-                      WHERE rrn = p_i_original_rrn
+                      
+					  FROM VMSCMS.TRANSACTIONLOG_VW                          --Added for VMS-5735/FSP-991
+                      
+					  WHERE rrn = p_i_original_rrn
                         AND customer_card_no = p_i_hash_pan_code
                         AND instcode = p_i_inst_code
                         AND response_code = '00'
@@ -12237,6 +12326,18 @@ PROCEDURE  peer_to_peer_transfer_rvsl (
          v_var_resp_cde := '1';
 
          BEGIN
+		 
+		    --Added for VMS-5735/FSP-991
+		   select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
+		   INTO   v_Retperiod 
+		   FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
+		   WHERE  OPERATION_TYPE='ARCHIVE' 
+		   AND OBJECT_NAME='CMS_STATEMENTS_LOG_EBR';
+		   
+		   v_Retdate := TO_DATE(SUBSTR(TRIM(p_i_tran_date), 1, 8), 'yyyymmdd');
+		 
+		 IF (v_Retdate>v_Retperiod) THEN                                --Added for VMS-5735/FSP-991
+		 
             UPDATE cms_statements_log
                SET csl_prod_code = p_i_prod_code,
                     csl_card_type=p_i_card_type,
@@ -12249,6 +12350,22 @@ PROCEDURE  peer_to_peer_transfer_rvsl (
                AND csl_delivery_channel = p_i_delivery_channel
                AND csl_business_date = p_i_tran_date
                AND csl_business_time = p_i_tran_time;
+			   
+	    ELSE
+		        UPDATE VMSCMS_HISTORY.CMS_STATEMENTS_LOG_HIST         --Added for VMS-5735/FSP-991
+                SET csl_prod_code = p_i_prod_code,
+                    csl_card_type=p_i_card_type,
+                    csl_acct_no = p_i_acct_no,
+                    csl_time_stamp = v_timestamp_time_stamp
+                WHERE csl_inst_code = p_i_inst_code
+                AND csl_pan_no = p_i_hash_pan_code
+                AND csl_rrn = p_i_rrn
+                AND csl_txn_code = p_i_txn_code
+                AND csl_delivery_channel = p_i_delivery_channel
+                AND csl_business_date = p_i_tran_date
+                AND csl_business_time = p_i_tran_time;
+		
+		END IF;
 
          EXCEPTION
             WHEN OTHERS
@@ -12262,6 +12379,20 @@ PROCEDURE  peer_to_peer_transfer_rvsl (
 
          --Sn update reverse flag
          BEGIN
+		 
+		 
+				 --Added for VMS-5735/FSP-991
+		   select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
+		   INTO   v_Retperiod 
+		   FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
+		   WHERE  OPERATION_TYPE='ARCHIVE' 
+		   AND OBJECT_NAME='TRANSACTIONLOG_EBR';
+		   
+		   v_Retdate := TO_DATE(SUBSTR(TRIM(v_date_orgnl_business_date), 1, 8), 'yyyymmdd');
+		   
+		   
+        IF (v_Retdate>v_Retperiod) THEN                        --Added for VMS-5735/FSP-991
+		
             UPDATE transactionlog
                SET tran_reverse_flag = 'Y'
              WHERE rrn = p_i_original_rrn
@@ -12269,6 +12400,18 @@ PROCEDURE  peer_to_peer_transfer_rvsl (
                AND business_time = v_time_orgnl_business_time
                AND customer_card_no = p_i_hash_pan_code
                AND instcode = p_i_inst_code;
+	    
+		ELSE 
+               UPDATE VMSCMS_HISTORY.TRANSACTIONLOG_HIST     --Added for VMS-5735/FSP-991
+               SET tran_reverse_flag = 'Y'
+               WHERE rrn = p_i_original_rrn
+               AND business_date = v_date_orgnl_business_date
+               AND business_time = v_time_orgnl_business_time
+               AND customer_card_no = p_i_hash_pan_code
+               AND instcode = p_i_inst_code;		
+		
+		
+	    END IF;
 
             IF SQL%ROWCOUNT = 0
             THEN
@@ -13009,4 +13152,4 @@ BEGIN
 END reset_password;
 END VMS_CUSTOMER;
 /
-show error
+show error;

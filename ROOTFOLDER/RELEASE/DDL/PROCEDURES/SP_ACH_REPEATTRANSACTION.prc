@@ -63,9 +63,16 @@ BEGIN
   
     SELECT COUNT(1)
      INTO V_RRN_COUNT
-     FROM TRANSACTIONLOG
+     FROM VMSCMS.TRANSACTIONLOG			--Added for VMS-5733/FSP-991
     WHERE RRN = P_RRN
     AND DELIVERY_CHANNEL = P_DEL_CHNL ;--Added by ramkumar.Mk on 25 march 2012
+	IF SQL%ROWCOUNT = 0 THEN 
+	SELECT COUNT(1)
+     INTO V_RRN_COUNT
+     FROM VMSCMS_HISTORY.TRANSACTIONLOG_HIST			--Added for VMS-5733/FSP-991
+    WHERE RRN = P_RRN
+    AND DELIVERY_CHANNEL = P_DEL_CHNL ;--Added by ramkumar.Mk on 25 march 2012
+	END IF;
     
      --Sn Getting the Transaction Description
     BEGIN
@@ -403,13 +410,24 @@ EXCEPTION
         BEGIN
           SELECT RESPONSE_CODE
             INTO V_RESPCODE
-            FROM TRANSACTIONLOG A,
+            FROM VMSCMS.TRANSACTIONLOG			 A, --Added for VMS-5733/FSP-991
                 (SELECT MIN(ADD_INS_DATE) MINDATE
-                  FROM TRANSACTIONLOG
+                  FROM VMSCMS.TRANSACTIONLOG		 A--Added for VMS-5733/FSP-991
                  WHERE RRN = P_RRN) B
            WHERE A.ADD_INS_DATE = MINDATE AND RRN = P_RRN;
         
           P_RESP_CODE := V_RESPCODE;
+		  IF SQL%ROWCOUNT = 0 THEN 
+		  SELECT RESPONSE_CODE
+            INTO V_RESPCODE
+            FROM VMSCMS_HISTORY.TRANSACTIONLOG_HIST			 A, --Added for VMS-5733/FSP-991
+                (SELECT MIN(ADD_INS_DATE) MINDATE
+                  FROM VMSCMS_HISTORY.TRANSACTIONLOG_HIST			 A--Added for VMS-5733/FSP-991
+                 WHERE RRN = P_RRN) B
+           WHERE A.ADD_INS_DATE = MINDATE AND RRN = P_RRN;
+        
+          P_RESP_CODE := V_RESPCODE;
+		  END IF;
         EXCEPTION
           WHEN OTHERS THEN
             P_ERRMSG    := 'Problem in selecting the response detail of Original transaction' ||
@@ -427,4 +445,4 @@ EXCEPTION
     P_ERRMSG := ' Error from main ' || SUBSTR(SQLERRM, 1, 200);
 END;
 /
-SHOW ERROR
+SHOW ERROR;

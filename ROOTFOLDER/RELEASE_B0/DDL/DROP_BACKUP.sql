@@ -5,7 +5,7 @@ BEGIN
 
 	FOR I IN (SELECT * FROM all_objects 
 				WHERE owner ='VMSCMS'
-				AND ( object_NAME LIKE '%_R81B%'
+				AND ( object_NAME LIKE '%_R82B%'
 						OR object_NAME LIKE '%_R92B%') 
 				AND OBJECT_TYPE ='TABLE') LOOP 
     

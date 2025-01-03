@@ -1,4 +1,4 @@
-SPOOL $VMS_HOME/JAN_VMSGPRHOST_R91_RELEASE/LOG/VMSGPRHOST_RELEASE_VMSCMS_R91.log;
+SPOOL $VMS_HOME/JAN_VMSGPRHOST_R91_RELEASE/ROOTFOLDER/LOG/VMSGPRHOST_RELEASE_VMSCMS_R91.log;
 
 
 ----------------------------------------------------------------------------------------------------------------

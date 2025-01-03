@@ -209,13 +209,7 @@ AS
    v_exp_date_exemption     cms_prod_cattype.cpc_exp_date_exemption%TYPE;
    v_encrypt_enable		    cms_prod_cattype.cpc_encrypt_enable%TYPE;
    v_encr_firstname         CMS_CAF_INFO_ENTRY.CCI_SEG12_NAME_LINE1%TYPE;
-   --SN VMS-7342
-   v_expry_arry vmscms.EXPRY_ARRAY_TYP := vmscms.EXPRY_ARRAY_TYP ();
-   v_sweep_flag vmscms.cms_prod_cattype.cpc_sweep_flag%type;
-   v_isexpry_randm vmscms.cms_prod_cattype.cpc_expdate_randomization%type;
-   v_qntity  NUMBER(10);
-   v_cntr    NUMBER:=0;
-   --EN VMS-7342
+
    excp_movetohist          EXCEPTION;
 
    -- added by sagar on 06Apr2012 to pass prod catg from prod_mast
@@ -1855,11 +1849,9 @@ BEGIN
          BEGIN
             SELECT cattype.cpc_profile_code, prod.cpm_profile_code,prod.cpm_catg_code,
                    cattype.cpc_prod_prefix, cattype.cpc_program_id, 
-                   cattype.cpc_starter_card,cattype.cpc_exp_date_exemption,
-                   NVL(cattype.cpc_expdate_randomization,'N'), NVL(cattype.cpc_sweep_flag,'N')   --Added for VMS-7342
+                   cattype.cpc_starter_card,cattype.cpc_exp_date_exemption
               INTO v_profile_code_catg, v_profile_code, v_cpm_catg_code,
-                   v_prod_prefix, v_programid, v_starter_card,v_exp_date_exemption,
-                    v_isexpry_randm,v_sweep_flag   --Added for VMS-7342
+                   v_prod_prefix, v_programid, v_starter_card,v_exp_date_exemption
               FROM cms_prod_cattype cattype, cms_prod_mast prod
              WHERE cattype.cpc_inst_code = p_instcode
                AND cattype.cpc_inst_code = prod.cpm_inst_code
@@ -1902,49 +1894,6 @@ BEGIN
                 p_errmsg:='Error while calling vmsfunutilities.get_expiry_date'||substr(sqlerrm,1,200);
                 RAISE excp_movetohist;  
          END;
-         
-        --SN: Added for VMS-7342     
-        BEGIN
-            SELECT COUNT (*)
-              INTO v_qntity
-              FROM cms_caf_info_temp
-             WHERE     cci_inst_code = p_instcode
-                   AND cci_file_name = p_filename
-                   AND cci_upld_stat = 'B';
-        EXCEPTION
-            WHEN OTHERS THEN
-                p_errmsg := 'Error while getting total qntity-' || SUBSTR (SQLERRM, 1, 200);
-                RAISE excp_movetohist;
-        END;
-
-        IF v_isexpry_randm = 'Y' AND v_sweep_flag='N' THEN
-            BEGIN
-                vmscms.vmsfunutilities.get_expiry_date (p_instcode,
-                                                        x.cci_prod_code,
-                                                        x.cci_card_type,
-                                                        v_profile_code_catg,
-                                                        v_qntity,
-                                                        v_expry_arry,
-                                                        p_errmsg);
-
-                IF p_errmsg <> 'OK' THEN
-                    RAISE excp_movetohist;
-                END IF;
-            EXCEPTION
-                WHEN excp_movetohist THEN
-                    RAISE;
-                WHEN OTHERS THEN
-                    p_errmsg := 'Error while calling get_expiry_date_1' || SUBSTR (SQLERRM, 1, 200);
-                    RAISE excp_movetohist;
-            END;
-        ELSE
-            SELECT v_expry_date
-              BULK COLLECT INTO v_expry_arry
-              FROM DUAL
-            CONNECT BY LEVEL <= v_qntity;
-        END IF;
-        --EN: Added for VMS-7342
-
 
          BEGIN
             sp_tmpno_serlcnt_bulk (p_instcode,
@@ -2013,7 +1962,7 @@ BEGIN
    v_addr_data2 := type_addr_rec_array ();
    v_appl_data := type_appl_rec_array ();
    v_seg31acctnum_data := type_acct_rec_array ();
-   
+
    FOR y IN c2 (p_filename)                              --loop 2 for cursor 2
    LOOP
       BEGIN
@@ -2022,7 +1971,6 @@ BEGIN
          v_addr_data2.DELETE;
          v_seg31acctnum_data.DELETE;
          v_appl_data.DELETE;
-         v_cntr := v_cntr+1; --VMS-7342 Changes
 
  
          IF y.cci_seg12_cardholder_title = '0'
@@ -2373,7 +2321,7 @@ BEGIN
                          v_prodcattype,
                          v_ccc_catg_code,                  --customer category
                          SYSDATE,
-                         v_expry_arry(v_cntr), --v_expry_date, --Modified for VMS-7342
+                         v_expry_date,
                          v_encr_firstname,
                          0,
                          'N',

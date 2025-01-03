@@ -1,53 +1,52 @@
-spool $VMS_HOME/JAN_VMSGPRHOST_R92_RELEASE/ROOTFOLDER/LOG/CHECK_ME_FIRST.log;
+SPOOL $VMS_HOME/FEB_VMSGPRHOST_R93_RELEASE/ROOTFOLDER/LOG/COMPILE_SCHEMA.log;
 
 SET SERVEROUTPUT ON;
-SET DEFINE ON;
-DECLARE 
 
-V_CIV_VERS_BULD VMSCMS.CMS_INCOMM_VERSION.CIV_VERS_BULD%TYPE;
+DECLARE 
+l_count_invalid_obj       INTEGER;
+l_count_invalid_obj_prev  INTEGER := 0;
 
 BEGIN
-
-        SELECT CIV_VERS_BULD
-        INTO   V_CIV_VERS_BULD
-        FROM   VMSCMS.CMS_INCOMM_VERSION 
-        WHERE CIV_BASE_VERS ='DB - 3.5.1';
-            
-        
-        IF V_CIV_VERS_BULD = 'VMSGPRHOST_R92_B0000' 
-        THEN 
-            
-	    DBMS_OUTPUT.PUT_LINE('****************************************');								
+    SELECT
+            COUNT(1)
+        INTO l_count_invalid_obj
+        FROM
+            all_objects
+        WHERE
+            status != 'VALID'
+		AND OWNER = 'VMSCMS';
+	
+	LOOP
+        IF l_count_invalid_obj = 0 OR l_count_invalid_obj_prev = l_count_invalid_obj THEN
 			
-        DBMS_OUTPUT.PUT_LINE('PLEASE EXECUTE RELEASE VMSGPRHOST_R92_B0001');
+			IF l_count_invalid_obj = 0 THEN
+				DBMS_OUTPUT.PUT_LINE('INVALID OBJECTS DOES NOT EXISTS..');
+			ELSE
+				DBMS_OUTPUT.PUT_LINE('INVALID OBJECTS ARE COMPLIED SUCCESSFULLY..');
+			END IF;
+				EXIT;
+        END IF;
 
-	    DBMS_OUTPUT.PUT_LINE('****************************************');					
+            l_count_invalid_obj_prev := l_count_invalid_obj;
+
+            dbms_utility.compile_schema(schema => 'VMSCMS', compile_all => false);
+			
+             SELECT
+                COUNT(1)
+            INTO l_count_invalid_obj
+            FROM
+                all_objects
+            WHERE
+               status != 'VALID'
+		AND OWNER = 'VMSCMS';
+
+
+        END LOOP;
 		
-        
-        ELSIF V_CIV_VERS_BULD = 'VMSGPRHOST_R92_B0001'
-        THEN
-
-	    DBMS_OUTPUT.PUT_LINE('****************************************');							
-		
-        DBMS_OUTPUT.PUT_LINE(' RELEASE VMSGPRHOST_R92_B0001 IS ALREADY INSTALLED') ;
-
-	    DBMS_OUTPUT.PUT_LINE('****************************************');					
-        
-        ELSIF V_CIV_VERS_BULD NOT IN ('VMSGPRHOST_R92_B0000','VMSGPRHOST_R92_B0001')
-        THEN
-
-	    DBMS_OUTPUT.PUT_LINE('****************************************');							
-        
-        DBMS_OUTPUT.PUT_LINE('PLEASE IMPLEMENT FURTHER RELEASES AFTER '||V_CIV_VERS_BULD) ;
-
-	    DBMS_OUTPUT.PUT_LINE('****************************************');							 
-            
-        END IF;     
-        
-EXCEPTION WHEN NO_DATA_FOUND
-THEN
-     DBMS_OUTPUT.PUT_LINE('DATABASE RELEASE NOT FOUND IN VERSION MASTER');       
-                     
-END; 
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE(SQLERRM(SQLCODE));
+END;
 /
 spool off;
+

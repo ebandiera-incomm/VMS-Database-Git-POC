@@ -1,1 +1,1 @@
-log folder for JAN_VMSGPRHOST_R92_RELEASE files
+log folder for FEB_VMSGPRHOST_R93_RELEASE files

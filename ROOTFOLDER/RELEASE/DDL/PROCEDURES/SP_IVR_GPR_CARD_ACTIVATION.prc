@@ -1,4 +1,5 @@
-create or replace PROCEDURE        VMSCMS.SP_IVR_GPR_CARD_ACTIVATION (P_INSTCODE         IN NUMBER,
+SET DEFINE OFF;
+CREATE OR REPLACE PROCEDURE VMSCMS.SP_IVR_GPR_CARD_ACTIVATION (P_INSTCODE         IN NUMBER,
                                             P_CARDNUM          IN VARCHAR2,
                                             P_RRN              IN VARCHAR2,
                                             P_TRANDATE         IN VARCHAR2,
@@ -33,14 +34,14 @@ create or replace PROCEDURE        VMSCMS.SP_IVR_GPR_CARD_ACTIVATION (P_INSTCODE
     * Reviewer         : Dhiraj
     * Reviewed Date    :
     * Release Number   :
-
+    
     * Modified By      : Pankaj S.
     * Modified Date    : 15-Mar-2013
     * Modified Reason  : Logging of system initiated card status change(FSS-390)
     * Reviewer         : Dhiraj
     * Reviewed Date    : 
     * Build Number     :  CMS3.5.1_RI0024_B0008
-
+  
     * Modified By      : Ramesh
     * Modified Date    : 01-Apr-2013
     * Modified Reason  : Mantis DI 10766
@@ -49,21 +50,21 @@ create or replace PROCEDURE        VMSCMS.SP_IVR_GPR_CARD_ACTIVATION (P_INSTCODE
     * Build Number     : CMS3.5.1_RI0024_B0017    
 
 
-
+ 
     * Modified By      : Siva Kumar M
     * Modified Date    : 14/Sept/2013
     * Modified Reason  : MVCSD-4099 Additional changes
     * Reviewer         : dhiraj
     * Reviewed Date    : 
     * Build Number     : RI0024.4_B0012
-
+    
     * Modified By      : Siva Kumar A
     * Modified Date    : 05/DEC/2013
     * Modified Reason  : Mantis-12153
     * Reviewer         : Dhiraj
     * Reviewed Date    : 05/DEC/2013
     * Build Number     : RI0024.7_B0001
-
+    
     * Modified Date    : 16-Dec-2013
     * Modified By      : Sagar More
     * Modified for     : Defect ID 13160
@@ -72,84 +73,84 @@ create or replace PROCEDURE        VMSCMS.SP_IVR_GPR_CARD_ACTIVATION (P_INSTCODE
     * Reviewer         : Dhiraj
     * Reviewed Date    : 16-Dec-2013
     * Release Number   : RI0024.7_B0002
-
+    
     * Modified by      : Pankaj S.
     * Modified for     : Transactionlog Functional Removal
     * Modified Date    : 13-May-2015
     * Reviewer         :  Saravanankumar
     * Build Number     : VMSGPRHOAT_3.0.3_B0001
-
+    
     * Modified by          : MageshKumar S.
     * Modified Date        : 23-June-15
     * Modified For         : MVCAN-77
     * Modified reason      : Canada account limit check
     * Reviewer             : Spankaj
     * Build Number         : VMSGPRHOSTCSD3.1_B0001
-
+    
     * Modified by          : MageshKumar S.
     * Modified Date        : 18-Dec-15
     * Modified For         : FSS-3921
     * Modified reason      : Account number not logging 
     * Reviewer             : Pankaj
     * Build Number         : VMSGPRHOSTCSD3.3_B0001
-
+    
      * Modified by         : Spankaj
      * Modified Date     : 23-Dec-15
      * Modified For       : FSS-3925
      * Reviewer              : Saravanankumar
      * Build Number       : VMSGPRHOSTCSD3.3_B0001
-
+     
     * Modified by                  : MageshKumar S.
     * Modified Date                : 29-DECEMBER-15
     * Modified For                 : FSS-3506
     * Modified reason              : ALERTS TRANSFER
     * Reviewer                     : SARAVANAKUMAR/SPANKAJ
     * Build Number                 : VMSGPRHOSTCSD3.3_B0002
-
+    
        * Modified by       :Siva kumar 
        * Modified Date    : 22-Mar-16
        * Modified For     : MVHOST-1323
        * Reviewer         : Saravanankumar/Pankaj
        * Build Number     : VMSGPRHOSTCSD_4.0_B006
-
+       
     * Modified by          : MageshKumar S.
     * Modified Date        : 19-July-16
     * Modified For         : FSS-4423
     * Modified reason      : Token LifeCycle Changes
     * Reviewer             : Saravanan/Spankaj
     * Build Number         : VMSGPRHOSTCSD4.6_B0001
-
+    
     * Modified by          : MageshKumar S.
     * Modified Date        : 02-Aug-16
     * Modified For         : FSS-4423 Additional Changes
     * Modified reason      : Token LifeCycle Changes
     * Reviewer             : Saravanan/Spankaj
     * Build Number         : VMSGPRHOSTCSD4.6_B0002
-
+    
     * Modified by          : MageshKumar S.
     * Modified Date        : 11-May-17
     * Modified For         : FSS-5103
     * Reviewer             : Saravanan/Spankaj
     * Build Number         : VMSGPRHOSTCSD17.05_B0001
-
+    
      * Modified by          : Pankaj S.
     * Modified Date        : 23-May-17
     * Modified For         : FSS-5135 -Changes in Card replacement / renewal logic
     * Reviewer             : Saravanan
     * Build Number         : VMSGPRHOST_17.05
-
+    
         * Modified By      : Saravana Kumar A
     * Modified Date    : 07/13/2017
     * Purpose          : Currency code getting from prodcat profile
     * Reviewer         : Pankaj S. 
     * Release Number   : VMSGPRHOST17.07
-
+	
     * Modified By      : UBAIDUR RAHMAN H
     * Modified Date    : 16-JAN-2018
     * Purpose          : CURRENCY CODE CHANGES FROM INST LEVEL TO BIN LEVEL.
     * Reviewer         : Vini
     * Release Number   : VMSGPRHOST18.1
-
+    
     * Modified By      : Puvanesh. N
     * Modified Date    : 07-JUL-2021
     * Purpose          : VMS-4727 IVR GPR CARD ACTIVATION - Defunding Inactive Card and Then Funding it on Activation
@@ -161,6 +162,12 @@ create or replace PROCEDURE        VMSCMS.SP_IVR_GPR_CARD_ACTIVATION (P_INSTCODE
     * Purpose          : VMS-7196 - Funding on Activation for Replacements
     * Reviewer         : Pankaj S.
     * Release Number   : R83
+
+    * Modified By      : venkat Singamaneni
+    * Modified Date    : 4-25-2022
+    * Purpose          : Archival changes.
+    * Reviewer         : Jyothi G
+    * Release Number   : VMSGPRHOST60 for VMS-5735/FSP-991
   *************************************************/
 
   V_CAP_CARD_STAT   CMS_APPL_PAN.CAP_CARD_STAT%TYPE;
@@ -244,7 +251,7 @@ create or replace PROCEDURE        VMSCMS.SP_IVR_GPR_CARD_ACTIVATION (P_INSTCODE
     v_timestamp timestamp(3);
     --EN Added for 13160
     v_cardactive_dt   cms_appl_pan.cap_active_date%TYPE;  
-
+    
     V_FLDOB_HASHKEY_ID         CMS_CUST_MAST.CCM_FLNAMEDOB_HASHKEY%TYPE;  --Added for MVCAN-77 OF 3.1 RELEASE
     v_chkcurr              cms_bin_param.cbp_param_value%TYPE;    
     v_oldcrd_clear varchar2(19);
@@ -259,13 +266,16 @@ create or replace PROCEDURE        VMSCMS.SP_IVR_GPR_CARD_ACTIVATION (P_INSTCODE
 	V_ORDER_FUND_AMT     	VMS_ORDER_LINEITEM.VOL_FUND_AMOUNT%TYPE;
 	V_PROFILE_CODE       	CMS_PROD_CATTYPE.CPC_PROFILE_CODE%TYPE;
 	V_INITIALLOAD_AMOUNT	CMS_ACCT_MAST.CAM_INITIALLOAD_AMT%TYPE;
-    V_TXN_CODE              cms_transaction_mast.CTM_TRAN_CODE%TYPE;--Added for VMS_7196
+	V_TXN_CODE              cms_transaction_mast.CTM_TRAN_CODE%TYPE;--Added for VMS_7196
     v_toggle_value         cms_inst_param.cip_param_value%TYPE;--Added for VMS_7196
 	V_ACTIVECARD_COUNT		PLS_INTEGER;
 	V_TXN_AMT             	NUMBER;
     V_REMARK                TRANSACTIONLOG.REMARK%TYPE;
     VOD_REPL_ORDER          VMS_ORDER_LINEITEM.VOL_ORDER_ID%TYPE;
     V_PARAM_VALUE           CMS_INST_PARAM.CIP_PARAM_VALUE%TYPE;
+
+v_Retperiod  date;  --Added for VMS-5735/FSP-991
+v_Retdate  date; --Added for VMS-5735/FSP-991
 BEGIN
   P_ERRMSG   := 'OK';
   V_ERRMSG   := 'OK';
@@ -273,7 +283,7 @@ BEGIN
   V_REMRK    := 'IVR GPR Card Activation';
   --P_auth_message := 'OK';
   V_TXN_AMT := 0;
-  V_TXN_CODE := P_TXN_CODE;--Added for VMS_7196
+    V_TXN_CODE := P_TXN_CODE;--Added for VMS_7196
   --SN CREATE HASH PAN
   BEGIN
     V_HASH_PAN := GETHASH(P_CARDNUM);
@@ -386,7 +396,7 @@ BEGIN
             || SUBSTR (SQLERRM, 1, 100);
          RAISE EXP_MAIN_REJECT_RECORD;
    END;
-
+   
    BEGIN
     SELECT
         NVL(CIP_PARAM_VALUE,'N')
@@ -445,7 +455,7 @@ BEGIN
 					END IF;
 
 	                 V_TXN_AMT := V_LINEITEM_DENOM;  
-
+                
 
    	EXCEPTION
 	    WHEN NO_DATA_FOUND 
@@ -463,7 +473,6 @@ BEGIN
 
     END IF;
 
-
         --Sn added for VMS_7196
             BEGIN
                 SELECT UPPER(TRIM(NVL(cip_param_value,'Y')))
@@ -478,11 +487,11 @@ BEGIN
             END;
 
     IF v_toggle_value = 'Y' THEN
-    
+
         if P_TXN_CODE = '09' and V_DEFUND_FLAG='N' and V_INITIALLOAD_AMOUNT=0  then
 
             BEGIN
-            
+
             select  cap_pan_code
                     into v_old_pan
                     from ( select cap_pan_code
@@ -493,7 +502,7 @@ BEGIN
                     ORDER BY cap_ins_date
                     )
             where rownum =1;
-                
+
                   SELECT TO_NUMBER(NVL(LINEITEM.VOL_DENOMINATION,'0')),LINEITEM.VOL_FUND_AMOUNT
                   INTO V_LINEITEM_DENOM,V_ORDER_FUND_AMT
                   FROM
@@ -507,7 +516,7 @@ BEGIN
 
                 IF V_ORDER_FUND_AMT = 1 AND V_LINEITEM_DENOM>0 THEN
                              V_TXN_AMT := V_LINEITEM_DENOM;
-                             v_txn_code := '59';  
+                             v_txn_code := '59';
                 END IF;
 
             EXCEPTION
@@ -528,7 +537,6 @@ BEGIN
     END IF;
 
     --En added for VMS_7196
-
   --Sn find debit and credit flag
 
   BEGIN
@@ -549,7 +557,7 @@ BEGIN
   EXCEPTION
     WHEN NO_DATA_FOUND THEN
      V_RESPCODE := '12'; --Ineligible Transaction
-     V_ERRMSG   := 'Transflag  not defined for txn code ' || v_TXN_CODE ||
+      V_ERRMSG   := 'Transflag  not defined for txn code ' || v_TXN_CODE ||
                 ' and delivery channel ' || P_DELIVERY_CHANNEL;
      RAISE EXP_MAIN_REJECT_RECORD;
     WHEN OTHERS THEN
@@ -602,9 +610,9 @@ BEGIN
      FROM CMS_DELCHANNEL_MAST
     WHERE CDM_CHANNEL_DESC = 'IVR' AND CDM_INST_CODE = P_INSTCODE;
     --IF the DeliveryChannel is MMPOS then the base currency will be the txn curr
-
+  
     IF V_DELCHANNEL_CODE = P_DELIVERY_CHANNEL THEN
-
+    
      BEGIN
 --       SELECT CIP_PARAM_VALUE
 --        INTO V_BASE_CURR
@@ -618,7 +626,7 @@ BEGIN
             AND cbp_profile_code = V_PROFILE_CODE;
 
 
-
+     
        IF V_BASE_CURR IS NULL THEN
         V_RESPCODE := '21';
         V_ERRMSG   := 'Base currency cannot be null ';
@@ -635,66 +643,66 @@ BEGIN
                     SUBSTR(SQLERRM, 1, 200);
         RAISE EXP_MAIN_REJECT_RECORD;
      END;
-
+    
      V_CURRCODE := V_BASE_CURR;
-
+    
     ELSE
      V_CURRCODE := '840';
     END IF;
-
+  
   EXCEPTION
     WHEN OTHERS THEN
      V_ERRMSG := 'Error while selecting the Delivery Channel of IVR  ' ||
                SUBSTR(SQLERRM, 1, 200);
      RAISE EXP_MAIN_REJECT_RECORD;
-
+    
   END;
 
   --Sn Duplicate RRN Check.IF duplicate RRN log the txn and return
 
   /*BEGIN
-
+  
     SELECT COUNT(1)
      INTO V_RRN_COUNT
      FROM TRANSACTIONLOG
     WHERE INSTCODE = P_INSTCODE AND RRN = P_RRN AND
          BUSINESS_DATE = P_TRANDATE AND
          DELIVERY_CHANNEL = P_DELIVERY_CHANNEL; --Added by ramkumar.Mk on 25 march 2012
-
+  
     IF V_RRN_COUNT > 0 THEN
-
+    
      V_RESPCODE := '22';
      V_ERRMSG   := 'Duplicate RRN ' || ' on ' || P_TRANDATE;
      RAISE EXP_MAIN_REJECT_RECORD;
-
+    
     END IF;
-
+  
   END;*/--Unwanted Code removed
 
   --En Duplicate RRN Check
-
+  
   --Sn Commented for Transactionlog Functional Removal
   /*BEGIN
-
+  
     SELECT COUNT(*)
      INTO V_TRAN_COUNT
      FROM TRANSACTIONLOG
     WHERE CUSTOMER_CARD_NO = V_HASH_PAN AND RESPONSE_CODE = '00' AND
          TXN_CODE = '68' AND DELIVERY_CHANNEL = '04';
-
+  
     SELECT COUNT(*)
      INTO V_TRAN_COUNT_REVERSAL
      FROM TRANSACTIONLOG
     WHERE CUSTOMER_CARD_NO = V_HASH_PAN AND RESPONSE_CODE = '00' AND
          TXN_CODE = '69' AND DELIVERY_CHANNEL = '04';
-
+  
     IF V_TRAN_COUNT <> V_TRAN_COUNT_REVERSAL THEN
-
+    
      V_RESPCODE := '27';
      V_ERRMSG   := 'Card Activation Already Done For This Card ';
      RAISE EXP_MAIN_REJECT_RECORD;
     END IF;
-
+  
   END;
 
   BEGIN
@@ -703,13 +711,13 @@ BEGIN
      FROM TRANSACTIONLOG
     WHERE CUSTOMER_CARD_NO = V_HASH_PAN AND RESPONSE_CODE = '00' AND
          TXN_CODE = '02' AND DELIVERY_CHANNEL = '07';
-
+  
     IF V_TRAN_COUNT > '0' THEN
      V_RESPCODE := '27';
      V_ERRMSG   := 'Card Activation Already Done For This Card ';
      RAISE EXP_MAIN_REJECT_RECORD;
     END IF;
-
+  
   END;
 
   BEGIN
@@ -718,13 +726,13 @@ BEGIN
      FROM TRANSACTIONLOG
     WHERE CUSTOMER_CARD_NO = V_HASH_PAN AND RESPONSE_CODE = '00' AND
          TXN_CODE = '09' AND DELIVERY_CHANNEL = '07';
-
+  
     IF V_TRAN_COUNT > '0' THEN
      V_RESPCODE := '27';
      V_ERRMSG   := 'Card Activation Already Done For This Card ';
      RAISE EXP_MAIN_REJECT_RECORD;
     END IF;
-
+  
   END;
 
   BEGIN
@@ -733,18 +741,18 @@ BEGIN
      FROM TRANSACTIONLOG
     WHERE CUSTOMER_CARD_NO = V_HASH_PAN AND RESPONSE_CODE = '00' AND
          TXN_CODE = '02' AND DELIVERY_CHANNEL = '10';
-
+  
     IF V_TRAN_COUNT > '0'  THEN
      V_RESPCODE := '27';
      V_ERRMSG   := 'Card Activation Already Done For This Card ';
      RAISE EXP_MAIN_REJECT_RECORD;
     END IF;
-
+  
   END;*/
   --En Commented for Transactionlog Functional Removal
 
 
-
+  
   --Sn Added for Transactionlog Functional Removal
   IF v_cardactive_dt is not null AND v_replace_expdt is null
     THEN
@@ -753,15 +761,15 @@ BEGIN
      RAISE EXP_MAIN_REJECT_RECORD;
   END IF;
   --En Added for Transactionlog Functional Removal
-
+  
   IF v_card_activation_code IS NOT NULL AND v_card_activation_code != p_activation_code_in 
   THEN
      V_RESPCODE := '266';
      V_ERRMSG   := 'Activation Codes Not Matched';
      RAISE EXP_MAIN_REJECT_RECORD;
-
+  
   END IF;
-
+  
    --Sn Added by Pankaj S. on 19-Feb-2013 for card replacement changes(FSS-391)
    if v_replace_expdt is null Then 
     BEGIN
@@ -793,7 +801,7 @@ BEGIN
        BEGIN
            SELECT cap_card_stat into v_oldcardstat from cms_appl_pan WHERE cap_inst_code = p_instcode AND cap_pan_code = v_oldcrd;
             if v_oldcardstat = 3 or v_oldcardstat = 7 then
-
+            
           UPDATE cms_appl_pan
              SET cap_card_stat = '9'
            WHERE cap_inst_code = p_instcode AND cap_pan_code = v_oldcrd;
@@ -805,11 +813,11 @@ BEGIN
              RAISE exp_main_reject_record;
           END IF;
           v_crdstat_chnge:='Y'; --Added for FSS-390
-
+          
           p_closed_card :=v_oldcrd_clear;
           end if;
        END;
-
+       
     EXCEPTION
        WHEN exp_main_reject_record
        THEN
@@ -827,18 +835,18 @@ BEGIN
     END;
     End if ;
     --En Added by Pankaj S. on 19-Feb-2013 for card replacement changes(FSS-391)
-
+    
      /* START   Added by Dhiraj G on 12072012 for Pre - LIMITS BRD   */
 /*IF v_lmtprfl IS NULL OR v_profile_level IS NULL -- Added on 30102012 Dhiraj 
    THEN
-
+ 
   BEGIN
     SELECT CPL_LMTPRFL_ID
      INTO V_LMTPRFL
      FROM CMS_PRDCATTYPE_LMTPRFL
     WHERE CPL_INST_CODE = V_INST_CODE AND CPL_PROD_CODE = V_PROD_CODE AND
          CPL_CARD_TYPE = V_PROD_CATTYPE;
-
+  
     V_PROFILE_LEVEL := 2;
   EXCEPTION
     WHEN NO_DATA_FOUND THEN
@@ -847,7 +855,7 @@ BEGIN
         INTO V_LMTPRFL
         FROM CMS_PROD_LMTPRFL
         WHERE CPL_INST_CODE = V_INST_CODE AND CPL_PROD_CODE = V_PROD_CODE;
-
+     
        V_PROFILE_LEVEL := 3;
      EXCEPTION
        WHEN NO_DATA_FOUND THEN
@@ -869,12 +877,12 @@ END IF  ;*/-- Added on 30102012 Dhiraj
 
 /*IF V_LMTPRFL IS NOT NULL THEN -- Added on 30102012 Dhiraj 
   BEGIN
-
+  
     UPDATE CMS_APPL_PAN
       SET CAP_PRFL_CODE = V_LMTPRFL, --Added by Dhiraj G on 12072012 for  - LIMITS BRD
          CAP_PRFL_LEVL = V_PROFILE_LEVEL --Added by Dhiraj G on 12072012 for  - LIMITS BRD
     WHERE CAP_INST_CODE = P_INSTCODE AND CAP_PAN_CODE = V_HASH_PAN;
-
+  
     IF SQL%ROWCOUNT = 0 THEN
      V_RESPCODE := '21';
      P_ERRMSG   := 'Limit Profile not updated for :' || V_HASH_PAN;
@@ -912,9 +920,9 @@ END IF;  */-- Added on 30102012 Dhiraj
      FROM CMS_APPL_PAN
     WHERE CAP_INST_CODE = P_INSTCODE AND CAP_PAN_CODE = V_HASH_PAN AND
          CAP_CARD_STAT = 0;
-
+  
     IF V_VALID_CARDSTAT_COUNT = 0 THEN
-
+    
      V_RESPCODE := '10'; --Modified resp code '09' to '10' by A.Sivakaminathan on 02-Oct-2012
      V_ERRMSG   := 'CARD MUST BE IN INACTIVE STATUS FOR ACTIVATION';
      RAISE EXP_MAIN_REJECT_RECORD;
@@ -933,22 +941,22 @@ END IF;  */-- Added on 30102012 Dhiraj
      FROM CMS_APPL_PAN
     WHERE CAP_INST_CODE = P_INSTCODE AND CAP_PAN_CODE = V_HASH_PAN AND
          CAP_FIRSTTIME_TOPUP = 'N';
-
+  
     IF V_CARD_TOPUP_FLAG = 0 THEN
-
+    
      V_RESPCODE := '28';
      V_ERRMSG   := 'CARD FIRST TIME TOPUP MUST BE N STATUS FOR ACTIVATION';
      RAISE EXP_MAIN_REJECT_RECORD;
-
+    
     END IF;
   END;*/
-
+  
   IF V_FIRSTTIME_TOPUP = 'Y' THEN
-
+    
      V_RESPCODE := '28';
      V_ERRMSG   := 'CARD FIRST TIME TOPUP MUST BE N STATUS FOR ACTIVATION';
      RAISE EXP_MAIN_REJECT_RECORD;
-
+    
     END IF;
 END IF;
   --Sn Expiry date, service code
@@ -969,7 +977,7 @@ END IF;
      V_ERRMSG   := 'Problem while selecting card detail' ||
                 SUBSTR(SQLERRM, 1, 200);
      RAISE EXP_MAIN_REJECT_RECORD;
-
+    
   END;*/
 
   --En  Expiry date, service code
@@ -977,59 +985,59 @@ END IF;
    --card status
    BEGIN
      IF V_CAP_CARD_STAT IN (2, 3) THEN
-
+  
       V_RESPCODE := '41';
       V_ERRMSG   := ' Lost Card ';
       RAISE EXP_MAIN_REJECT_RECORD;
-
+  
      ELSIF V_CAP_CARD_STAT = 4 THEN
-
+  
       V_RESPCODE := '14';
       V_ERRMSG   := ' Restricted Card ';
       RAISE EXP_MAIN_REJECT_RECORD;
-
+  
      ELSIF V_CAP_CARD_STAT = 9 THEN
-
+  
       V_RESPCODE := '46';
       V_ERRMSG   := ' Closed Card ';
       RAISE EXP_MAIN_REJECT_RECORD;
-
+  
      END IF;
    END;
    --card status
-
+  
    -- Expiry Check
-
+  
    BEGIN
-
-
+  
+  
      IF TO_DATE(P_TRANDATE, 'YYYYMMDD') >
        LAST_DAY(TO_CHAR(V_EXPRY_DATE, 'DD-MON-YY')) THEN
-
+  
       V_RESPCODE := '13';
       V_ERRMSG   := 'EXPIRED CARD';
       RAISE EXP_MAIN_REJECT_RECORD;
-
+  
      END IF;
-
+  
    EXCEPTION
-
+  
      WHEN EXP_MAIN_REJECT_RECORD THEN
       RAISE;
-
+  
      WHEN OTHERS THEN
       V_RESPCODE := '21';
       V_ERRMSG   := 'ERROR IN EXPIRY DATE CHECK : Tran Date - ' ||
                  P_TRANDATE || ', Expiry Date - ' || V_EXPRY_DATE || ',' ||
                  SUBSTR(SQLERRM, 1, 200);
       RAISE EXP_MAIN_REJECT_RECORD;
-
+  
    END;
   */
   -- End Expiry Check
 
  -- IF V_CAP_PROD_CATG = 'P' THEN
-
+  
     --Sn call to authorize txn
     BEGIN
      SP_AUTHORIZE_TXN_CMS_AUTH(P_INSTCODE,
@@ -1037,7 +1045,7 @@ END IF;
                           P_RRN,
                           P_DELIVERY_CHANNEL,
                           '0',
-                          V_TXN_CODE, --P_TXN_CODE,-- Modified for VMS_7196
+                           V_TXN_CODE, --P_TXN_CODE,-- Modified for VMS_7196
                           0,
                           P_TRANDATE,
                           P_TRANTIME,
@@ -1069,26 +1077,26 @@ END IF;
                           V_RESPCODE,
                           V_RESPMSG,
                           V_CAPTURE_DATE);
-
+    
      IF V_RESPCODE <> '00' AND V_RESPMSG <> 'OK' THEN
        V_ERRMSG := V_RESPMSG;
        RAISE EXP_AUTH_REJECT_RECORD;
      END IF;
-
+    
     EXCEPTION
      WHEN EXP_AUTH_REJECT_RECORD THEN
        RAISE;
-
+     
      WHEN OTHERS THEN
        V_RESPCODE := '21';
        V_ERRMSG   := 'Error from Card authorization' ||
                   SUBSTR(SQLERRM, 1, 200);
        RAISE EXP_MAIN_REJECT_RECORD;
     END;
-
+  
     --En call to authorize txn
  -- END IF;
-
+  
       --Sn Added for FSS-3925
         BEGIN
 --           SELECT TRIM (cbp_param_value)
@@ -1101,11 +1109,11 @@ END IF;
 --                  AND cpm_prod_code = v_prod_code;
 
       vmsfunutilities.get_currency_code(v_prod_code,V_PROD_CATTYPE,p_instcode,v_chkcurr,v_errmsg);
-
+      
       if v_errmsg<>'OK' then
            raise exp_main_reject_record;
       end if;
-
+                  
            IF v_chkcurr IS NULL THEN
               v_respcode := '21';
               v_errmsg := 'Base currency cannot be null ';
@@ -1128,7 +1136,7 @@ END IF;
               INTO v_ssn--,V_FLDOB_HASHKEY_ID --Added for MVCAN-77 of 3.1 release
               FROM cms_cust_mast
              WHERE ccm_inst_code = p_instcode AND ccm_cust_code = v_cust_code;
-
+             
             sp_check_ssn_threshold (p_instcode,
                                     v_ssn,
                                     v_prod_code,
@@ -1189,7 +1197,7 @@ END IF;
         END;
         --En select Starter Card
         --En added by Pankaj S. for FSS-390
-
+    
      SP_IVR_GPR_CARD_ACTIVATE(P_INSTCODE,
                           P_CARDNUM,
                           P_RRN,          -- added for mvcsd-4099 additional changes on 14/Sept/2013
@@ -1203,7 +1211,7 @@ END IF;
        V_ERRMSG := V_RESPMSG;
        RAISE EXP_AUTH_REJECT_RECORD;
      END IF;
-
+    
     --Sn added by Pankaj S. for FSS-390
        IF v_starter_card IS NOT NULL THEN
        sp_log_cardstat_chnge (p_instcode,
@@ -1223,10 +1231,10 @@ END IF;
              v_errmsg := v_respmsg;
              RAISE exp_main_reject_record;
           END IF;
-
+          
         --Sn added by MAGESHKUMAR S. for FSS-3506
         IF v_respcode = '00' AND v_respmsg = 'OK' THEN
-
+        
          VMSCOMMON.TRFR_ALERTS (p_instcode,
                                  v_starter_card,
                                  V_HASH_PAN,
@@ -1239,11 +1247,11 @@ END IF;
              RAISE exp_main_reject_record;
           END IF;
           END IF;
-
+          
           ELSE
-
+          
           IF v_oldcrd IS NOT NULL THEN
-
+          
           VMSCOMMON.TRFR_ALERTS (p_instcode,
                                  v_oldcrd,
                                  V_HASH_PAN,
@@ -1255,14 +1263,14 @@ END IF;
              v_errmsg := v_respmsg;
              RAISE exp_main_reject_record;
           END IF;
-
+          
           END IF;
-
+          
       --En added by MAGESHKUMAR S. for FSS-3506
-
+          
        END IF;
       --En added by Pankaj S. for FSS-390
-
+    
     EXCEPTION
      WHEN EXP_AUTH_REJECT_RECORD THEN
        RAISE;
@@ -1275,7 +1283,7 @@ END IF;
        RAISE EXP_MAIN_REJECT_RECORD;
     END;
   END IF;
-
+  
   --Sn added by Pankaj S. for FSS-390
    IF v_errmsg='OK' and v_crdstat_chnge='Y'
    THEN
@@ -1316,7 +1324,7 @@ END IF;
      INTO V_RESONCODE
      FROM CMS_SPPRT_REASONS
     WHERE CSR_INST_CODE = P_INSTCODE AND CSR_SPPRT_KEY = 'ACTVTCARD';
-
+  
   EXCEPTION
     WHEN NO_DATA_FOUND THEN
      V_RESPCODE := '21';
@@ -1368,7 +1376,7 @@ END IF;
      P_ERRMSG    := V_ERRMSG;
      P_RESP_CODE := V_RESPCODE;
      -- Assign the response code to the out parameter
-
+    
      SELECT CMS_ISO_RESPCDE
        INTO P_RESP_CODE
        FROM CMS_RESPONSE_MAST
@@ -1381,7 +1389,7 @@ END IF;
                    V_RESPCODE || SUBSTR(SQLERRM, 1, 300);
        P_RESP_CODE := '89';
        ---ISO MESSAGE FOR DATABASE ERROR Server Declined
-
+    
     END;
   ELSE
     P_RESP_CODE := V_RESPCODE;
@@ -1410,7 +1418,7 @@ END IF;
   END;
 
   BEGIN
-
+  
     --Sn Usage limit and amount updation for MMPOS
     IF P_DELIVERY_CHANNEL = '04' THEN
      IF V_TRAN_DATE > V_BUSINESS_DATE_TRAN THEN
@@ -1452,7 +1460,7 @@ END IF;
      END IF;
     END IF;
     --En Usage limit and amount updation for MMPOS
-
+  
   END;*/
 
   ---En Updation of Usage limit and amount
@@ -1460,7 +1468,7 @@ END IF;
   --IF errmsg is OK then balance amount will be returned
 
   IF P_ERRMSG = 'OK' THEN
-
+  
     --Sn of Getting  the Acct Balannce
     BEGIN
      SELECT CAM_ACCT_BAL
@@ -1484,36 +1492,55 @@ END IF;
                   V_HASH_PAN;
        RAISE EXP_MAIN_REJECT_RECORD;
     END;
-
+  
     --En of Getting  the Acct Balannce
-
+  
     --En of Getting  the Acct Balannce
     IF P_ERRMSG = 'OK' THEN
      P_ERRMSG   := '';
     -- P_EXP_DATE := V_EXP_DATE;
     -- P_SRV_CODE := V_SRV_CODE;
     END IF;
-
+  
   END IF;
   BEGIN
+--Added for VMS-5735/FSP-991
+ select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
+       INTO   v_Retperiod 
+       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
+       WHERE  OPERATION_TYPE='ARCHIVE' 
+       AND OBJECT_NAME='TRANSACTIONLOG_EBR';
+       
+       v_Retdate := TO_DATE(SUBSTR(TRIM(p_trandate), 1, 8), 'yyyymmdd');
+
+
+IF (v_Retdate>v_Retperiod)
+    THEN
     UPDATE TRANSACTIONLOG
       SET ANI = P_ANI, DNI = P_DNI
     WHERE RRN = P_RRN AND BUSINESS_DATE = P_TRANDATE AND
-         TXN_CODE = v_TXN_CODE AND BUSINESS_TIME = P_TRANTIME AND
+          TXN_CODE = v_TXN_CODE AND BUSINESS_TIME = P_TRANTIME AND
          DELIVERY_CHANNEL = P_DELIVERY_CHANNEL;
+ELSE
+    UPDATE VMSCMS_HISTORY.TRANSACTIONLOG_HIST --Added for VMS-5733/FSP-991
+      SET ANI = P_ANI, DNI = P_DNI
+    WHERE RRN = P_RRN AND BUSINESS_DATE = P_TRANDATE AND
+          TXN_CODE = v_TXN_CODE AND BUSINESS_TIME = P_TRANTIME AND
+         DELIVERY_CHANNEL = P_DELIVERY_CHANNEL;
+END IF;
   EXCEPTION
     WHEN OTHERS THEN
      P_RESP_CODE := '69';
      P_ERRMSG    := 'Problem while inserting data into transaction log  dtl' ||
                  SUBSTR(SQLERRM, 1, 300);
   END;
-
+  
   IF V_RESPCODE = '00' AND V_ERRMSG = 'OK' THEN
-
+    
     IF V_DEFUND_FLAG = 'Y' AND NVL(V_TXN_AMT,0) > 0 AND V_PARAM_VALUE = 'N' THEN
-
+    
         V_REMARK := 'Activated and Loaded the Defunded Amount For the Account';
-
+  
     SP_CARD_LOAD_DEFUND_AMOUNT(P_INSTCODE,
                                '0200',
                                 P_RRN,
@@ -1544,13 +1571,13 @@ END IF;
                      END IF;
                 END IF;
         END IF;
-
+  
 EXCEPTION
   --<< MAIN EXCEPTION >>
   WHEN EXP_AUTH_REJECT_RECORD THEN
     P_ERRMSG    := V_ERRMSG;
     P_RESP_CODE := V_RESPCODE;
-
+  
     ---Sn Updation of Usage limit and amount
  /*   BEGIN
      SELECT CTC_MMPOSUSAGE_AMT, CTC_MMPOSUSAGE_LIMIT, CTC_BUSINESS_DATE
@@ -1570,9 +1597,9 @@ EXCEPTION
        V_RESPCODE := '21';
        RAISE EXP_MAIN_REJECT_RECORD;
     END;
-
+  
     BEGIN
-
+    
      --Sn Usage limit and amount updation for MMPOS
      IF P_DELIVERY_CHANNEL = '04' THEN
        IF V_TRAN_DATE > V_BUSINESS_DATE_TRAN THEN
@@ -1614,9 +1641,9 @@ EXCEPTION
        END IF;
      END IF;
      --En Usage limit and amount updation for MMPOS
-
+    
     END;*/
-
+  
   ---En Updation of Usage limit and amount
 
   --Sn create a entry in txn log
@@ -1660,9 +1687,9 @@ EXCEPTION
        V_RESPCODE := '21';
        RAISE EXP_MAIN_REJECT_RECORD;
     END;
-
+  
     BEGIN
-
+    
      --Sn Usage limit and amount updation for MMPOS
      IF P_DELIVERY_CHANNEL = '04' THEN
        IF V_TRAN_DATE > V_BUSINESS_DATE_TRAN THEN
@@ -1704,17 +1731,17 @@ EXCEPTION
        END IF;
      END IF;
      --En Usage limit and amount updation for MMPOS
-
+    
     END;*/
-
+  
     ---En Updation of Usage limit and amount
-
+  
     --Sn select response code and insert record into txn log dtl
     BEGIN
      P_ERRMSG    := V_ERRMSG;
      P_RESP_CODE := V_RESPCODE;
      -- Assign the response code to the out parameter
-
+    
      SELECT CMS_ISO_RESPCDE
        INTO P_RESP_CODE
        FROM CMS_RESPONSE_MAST
@@ -1728,7 +1755,7 @@ EXCEPTION
        P_RESP_CODE := '89';
        ---ISO MESSAGE FOR DATABASE ERROR Server Declined
     END;
-
+  
     --Sn select response code and insert record into txn log dtl
     BEGIN
      IF P_RESP_CODE = '00' THEN
@@ -1749,16 +1776,16 @@ EXCEPTION
                    V_RESPCODE || SUBSTR(SQLERRM, 1, 300);
        P_RESP_CODE := '99';
     END;
-
+  
     P_ERRMSG   := V_ERRMSG;
    -- P_EXP_DATE := V_EXP_DATE;
    -- P_SRV_CODE := V_SRV_CODE;
-
+    
  --SN Added for 13160 
 
     if v_dr_cr_flag is null
     then
-
+    
        BEGIN
           SELECT ctm_credit_debit_flag,
                  ctm_tran_desc
@@ -1773,14 +1800,14 @@ EXCEPTION
           THEN
                null; 
        END;
-
+       
     end if;
-
+        
     if v_prod_code is null
     then
-
+    
        BEGIN
-
+       
           SELECT cap_card_stat, cap_acct_no,
                  cap_prod_code,cap_card_type
             INTO v_cap_card_stat,v_acct_number,
@@ -1792,13 +1819,13 @@ EXCEPTION
           THEN
               null;
        END;   
-
+       
     end if;    
 
    v_timestamp := systimestamp;   
-
+   
    --EN Added for 13160        
-
+  
     BEGIN
      INSERT INTO TRANSACTIONLOG
        (MSGTYPE,
@@ -1855,7 +1882,7 @@ EXCEPTION
         P_DELIVERY_CHANNEL,
         0,
         V_BUSINESS_DATE,
-        v_TXN_CODE,
+         v_TXN_CODE,
         V_TXN_TYPE,
         0,
         DECODE(P_RESP_CODE, '00', 'C', 'F'),
@@ -1899,16 +1926,16 @@ EXCEPTION
         v_errmsg
         --En Added for 13160             
         );
-
+    
     EXCEPTION
      WHEN OTHERS THEN
-
+     
        P_RESP_CODE := '89';
        P_ERRMSG    := 'Problem while inserting data into transaction log  dtl' ||
                    SUBSTR(SQLERRM, 1, 300);
     END;
     BEGIN
-
+    
      INSERT INTO CMS_TRANSACTION_LOG_DTL
        (CTD_DELIVERY_CHANNEL,
         CTD_TXN_CODE,
@@ -1958,7 +1985,7 @@ EXCEPTION
         --'', -- Commented for Account number logging issue in production - FSS3921
         V_ACCT_NUMBER, -- Added for Account number logging issue in production - FSS-3921
         V_TXN_TYPE);
-
+    
      P_ERRMSG := V_ERRMSG;
     EXCEPTION
      WHEN OTHERS THEN
@@ -1970,7 +1997,9 @@ EXCEPTION
     END;
   WHEN OTHERS THEN
     P_ERRMSG := ' Error from main ' || SUBSTR(SQLERRM, 1, 200);
-
+  
 END;
+
 /
-SHOW ERROR;
+
+show error

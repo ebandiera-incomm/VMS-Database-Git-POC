@@ -33,7 +33,13 @@ As
                             Acct_type
        * Reviewer         : Dhiraj
        * Reviewed Date    : 16-Dec-2013
-       * Release Number   : RI0024.7_B0001           
+       * Release Number   : RI0024.7_B0001       
+   
+    * Modified By      : venkat Singamaneni
+    * Modified Date    : 4-25-2022
+    * Purpose          : Archival changes.
+    * Reviewer         : Jyothi G
+    * Release Number   : VMSGPRHOST60 for VMS-5735/FSP-991    
        
 *************************************************/
 V_TRAN_DATE             DATE;
@@ -70,7 +76,8 @@ V_Fs_Available          Boolean Default True;
 
 v_acct_type cms_acct_mast.cam_type_code%type; -- Added for 13160
 v_resp_id  cms_response_mast.CMS_RESPONSE_ID%type; -- Added for 13160
-
+v_Retperiod  date;  --Added for VMS-5735/FSP-991
+v_Retdate  date; --Added for VMS-5735/FSP-991
 
 BEGIN
    V_TXN_TYPE := '1';
@@ -138,12 +145,32 @@ BEGIN
 
       --Sn Duplicate RRN Check
         BEGIN
+--Added for VMS-5735/FSP-991
+ select (add_months(trunc(sysdate,'MM'),'-'||RETENTION_PERIOD))
+       INTO   v_Retperiod 
+       FROM DBA_OPERATIONS.ARCHIVE_MGMNT_CTL 
+       WHERE  OPERATION_TYPE='ARCHIVE' 
+       AND OBJECT_NAME='TRANSACTIONLOG_EBR';
+       
+       v_Retdate := TO_DATE(SUBSTR(TRIM(P_TRAN_DATE), 1, 8), 'yyyymmdd');
+
+
+IF (v_Retdate>v_Retperiod)
+    THEN
           SELECT COUNT(1)
           INTO V_RRN_COUNT
           FROM TRANSACTIONLOG
           WHERE RRN         = P_RRN
           AND BUSINESS_DATE = P_TRAN_DATE AND INSTCODE=P_INST_CODE
           and DELIVERY_CHANNEL = P_DELIVERY_CHANNEL;
+   ELSE
+     SELECT COUNT(1)
+          INTO V_RRN_COUNT
+          FROM VMSCMS_HISTORY.TRANSACTIONLOG_HIST --Added for VMS-5733/FSP-991
+          WHERE RRN         = P_RRN
+          AND BUSINESS_DATE = P_TRAN_DATE AND INSTCODE=P_INST_CODE
+          and DELIVERY_CHANNEL = P_DELIVERY_CHANNEL;
+   END IF;
 
           IF V_RRN_COUNT    > 0 THEN
             P_RESP_CODE     := '22';
@@ -243,11 +270,11 @@ BEGIN
      Begin
         Select to_date(Business_Date,'YYYYMMDD'), Amount into V_Fast50_Date,V_Fast50_amt From (
           SELECT business_date, amount
-            FROM  TRANSACTIONLOG WHERE 
+            FROM  VMSCMS.TRANSACTIONLOG_VW  WHERE 
             CR_DR_FLAG ='CR' and response_code = '00' and   NVL(TRAN_REVERSE_FLAG,'N') = 'N' 
             and ((DELIVERY_CHANNEL ='04' and TXN_CODE in ('68', '80', '82', '85', '88') 
             and exists (Select * from
-            cms_transaction_log_dtl where ctd_hashkey_id =
+            VMSCMS.CMS_TRANSACTION_LOG_DTL_VW where ctd_hashkey_id =
             Gethash (Delivery_Channel||Txn_Code||Fn_Dmaps_Main(Customer_Card_No_Encr)||Rrn||To_Char(Time_Stamp,'YYYYMMDDHH24MISSFF5'))
             And Ctd_Reason_Code Is Not Null And Substr(Ctd_Reason_Code,1,1) = 'F')))
             --Or ((Delivery_Channel ='11' And Txn_Code In ('22', '32')) And Ach_Exception_Queue_Flag ='FD'))
@@ -265,11 +292,11 @@ BEGIN
      Begin
         Select to_date(Business_Date,'YYYYMMDD'), Amount into v_fstax_date,v_fstax_amt From (
           SELECT business_date, amount
-            FROM  TRANSACTIONLOG WHERE 
+            FROM  VMSCMS.TRANSACTIONLOG_VW WHERE 
             CR_DR_FLAG ='CR' and response_code = '00' and   NVL(TRAN_REVERSE_FLAG,'N') = 'N'
             and ((DELIVERY_CHANNEL ='04' and TXN_CODE in ('68', '80', '82', '85', '88') 
             and exists (Select * from
-            cms_transaction_log_dtl where ctd_hashkey_id =
+            VMSCMS.CMS_TRANSACTION_LOG_DTL_VW where ctd_hashkey_id =
             Gethash (Delivery_Channel||Txn_Code||Fn_Dmaps_Main(Customer_Card_No_Encr)||Rrn||To_Char(Time_Stamp,'YYYYMMDDHH24MISSFF5'))
             And Ctd_Reason_Code Is Not Null And Substr(Ctd_Reason_Code,1,1) in ('T','S')))
             or  ((Delivery_Channel ='11' And Txn_Code In ('22', '32')) And Ach_Exception_Queue_Flag ='FD'))
@@ -297,6 +324,9 @@ BEGIN
     P_Fstax_Amt :=V_Fstax_Amt;
     
     BEGIN
+
+IF (v_Retdate>v_Retperiod)
+    THEN
       UPDATE TRANSACTIONLOG
         SET  ANI = P_ANI,  DNI = P_DNI                                                           
         WHERE RRN=P_RRN AND BUSINESS_DATE=P_TRAN_DATE
@@ -305,6 +335,16 @@ BEGIN
         AND TXN_CODE=P_TXN_CODE 
         AND MSGTYPE=P_MSG_TYPE
         AND INSTCODE=P_INST_CODE;
+ELSE
+     UPDATE VMSCMS_HISTORY.TRANSACTIONLOG_HIST --Added for VMS-5733/FSP-991
+        SET  ANI = P_ANI,  DNI = P_DNI                                                           
+        WHERE RRN=P_RRN AND BUSINESS_DATE=P_TRAN_DATE
+        AND BUSINESS_TIME=P_TRAN_TIME
+        AND DELIVERY_CHANNEL=P_DELIVERY_CHANNEL
+        AND TXN_CODE=P_TXN_CODE 
+        AND MSGTYPE=P_MSG_TYPE
+        AND INSTCODE=P_INST_CODE;
+ END IF;
               
       IF SQL%ROWCOUNT = 0 THEN
         V_ERRMSG  := 'ERROR WHILE UPDATING Trasnsaction log ';
@@ -348,6 +388,9 @@ When Exp_Auth_Reject_Record Then
     P_RESP_CODE := P_RESP_CODE;
     
     BEGIN
+
+IF (v_Retdate>v_Retperiod)
+    THEN
       Update Transactionlog
        SET 
              ANI=P_ANI, 
@@ -360,6 +403,20 @@ When Exp_Auth_Reject_Record Then
          AND msgtype = P_MSG_TYPE
          And Customer_Card_No = V_Hash_Pan
          AND instcode = P_INST_CODE;
+ELSE
+         Update VMSCMS_HISTORY.TRANSACTIONLOG_HIST --Added for VMS-5733/FSP-991
+       SET 
+             ANI=P_ANI, 
+             DNI=P_DNI 
+       WHERE rrn = p_rrn
+         And Delivery_Channel = P_Delivery_Channel
+         And Txn_Code = P_Txn_Code
+         And Business_Date = P_Tran_Date
+         AND business_time = P_TRAN_TIME
+         AND msgtype = P_MSG_TYPE
+         And Customer_Card_No = V_Hash_Pan
+         AND instcode = P_INST_CODE;
+END IF;
       
       IF SQL%ROWCOUNT = 0
       THEN

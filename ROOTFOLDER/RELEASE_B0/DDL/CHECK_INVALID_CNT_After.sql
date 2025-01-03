@@ -1,4 +1,4 @@
-SPOOL $VMS_HOME/JAN_VMSGPRHOST_R91_RELEASE/LOG/CHECK_INVALID_CNT.log;
+SPOOL $VMS_HOME/JAN_VMSGPRHOST_R91_RELEASE/ROOTFOLDER/LOG/CHECK_INVALID_CNT.log;
 
 set serveroutput on
 
@@ -37,7 +37,8 @@ WITH
                                                           1,
                                                           1)
                                                  + 2,
-                                                 LENGTH (EDITION_NAME)),
+                                                 3), -- TEMP CHANGE /TODO
+                                                 --LENGTH (EDITION_NAME)),
                                          '_',
                                          '.')) DESC)    r_no
            FROM vmscms.vms_edition_invalid_cnt

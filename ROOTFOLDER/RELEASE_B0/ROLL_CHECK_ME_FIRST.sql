@@ -1,4 +1,4 @@
-spool $VMS_HOME/JAN_VMSGPRHOST_R92_RELEASE/ROOTFOLDER/LOG/ROLL_CHECK_ME_FIRST.log;
+spool $VMS_HOME/FEB_VMSGPRHOST_R93_RELEASE/ROOTFOLDER/LOG/ROLL_CHECK_ME_FIRST.log;
 
 SET SERVEROUTPUT ON;
 
@@ -15,21 +15,21 @@ BEGIN
         WHERE CIV_BASE_VERS ='DB - 3.5.1';
         
                    
-           IF V_CIV_VERS_BULD = 'VMSGPRHOST_R92_B0000' 
+           IF V_CIV_VERS_BULD = 'VMSGPRHOST_R93_B0000' 
         THEN 
 		
 	    DBMS_OUTPUT.PUT_LINE('*************************************************');					
             
-        DBMS_OUTPUT.PUT_LINE('PLEASE EXECUTE ROLLBACK FOR RELEASE VMSGPRHOST_R91');
+        DBMS_OUTPUT.PUT_LINE('PLEASE EXECUTE ROLLBACK FOR RELEASE VMSGPRHOST_R92');
                          
 	    DBMS_OUTPUT.PUT_LINE('*************************************************');			
 						 
-        ELSIF V_CIV_VERS_BULD = 'VMSGPRHOST_R91' 
+        ELSIF V_CIV_VERS_BULD = 'VMSGPRHOST_R92' 
         THEN
 
 	    DBMS_OUTPUT.PUT_LINE('***********************************************');					
 		
-        DBMS_OUTPUT.PUT_LINE('ROLLBACK IS ALREADY EXECUTED FOR VMSGPRHOST_R91');
+        DBMS_OUTPUT.PUT_LINE('ROLLBACK IS ALREADY EXECUTED FOR VMSGPRHOST_R92');
 
 	    DBMS_OUTPUT.PUT_LINE('***********************************************');			        
             

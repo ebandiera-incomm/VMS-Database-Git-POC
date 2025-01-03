@@ -1,0 +1,5 @@
+CREATE TABLE vmscms.CMS_INST_PARAM_R93B1
+AS
+    SELECT *
+      FROM vmscms.CMS_INST_PARAM
+     WHERE 1 = 2;
